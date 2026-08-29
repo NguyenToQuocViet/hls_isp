@@ -1,3 +1,10 @@
+<!--
+Project: Adaptive Directional BPC and BLC
+Module: Repository Guidelines
+Description: Define repository-wide contribution and agent behavior.
+Author: Viet Nguyen To Quoc
+-->
+
 # Repository Guidelines
 
 ## Scope and Sources of Truth
@@ -31,6 +38,19 @@ Keep handwritten source separate from generated output under ignored `build/` or
 ## Coding Style & Naming Conventions
 
 Use lowercase directories and descriptive filenames. For C++, use four-space indentation, `snake_case` for functions and variables, `PascalCase` for types, and `UPPER_SNAKE_CASE` for constants. Keep reference code clear and independent of HLS optimization. Add hardware-specific types or optimizations only when an accepted design justifies them.
+
+## File Header Convention
+
+Every new human-authored code or documentation file must begin with these four fields in this order. Bring an existing file into compliance when next editing it.
+
+```text
+Project: Adaptive Directional BPC and BLC
+Module: <logical name of this file or module>
+Description: <one concise sentence describing its responsibility>
+Author: Viet Nguyen To Quoc
+```
+
+`Project` and `Author` are fixed verbatim. `Module` names the file's logical unit, such as `Defect Injector` or `Defect Injection Contract`; `Description` is file-specific. Use native comments: `//` for C/C++/Verilog/SystemVerilog, `#` after any required shebang for Python or shell, and an HTML comment for Markdown. Exclude `.gitignore`, data, binaries, generated output, and third-party files. Do not add dates, email, version, license, or copyright fields unless this contract is explicitly revised.
 
 ## Testing Guidelines
 
