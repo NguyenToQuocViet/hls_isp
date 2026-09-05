@@ -2,3 +2,8 @@
 /artifacts/
 *.dng
 *.swp
+<<<<<<< Updated upstream
+=======
+/docs/NguyenToQuocViet_ISP_report_week_3.zip
+/fivek_dataset
+>>>>>>> Stashed changes
