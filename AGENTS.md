@@ -26,7 +26,13 @@ Keep the hierarchy shallow. Add `include/`, `data/`, `results/`, or similar dire
 
 ## Build, Test, and Development Commands
 
-No build system, source, or test framework is committed. Do not invent commands or generated Vitis/Vivado layouts. Document reproducible commands here when the toolchain exists. Checks:
+No build system or test framework is committed. Do not invent commands or generated Vitis/Vivado layouts. The committed BLC reference model can be syntax-checked with:
+
+```sh
+g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -Ireference -fsyntax-only reference/blc.cpp
+```
+
+General checks:
 
 ```sh
 git status --short

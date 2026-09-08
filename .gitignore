@@ -1,9 +1,10 @@
 /build/
 /artifacts/
+/__pycache__/
+**/__pycache__/
+*.pyc
 *.dng
 *.swp
-<<<<<<< Updated upstream
-=======
 /docs/NguyenToQuocViet_ISP_report_week_3.zip
+/docs/NguyenToQuocViet_ISP_report_week_4.zip
 /fivek_dataset
->>>>>>> Stashed changes
