@@ -1,5 +1,8 @@
 /build/
 /artifacts/
+/.clangd
+/.vscode/
+/_ide/
 /__pycache__/
 **/__pycache__/
 *.pyc
