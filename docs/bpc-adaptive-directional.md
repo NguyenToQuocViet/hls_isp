@@ -1,7 +1,7 @@
 <!--
 Project: Adaptive Directional BPC and BLC
 Module: Adaptive Directional BPC
-Description: Define the adaptive directional BPC reference behavior.
+Description: Define the adaptive directional BPC behavior and streaming HLS architecture.
 Author: Viet Nguyen To Quoc
 -->
 
@@ -154,4 +154,24 @@ A physical stuck pixel may be corrected when it happens to appear as a spatial h
 
 Synthetic stuck corruption shall not be used for training, validation, testing, or performance claims under this single-frame contract. Defect clusters, temporal detection, calibration state, and persistent defect maps are also outside the current scope. This scope decision is recorded in [ADR 0001](adr/0001-exclude-stuck-from-single-frame-bpc.md).
 
-This document defines the C++ reference behavior. AXI4-Stream, line buffers, pipeline stages, `II=1`, and AXI4-Lite belong to the later HLS architecture contract.
+## 11. HLS Streaming Architecture
+
+`isp_bpc_top` processes one fixed 1920 x 1080 frame per invocation. It consumes exactly one AXI4-Stream beat for each input pixel and produces exactly one beat for each output pixel in row-major order.
+
+The window generator uses four independent line-buffer banks of `FRAME_WIDTH` RAW12 samples and three horizontal shift rows of five samples. The line buffers retain the four preceding samples at the current image column. The horizontal rows select the top, center, and bottom same-CFA rows needed by `bpc_pixel`.
+
+The window shifts continuously across row boundaries. It is not cleared or padded between input rows. During the mixed-window interval, the corresponding output centers belong to the two right-border pixels of the preceding row or the two left-border pixels of the next row, so they are copied unchanged. The first interior center of a row is processed only after its complete window is present.
+
+The output center trails the flattened input stream by:
+
+```text
+CENTER_DELAY = 2 * FRAME_WIDTH + 2
+```
+
+The initial delay fills the window. After the final input beat, the block performs `CENTER_DELAY` internal zero-valued drain steps to emit the remaining real centers. Drain samples are internal state transitions and are not AXI input beats or output pixels.
+
+Border selection uses the output-center coordinates. The outer two rows and columns bypass `bpc_pixel` and emit the stored center sample. Interior centers use the adaptive algorithm in Sections 3 through 6.
+
+Output sidebands are generated from output coordinates: `TUSER` marks output `(0, 0)` and `TLAST` marks column `FRAME_WIDTH - 1`. Input sidebands do not transfer directly because the input beat and output center represent different coordinates.
+
+The pixel loop requests `II=1`. This is an implementation target, not measured evidence; achieved initiation interval, latency, timing, and resource use require HLS synthesis reports.
