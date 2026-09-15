@@ -42,6 +42,8 @@ and NumPy. Build and test from the repository root:
 bash scripts/build_reference.sh
 g++ -std=c++17 -O2 -Wall -Wextra -Wpedantic -Werror -Ireference tests/test_reference.cpp reference/blc.cpp reference/bpc_baseline.cpp reference/bpc_adaptive.cpp -o build/test_reference
 build/test_reference
+g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -Ireference tests/bpc_reference_test.cpp reference/bpc_adaptive.cpp -o build/bpc_reference_test
+build/bpc_reference_test
 python3 tests/test_pipeline.py
 python3 tests/test_evaluator.py
 python3 tests/test_fivek_experiment.py
