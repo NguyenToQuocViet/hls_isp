@@ -33,25 +33,33 @@ ap_ufixed<12, 12> bpc_pixel(const BpcWindow& input, ap_uint<12> row, ap_uint<12>
         input.down_left
     };
 
-    //4 direction gradients
+    //directional gradients and predictions
     std::array<ap_ufixed<12, 12>, 4> gradients;
+    std::array<ap_ufixed<12, 12>, 4> predictions;
+    #pragma HLS ARRAY_PARTITION variable=gradients complete
+    #pragma HLS ARRAY_PARTITION variable=predictions complete
+
     for (std::size_t i = 0; i < 4; i++) {
+        #pragma HLS UNROLL
+
         gradients[i] = abs_diff(first[i], second[i]);
+        const ap_ufixed<13, 13> pair_sum =
+            ap_ufixed<13, 13>(first[i]) + ap_ufixed<13, 13>(second[i]);
+        predictions[i] = pair_sum >> 1;
     }
 
-    //get Gmin and P
-    ap_ufixed<12, 12> min_gradients = gradients[0];
-    ap_uint<2> min_direction = 0;
-    for (std::size_t i = 1; i < 4; i++) {
-        if (min_gradients > gradients[i]) {
-            min_gradients = gradients[i];
-            min_direction = i;
-        }
-    }
+    //balanced selection preserves H, V, D1, D2 tie priority
+    const bool select_v = gradients[1] < gradients[0];
+    const ap_ufixed<12, 12> axis_gradient = select_v ? gradients[1] : gradients[0];
+    const ap_ufixed<12, 12> axis_prediction = select_v ? predictions[1] : predictions[0];
 
-    //prediction smoothest directional pair
-    const ap_ufixed<13, 13> pair_sum = ap_ufixed<13, 13>(first[min_direction]) + ap_ufixed<13, 13>(second[min_direction]);
-    const ap_ufixed<12, 12> prediction = pair_sum >> 1;
+    const bool select_d2 = gradients[3] < gradients[2];
+    const ap_ufixed<12, 12> diagonal_gradient = select_d2 ? gradients[3] : gradients[2];
+    const ap_ufixed<12, 12> diagonal_prediction = select_d2 ? predictions[3] : predictions[2];
+
+    const bool select_diagonal = diagonal_gradient < axis_gradient;
+    const ap_ufixed<12, 12> min_gradients = select_diagonal ? diagonal_gradient : axis_gradient;
+    const ap_ufixed<12, 12> prediction = select_diagonal ? diagonal_prediction : axis_prediction;
 
     //get CFA Phase
     ap_uint<2> phase;
@@ -110,7 +118,7 @@ void isp_bpc_top(hls::stream<ap_axiu<16, 1, 0, 0>>& input, hls::stream<ap_axiu<1
 
     //streaming window storage
     ap_ufixed<12, 12> line_buffer[4][FRAME_WIDTH];
-    ap_ufixed<12, 12> horizontal[3][5] = {};
+    ap_ufixed<12, 12> horizontal[3][5];
     #pragma HLS ARRAY_PARTITION variable=line_buffer complete dim=1
     #pragma HLS ARRAY_PARTITION variable=horizontal complete dim=0
 
@@ -118,6 +126,7 @@ void isp_bpc_top(hls::stream<ap_axiu<16, 1, 0, 0>>& input, hls::stream<ap_axiu<1
         thresh_r,
         thresh_g,
         thresh_b,
+        
         shift_signal,
         shift_gradient
     };
@@ -173,6 +182,7 @@ void isp_bpc_top(hls::stream<ap_axiu<16, 1, 0, 0>>& input, hls::stream<ap_axiu<1
             shift_col_loop:
             for (int col = 0; col < 4; col++) {
                 #pragma HLS UNROLL
+
                 horizontal[row][col] = horizontal[row][col + 1];
             }
         }
@@ -201,6 +211,7 @@ void isp_bpc_top(hls::stream<ap_axiu<16, 1, 0, 0>>& input, hls::stream<ap_axiu<1
                 (output_col >= (FRAME_WIDTH - 2));
 
             ap_ufixed<12, 12> result = window.center;
+            
             if (!border) {
                 result = bpc_pixel(window, output_row, output_col, config);
             }
