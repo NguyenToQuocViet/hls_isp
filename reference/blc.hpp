@@ -3,7 +3,6 @@ Project: Adaptive Directional BPC and BLC
 Module: Black Level Correction Interface
 Description: Declare the host-side Black Level Correction reference-model interface.
 Author: Viet Nguyen To Quoc
-Version: 0.1
 */
 
 #pragma once

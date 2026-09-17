@@ -3,7 +3,6 @@ Project: Adaptive Directional BPC and BLC
 Module: Black Level Correction
 Description: Provide a guided skeleton for the host-side Black Level Correction reference model.
 Author: Viet Nguyen To Quoc
-Version: 0.1
 */
 
 #include "blc.hpp"
