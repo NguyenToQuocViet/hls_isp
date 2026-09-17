@@ -306,6 +306,63 @@ Total                                  5,742 evaluator passes
 
 All candidate metrics shall still be reconstructed and ranked as the full five-parameter configurations. This optimization changes evaluation cost, not the candidate set or selection rule.
 
+### 8.4 AMD Vitis Vision vendor baseline
+
+The parameter-free AMD Vitis Vision `xf::cv::badpixelcorrection` function is a
+third comparison point, separate from the tuned fixed-threshold baseline. For a
+center sample `X`, let `N` contain the eight same-CFA neighbors at row and column
+offsets in `{-2, 0, 2}`, excluding the center. Its interior-pixel behavior is:
+
+```text
+N_min = min(N)
+N_max = max(N)
+O     = clamp(X, N_min, N_max)
+```
+
+The host reference uses constant-zero samples outside the frame to match the
+AMD API's default `XF_BORDER_CONSTANT` mode. Evaluation still excludes the
+outer two rows and columns under the common metric contract, so border behavior
+does not affect `RG_hot`, `RG_dead`, `BRG`, `BCR`, or `IOTCR`.
+
+AMD BPC has no algorithm parameter to train. It shall be evaluated as published
+on the already frozen held-out split, using the recorded per-image injection
+seeds. The existing fixed-threshold and adaptive-v2 per-image results remain
+immutable comparison inputs. AMD BPC is not rejected or retuned if it exceeds
+the adaptive tuning BCR/IOTCR budget; that excess is part of the reported
+result. A new algorithm variant derived from test results requires a fresh
+split and is not covered by this vendor-baseline comparison.
+
+### 8.5 OpenISP gradient DPC baseline
+
+The OpenISP comparison point reproduces the `gradient` mode in
+`cruxopen/openISP` commit
+`d4947e1aa5f4af83c3640131dbca8a675b613ec6`. For center `X` and the eight
+same-CFA neighbors `N` at two-pixel row and column offsets, detection is:
+
+```text
+detected = all(abs(X - n) > T for n in N)
+```
+
+On detection, OpenISP computes vertical, horizontal, left-diagonal, and
+right-diagonal gradients as the absolute difference between `2*X` and each
+directional neighbor-pair sum. It selects the minimum with that tie priority
+and replaces `X` with the selected pair's rounded-up integer mean. Otherwise it
+passes `X` through. The source uses reflected two-pixel padding; the common
+metric contract still excludes the outer two rows and columns.
+
+The published configuration uses `T=30`, `gradient` mode, and clip `1023` for
+its 10-bit pipeline. This repository fixes `T=120` for RAW12, scaling the
+published threshold by four while retaining the same normalized signal
+difference. Output is naturally within RAW12, so clipping uses `[0,4095]`.
+This bit-depth mapping is a declared comparison choice, not a trained result.
+
+OpenISP originally places DPC before BLC. The comparison reference applies the
+same DPC behavior to the post-BLC `R` and `C` frames used by every existing BPC
+metric, so `RG_hot`, `RG_dead`, `BRG`, `BCR`, and `IOTCR` remain directly
+comparable. It reuses the frozen adaptive-v2 held-out split and injection seeds;
+the OpenISP threshold must not be adjusted from held-out results. As with AMD,
+budget excess is reported rather than used to reject or retune the algorithm.
+
 ## 9. Claim Boundary
 
 Evidence from this methodology may support the following claim:
