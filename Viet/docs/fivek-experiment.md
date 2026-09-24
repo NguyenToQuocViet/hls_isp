@@ -58,7 +58,7 @@ change the split or drop images.
 ## Adaptive v2 commands (for the user to run)
 
 Requires the existing C++17/LibRaw build dependencies and Python 3.9+ with NumPy.
-Run from the repository root. Rebuild the evaluator for its new modes first:
+Run from `Viet/`. Rebuild the evaluator for its new modes first:
 
 ```sh
 bash scripts/build_reference.sh

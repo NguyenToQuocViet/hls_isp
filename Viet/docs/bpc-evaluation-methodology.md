@@ -465,7 +465,9 @@ Source: `a0001-jmac_DSC1459.dng`, LibRaw 0.22.2-Release, crop top/left
 scalar/four-phase BLC loading was checked with generated DNG fixtures, not a
 natural nonzero-black image. The source RAW is not proven defect-free.
 
-Run commands from the repository root after the README build:
+These historical commands were run from the former project root. In the team
+layout, run them from `Viet/` after `bash scripts/build_reference.sh`, with the
+local dataset and generated artifacts placed under `Viet/`:
 
 ```sh
 mkdir -p artifacts/one_image

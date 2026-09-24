@@ -1,85 +1,34 @@
 <!--
-Project: Adaptive Directional BPC and BLC
+Project: AI-Ready Streaming Image Signal Processor via HLS
 Module: Repository Overview
-Description: Describe the owned reference workspace and reproducible one-image pipeline.
-Author: Viet Nguyen To Quoc
+Description: Introduce the shared ISP research project and team workspace.
+Author: Tuan Anh, Chi Nhan, Viet Hoang, Quoc Viet
 -->
 
-# Adaptive Directional BPC HLS
+# AI-Ready Streaming Image Signal Processor via HLS
 
-Personal R&D workspace for:
+This repository is a shared workspace for exploring an Image Signal Processor
+(ISP) with a streaming architecture designed through High-Level Synthesis
+(HLS). The project studies how adaptive image-processing methods can improve
+image quality while remaining practical for FPGA implementation.
 
-- Adaptive Directional Bad Pixel Correction (BPC)
-- Black Level Correction (BLC)
-- FPGA High-Level Synthesis and verification
+The research covers four areas: bad pixel correction, RAW image denoising,
+demosaicing, and local tone mapping. The team develops and evaluates each area
+within a common ISP direction. Algorithms, interfaces, and performance targets
+may change as the work progresses; each member's folder records the details of
+their own contribution.
 
-This repository contains only work owned by Viet Nguyen To Quoc. It is not the full Viettel ISP Project and contains no confidential Viettel source or data.
+## Team workspace
 
-## Structure
+| Folder | Contributor |
+| --- | --- |
+| [`Anh/`](Anh/) | Tuan Anh |
+| [`Nhan/`](Nhan/) | Chi Nhan |
+| [`Hoang/`](Hoang/) | Viet Hoang |
+| [`Viet/`](Viet/) | Quoc Viet |
 
-- `reference/`: Algorithm and golden-reference code
-- `hls/`: Synthesizable HLS code
-- `tests/`: Verification code
-- `scripts/`: Experiment utilities
-- `docs/`: Engineering contracts and decisions
+Each contributor organizes their work within their folder. The folders are
+independent workspaces for source, experiments, documentation, and results that
+belong to their respective contributions.
 
-## One-image RAW/BLC/BPC experiment
-
-For the compatible-image batch workflow (fixed manifest, split, tuning,
-selection, and held-out test), see [FiveK experiment scripts](docs/fivek-experiment.md).
-The RAW10 `adaptive_v2` workflow reuses the existing compatibility manifest and
-writes all new stage results below `artifacts/adaptive_v2_raw10/`. Existing
-`artifacts/adaptive_v2/` results remain RAW12 history.
-
-The loader decodes a supported DNG, crops/normalizes RGGB RAW10, injects only
-hot/dead defects, and runs BLC on both reference and corrupted frames. The BPC
-evaluator consumes those post-BLC frames. See [input contract](docs/defect-injection.md#11-current-raw10-blc-pipeline-profile)
-and [evaluation contract](docs/bpc-evaluation-methodology.md#11-one-image-pipeline-experiment).
-
-Dependencies: C++17 compiler, `pkg-config`, LibRaw development package, Python 3
-and NumPy. Build and test from the repository root:
-
-```sh
-bash scripts/build_reference.sh
-g++ -std=c++17 -O2 -Wall -Wextra -Wpedantic -Werror -Ireference tests/test_reference.cpp reference/blc.cpp reference/bpc_baseline.cpp reference/bpc_adaptive.cpp -o build/test_reference
-build/test_reference
-g++ -std=c++17 -Wall -Wextra -Wpedantic -Werror -Ireference tests/bpc_reference_test.cpp reference/bpc_adaptive.cpp -o build/bpc_reference_test
-build/bpc_reference_test
-python3 tests/test_pipeline.py
-python3 tests/test_evaluator.py
-python3 tests/test_fivek_experiment.py
-```
-
-Run one explicitly selected source (replace `/absolute/path/image.dng`):
-
-```sh
-mkdir -p artifacts/my_image
-cd artifacts/my_image
-../../build/defect_injector /absolute/path/image.dng
-cd ../..
-python3 scripts/sweep_one_image.py artifacts/my_image --output artifacts/adaptive_v2_raw10/one_image
-```
-
-Use a fresh output directory for each sweep. The script runs coarse search,
-per-CFA separation, refinement and final shift audit; the maximum scheduled
-candidate count is 75,078 before clipping and deduplication. The C++ evaluator
-builds exact per-phase integer metric tables, and Python combines/ranks them.
-The local native-int64 `metrics.bin` is a generated cache, not a portable dataset
-format. It occupies about 15.125 MiB. No full-frame BPC call is made per candidate;
-the script checks the cache against the original BPC on 12 configurations and
-the selected configuration.
-
-`candidates.csv` records all unique candidates. `summary.json` records the
-baseline, selected configuration, timings, input/executable hashes and verification
-configurations. Baseline shared threshold defaults to the quarter-scale RAW10
-anchor `266`; override explicitly with `--baseline-threshold`. A one-image sweep
-does not establish generalization or physical-defect ground truth.
-
-For the batch experiment, the adaptive candidate is selected within the
-documented BRG-regret floor, then the safer BCR/IOTCR operating point is chosen.
-That candidate supplies the mean BCR/IOTCR comparison budget on tuning data.
-The baseline threshold is then trained for maximum mean BRG without exceeding
-that adaptive operating point.
-
-The checked experiment and limitations are recorded in the
-[historical v1 evaluation evidence](docs/bpc-evaluation-methodology.md#12-historical-adaptive-v1-one-image-run-2026-09-07).
+**Authors:** Tuan Anh, Chi Nhan, Viet Hoang, Quoc Viet.
