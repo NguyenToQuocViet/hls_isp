@@ -6,6 +6,7 @@ Author: Viet Nguyen To Quoc
 */
 
 #include "isp_bpc.hpp"
+#include "../isp_frame.hpp"
 
 #include <array>
 
@@ -59,31 +60,30 @@ ap_ufixed<10, 10> bpc_pixel(
         predictions[i] = pair_sum >> 1;
     }
 
-    //balanced selection preserves H, V, D1, D2 tie priority
-    const bool select_v = gradients[1] < gradients[0];
+    // Balanced selection preserves H, V, D1, D2 tie priority.
+    ap_ufixed<10, 10> axis_gradient = gradients[0];
+    ap_ufixed<10, 10> axis_prediction = predictions[0];
 
-    const ap_ufixed<10, 10> axis_gradient =
-        select_v ? gradients[1] : gradients[0];
+    if (gradients[1] < gradients[0]) {
+        axis_gradient = gradients[1];
+        axis_prediction = predictions[1];
+    }
 
-    const ap_ufixed<10, 10> axis_prediction =
-        select_v ? predictions[1] : predictions[0];
+    ap_ufixed<10, 10> diagonal_gradient = gradients[2];
+    ap_ufixed<10, 10> diagonal_prediction = predictions[2];
 
-    const bool select_d2 = gradients[3] < gradients[2];
+    if (gradients[3] < gradients[2]) {
+        diagonal_gradient = gradients[3];
+        diagonal_prediction = predictions[3];
+    }
 
-    const ap_ufixed<10, 10> diagonal_gradient =
-        select_d2 ? gradients[3] : gradients[2];
+    ap_ufixed<10, 10> min_gradients = axis_gradient;
+    ap_ufixed<10, 10> prediction = axis_prediction;
 
-    const ap_ufixed<10, 10> diagonal_prediction =
-        select_d2 ? predictions[3] : predictions[2];
-
-    const bool select_diagonal =
-        diagonal_gradient < axis_gradient;
-
-    const ap_ufixed<10, 10> min_gradients =
-        select_diagonal ? diagonal_gradient : axis_gradient;
-
-    const ap_ufixed<10, 10> prediction =
-        select_diagonal ? diagonal_prediction : axis_prediction;
+    if (diagonal_gradient < axis_gradient) {
+        min_gradients = diagonal_gradient;
+        prediction = diagonal_prediction;
+    }
 
     //get CFA Phase
     ap_uint<2> phase;
@@ -125,28 +125,16 @@ ap_ufixed<10, 10> bpc_pixel(
     return input.center;
 }
 
-void isp_bpc_top(
-    hls::stream<ap_axiu<16, 1, 0, 0>>& input,
-    hls::stream<ap_axiu<16, 1, 0, 0>>& output,
+void bpc_process_frame(
+    hls::stream<IspStreamPixel>& input,
+    hls::stream<IspStreamPixel>& output,
     ap_ufixed<10, 10> thresh_r,
     ap_ufixed<10, 10> thresh_g,
     ap_ufixed<10, 10> thresh_b,
     ap_uint<4> shift_signal,
     ap_uint<4> shift_gradient
 ) {
-    //AXI4-Stream RAW10 ports
-#pragma HLS INTERFACE axis port=input
-#pragma HLS INTERFACE axis port=output
-
-    //AXI4-Lite control map
-#pragma HLS INTERFACE s_axilite port=thresh_r bundle=s_axi_ctrl offset=0x10
-#pragma HLS INTERFACE s_axilite port=thresh_g bundle=s_axi_ctrl offset=0x18
-#pragma HLS INTERFACE s_axilite port=thresh_b bundle=s_axi_ctrl offset=0x20
-
-#pragma HLS INTERFACE s_axilite port=shift_signal bundle=s_axi_ctrl offset=0x28
-#pragma HLS INTERFACE s_axilite port=shift_gradient bundle=s_axi_ctrl offset=0x30
-
-#pragma HLS INTERFACE s_axilite port=return bundle=s_axi_ctrl
+#pragma HLS INLINE off
 
     constexpr int PIXEL_COUNT = FRAME_WIDTH * FRAME_HEIGHT;
     constexpr int CENTER_DELAY = (2 * FRAME_WIDTH) + 2;
@@ -186,7 +174,7 @@ pixel_loop:
         ap_ufixed<10, 10> new_pixel = 0;
 
         if (receive_pixel) {
-            const ap_axiu<16, 1, 0, 0> input_packet =
+            const IspStreamPixel input_packet =
                 input.read();
 
             new_pixel = input_packet.data.range(9, 0);
@@ -269,7 +257,7 @@ shift_col_loop:
             }
 
             //output payload and coordinates
-            ap_axiu<16, 1, 0, 0> output_packet;
+            IspStreamPixel output_packet;
 
             output_packet.data = 0;
             output_packet.data.range(9, 0) = result;
@@ -299,4 +287,42 @@ shift_col_loop:
             input_col++;
         }
     }
+}
+
+void isp_bpc_top(
+    hls::stream<ap_axiu<16, 1, 0, 0>>& input,
+    hls::stream<ap_axiu<16, 1, 0, 0>>& output,
+    ap_ufixed<10, 10> thresh_r,
+    ap_ufixed<10, 10> thresh_g,
+    ap_ufixed<10, 10> thresh_b,
+    ap_uint<4> shift_signal,
+    ap_uint<4> shift_gradient
+) {
+#pragma HLS INTERFACE axis port=input
+#pragma HLS INTERFACE axis port=output
+#pragma HLS INTERFACE s_axilite port=thresh_r bundle=s_axi_ctrl offset=0x10
+#pragma HLS INTERFACE s_axilite port=thresh_g bundle=s_axi_ctrl offset=0x18
+#pragma HLS INTERFACE s_axilite port=thresh_b bundle=s_axi_ctrl offset=0x20
+#pragma HLS INTERFACE s_axilite port=shift_signal bundle=s_axi_ctrl offset=0x28
+#pragma HLS INTERFACE s_axilite port=shift_gradient bundle=s_axi_ctrl offset=0x30
+#pragma HLS INTERFACE s_axilite port=return bundle=s_axi_ctrl
+
+#pragma HLS DATAFLOW
+
+    hls::stream<IspStreamPixel> raw_pixels;
+    hls::stream<IspStreamPixel> corrected_pixels;
+#pragma HLS STREAM variable=raw_pixels depth=2
+#pragma HLS STREAM variable=corrected_pixels depth=2
+
+    axis_to_internal_frame(input, raw_pixels);
+    bpc_process_frame(
+        raw_pixels,
+        corrected_pixels,
+        thresh_r,
+        thresh_g,
+        thresh_b,
+        shift_signal,
+        shift_gradient
+    );
+    internal_to_axis_frame(corrected_pixels, output);
 }

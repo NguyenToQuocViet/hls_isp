@@ -465,31 +465,20 @@ void test_bpc_pixel() {
               << "\n";
 }
 
-void test_isp_bpc_top() {
-    //One full-frame transaction for CSim and CoSim
-    std::mt19937 rng(FRAME_SEED);
-
-    std::size_t pixel_count =
+void run_isp_bpc_frame(
+    const std::string& frame_name,
+    const std::vector<std::uint16_t>& frame,
+    const adaptive_bpc::BpcConfig& config
+) {
+    // Expected data and streams are released before the next transaction.
+    const std::size_t pixel_count =
         std::size_t(FRAME_WIDTH) * FRAME_HEIGHT;
 
-    adaptive_bpc::BpcConfig config{
-        16,
-        16,
-        16,
-        3,
-        0
-    };
-
-    std::vector<std::uint16_t> frame(pixel_count);
     std::vector<std::uint16_t> expected;
     std::vector<adaptive_bpc::Detection> detections;
 
     hls::stream<ap_axiu<16, 1, 0, 0>> input_stream;
     hls::stream<ap_axiu<16, 1, 0, 0>> output_stream;
-
-    for (std::size_t i = 0; i < pixel_count; i++) {
-        frame[i] = random_raw10(rng);
-    }
 
     adaptive_bpc::bpc_frame(
         frame,
@@ -498,15 +487,16 @@ void test_isp_bpc_top() {
         config
     );
 
-    //Input metadata differs from regenerated output coordinates
+    // Valid AXI video metadata for the fixed raster contract.
     for (std::size_t i = 0; i < pixel_count; i++) {
         ap_axiu<16, 1, 0, 0> packet{};
 
         packet.data = frame[i];
         packet.keep = 3;
         packet.strb = 3;
-        packet.user = (i % 97) == 0;
-        packet.last = (i % 257) == 0;
+        packet.user = i == 0;
+        packet.last =
+            (i % FRAME_WIDTH) == (FRAME_WIDTH - 1);
 
         input_stream.write(packet);
     }
@@ -528,7 +518,8 @@ void test_isp_bpc_top() {
             if (printed_failures < MAX_FAILURE_LOGS) {
                 printed_failures++;
 
-                std::cout << "isp_bpc_top: missing output pixel="
+                std::cout << "isp_bpc_top " << frame_name
+                          << ": missing output pixel="
                           << i
                           << "\n";
             }
@@ -554,7 +545,8 @@ void test_isp_bpc_top() {
             if (printed_failures < MAX_FAILURE_LOGS) {
                 printed_failures++;
 
-                std::cout << "isp_bpc_top: pixel=" << i
+                std::cout << "isp_bpc_top " << frame_name
+                          << ": pixel=" << i
                           << " expected=" << expected[i]
                           << " got=" << packet.data.to_uint()
                           << " user=" << packet.user
@@ -571,14 +563,63 @@ void test_isp_bpc_top() {
 
         if (printed_failures < MAX_FAILURE_LOGS) {
             printed_failures++;
-            std::cout << "isp_bpc_top: extra output\n";
+            std::cout << "isp_bpc_top " << frame_name
+                      << ": extra output\n";
         }
     }
 
-    std::cout << "isp_bpc_top: seed=" << FRAME_SEED
+    std::cout << "isp_bpc_top " << frame_name
               << " pixels=" << pixel_count
               << " detections=" << detections.size()
               << "\n";
+}
+
+void test_isp_bpc_top() {
+    // Primary full-frame functional regression.
+    std::mt19937 rng(FRAME_SEED);
+
+    const std::size_t pixel_count =
+        std::size_t(FRAME_WIDTH) * FRAME_HEIGHT;
+
+    const adaptive_bpc::BpcConfig config{
+        16,
+        16,
+        16,
+        3,
+        0
+    };
+
+    std::vector<std::uint16_t> frame(pixel_count);
+
+    for (std::size_t i = 0; i < pixel_count; i++) {
+        frame[i] = random_raw10(rng);
+    }
+
+    run_isp_bpc_frame("random", frame, config);
+}
+
+void test_isp_bpc_frame_boundary() {
+    // Two back-to-back full-frame transactions without a DUT reset.
+    const std::size_t pixel_count =
+        std::size_t(FRAME_WIDTH) * FRAME_HEIGHT;
+
+    const adaptive_bpc::BpcConfig config{
+        16,
+        16,
+        16,
+        3,
+        0
+    };
+
+    {
+        const std::vector<std::uint16_t> frame_a(pixel_count, 0);
+        run_isp_bpc_frame("boundary_a", frame_a, config);
+    }
+
+    {
+        const std::vector<std::uint16_t> frame_b(pixel_count, 1023);
+        run_isp_bpc_frame("boundary_b", frame_b, config);
+    }
 }
 
 int finish_tests() {
@@ -604,9 +645,14 @@ int main(
         test_isp_bpc_top();
     }
 
+    if (mode == "boundary" || mode == "all") {
+        test_isp_bpc_frame_boundary();
+    }
+
     if (
         mode != "pixel" &&
         mode != "top" &&
+        mode != "boundary" &&
         mode != "all"
     ) {
         std::cout << "Unknown mode: "

@@ -6,6 +6,7 @@ Author: Viet Nguyen To Quoc
 */
 
 #include "isp_blc.hpp"
+#include "../isp_frame.hpp"
 
 ap_ufixed<10, 10> blc_pixel(
     ap_ufixed<10, 10> input,
@@ -52,25 +53,15 @@ ap_ufixed<10, 10> blc_pixel(
     return (input - black_level);
 }
 
-void isp_blc_top(
-    hls::stream<ap_axiu<16, 1, 0, 0>>& input,
-    hls::stream<ap_axiu<16, 1, 0, 0>>& output,
+void blc_process_frame(
+    hls::stream<IspStreamPixel>& input,
+    hls::stream<IspStreamPixel>& output,
     ap_ufixed<10, 10> bl_r,
     ap_ufixed<10, 10> bl_gr,
     ap_ufixed<10, 10> bl_gb,
     ap_ufixed<10, 10> bl_b
 ) {
-    //AXI4-Stream RAW10 ports
-#pragma HLS INTERFACE axis port=input
-#pragma HLS INTERFACE axis port=output
-
-    //AXI4-Lite control map
-#pragma HLS INTERFACE s_axilite port=bl_r bundle=s_axi_ctrl offset=0x10
-#pragma HLS INTERFACE s_axilite port=bl_gr bundle=s_axi_ctrl offset=0x18
-#pragma HLS INTERFACE s_axilite port=bl_gb bundle=s_axi_ctrl offset=0x20
-#pragma HLS INTERFACE s_axilite port=bl_b bundle=s_axi_ctrl offset=0x28
-
-#pragma HLS INTERFACE s_axilite port=return bundle=s_axi_ctrl
+#pragma HLS INLINE off
 
     //local BLC config
     const BlcConfig config {
@@ -88,16 +79,51 @@ row_loop:
 #pragma HLS PIPELINE II=1
 
             //unpack and correct RAW10
-            ap_axiu<16, 1, 0, 0> input_packet = input.read();
+            IspStreamPixel input_packet = input.read();
             ap_ufixed<10, 10> input_pixel = input_packet.data.range(9, 0);
             ap_ufixed<10, 10> result = blc_pixel(input_pixel, row, col, config);
 
             //preserve sidebands, replace RAW10 payload
-            ap_axiu<16, 1, 0, 0> output_packet = input_packet;
+            IspStreamPixel output_packet = input_packet;
             output_packet.data = 0;
             output_packet.data.range(9, 0) = result;
 
             output.write(output_packet);
         }
     }
+}
+
+void isp_blc_top(
+    hls::stream<ap_axiu<16, 1, 0, 0>>& input,
+    hls::stream<ap_axiu<16, 1, 0, 0>>& output,
+    ap_ufixed<10, 10> bl_r,
+    ap_ufixed<10, 10> bl_gr,
+    ap_ufixed<10, 10> bl_gb,
+    ap_ufixed<10, 10> bl_b
+) {
+#pragma HLS INTERFACE axis port=input
+#pragma HLS INTERFACE axis port=output
+#pragma HLS INTERFACE s_axilite port=bl_r bundle=s_axi_ctrl offset=0x10
+#pragma HLS INTERFACE s_axilite port=bl_gr bundle=s_axi_ctrl offset=0x18
+#pragma HLS INTERFACE s_axilite port=bl_gb bundle=s_axi_ctrl offset=0x20
+#pragma HLS INTERFACE s_axilite port=bl_b bundle=s_axi_ctrl offset=0x28
+#pragma HLS INTERFACE s_axilite port=return bundle=s_axi_ctrl
+
+#pragma HLS DATAFLOW
+
+    hls::stream<IspStreamPixel> raw_pixels;
+    hls::stream<IspStreamPixel> corrected_pixels;
+#pragma HLS STREAM variable=raw_pixels depth=2
+#pragma HLS STREAM variable=corrected_pixels depth=2
+
+    axis_to_internal_frame(input, raw_pixels);
+    blc_process_frame(
+        raw_pixels,
+        corrected_pixels,
+        bl_r,
+        bl_gr,
+        bl_gb,
+        bl_b
+    );
+    internal_to_axis_frame(corrected_pixels, output);
 }
