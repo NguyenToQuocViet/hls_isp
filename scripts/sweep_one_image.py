@@ -17,6 +17,13 @@ import numpy as np
 
 
 ALGORITHM = "adaptive_v2"
+PIXEL_DOMAIN = "raw10"
+EXPERIMENT = "adaptive_v2_raw10"
+RAW_MAX = 1023
+LEVELS = RAW_MAX + 1
+MAX_SHIFT = 10
+SHIFT_VALUES = MAX_SHIFT + 1
+DEFAULT_BASELINE_THRESHOLD = 266
 
 
 def neighborhood(center, radius, step, maximum):
@@ -43,7 +50,7 @@ def main():
     parser.add_argument("input", type=Path, help="Injector output directory containing the post-BLC pair")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--evaluator", type=Path, default=Path(__file__).resolve().parents[1] / "build/bpc_evaluate")
-    parser.add_argument("--baseline-threshold", type=int, default=1063)
+    parser.add_argument("--baseline-threshold", type=int, default=DEFAULT_BASELINE_THRESHOLD)
     args = parser.parse_args()
     args.input = args.input.resolve()
     args.evaluator = args.evaluator.resolve()
@@ -51,12 +58,12 @@ def main():
     started = time.monotonic()
     bank_path = args.output / "metrics.bin"
     metadata = json.loads(subprocess.check_output([str(args.evaluator), str(args.input), "--bank", str(bank_path), str(args.baseline_threshold)], text=True))
-    bank = np.memmap(bank_path, mode="r", dtype=np.int64, shape=(13, 13, 4, 4096, 4))
+    bank = np.memmap(bank_path, mode="r", dtype=np.int64, shape=(SHIFT_VALUES, SHIFT_VALUES, 4, LEVELS, 4))
 
     # Exact integer comparisons before any ranking; includes cutoff extremes and independent colors.
-    configs = [(0, 0, 0, 0, 0), (0, 0, 0, 12, 12), (4095, 4095, 4095, 12, 12), (64, 128, 256, 3, 6)]
+    configs = [(0, 0, 0, 0, 0), (0, 0, 0, MAX_SHIFT, MAX_SHIFT), (RAW_MAX, RAW_MAX, RAW_MAX, MAX_SHIFT, MAX_SHIFT), (16, 32, 64, 3, 6)]
     rng = np.random.default_rng(20260907)
-    configs += [tuple(map(int, list(rng.integers(0, 4096, 3)) + list(rng.integers(0, 13, 2)))) for _ in range(8)]
+    configs += [tuple(map(int, list(rng.integers(0, LEVELS, 3)) + list(rng.integers(0, SHIFT_VALUES, 2)))) for _ in range(8)]
 
     def verify(config):
         observed = json.loads(subprocess.check_output([str(args.evaluator), str(args.input), "--oracle", *map(str, config)], text=True))
@@ -95,7 +102,7 @@ def main():
             print(f"{stage}: {added} new candidates", flush=True)
             return sorted((entry for entry in result if entry[1]["eligible"]), key=lambda entry: (-entry[1]["BRG"], entry[1]["IOTCR"], entry[1]["BCR"], entry[0]))
 
-        stage1 = evaluate(((threshold, threshold, threshold, signal, activity) for threshold in list(range(0, 4096, 256)) + [4095] for signal in range(13) for activity in range(13)), "coarse")
+        stage1 = evaluate(((threshold, threshold, threshold, signal, activity) for threshold in list(range(0, LEVELS, 64)) + [RAW_MAX] for signal in range(SHIFT_VALUES) for activity in range(SHIFT_VALUES)), "coarse")
         selected = None
         if stage1:
             regions = []
@@ -106,18 +113,20 @@ def main():
                     used_thresholds.add(config[0])
                     if len(regions) == 3:
                         break
-            stage2_configs = itertools.chain.from_iterable(itertools.product(neighborhood(r, 256, 64, 4095), neighborhood(g, 256, 64, 4095), neighborhood(b, 256, 64, 4095), neighborhood(s, 2, 1, 12), neighborhood(a, 2, 1, 12)) for r, g, b, s, a in regions)
+            stage2_configs = itertools.chain.from_iterable(itertools.product(neighborhood(r, 64, 16, RAW_MAX), neighborhood(g, 64, 16, RAW_MAX), neighborhood(b, 64, 16, RAW_MAX), neighborhood(s, 2, 1, MAX_SHIFT), neighborhood(a, 2, 1, MAX_SHIFT)) for r, g, b, s, a in regions)
             stage2 = evaluate(stage2_configs, "per_cfa")
             r, g, b, s, a = stage2[0][0]
-            stage3 = evaluate(itertools.product(neighborhood(r, 64, 16, 4095), neighborhood(g, 64, 16, 4095), neighborhood(b, 64, 16, 4095), neighborhood(s, 2, 1, 12), neighborhood(a, 2, 1, 12)), "refine")
+            stage3 = evaluate(itertools.product(neighborhood(r, 16, 4, RAW_MAX), neighborhood(g, 16, 4, RAW_MAX), neighborhood(b, 16, 4, RAW_MAX), neighborhood(s, 2, 1, MAX_SHIFT), neighborhood(a, 2, 1, MAX_SHIFT)), "refine")
             r, g, b, _, _ = stage3[0][0]
-            final = evaluate(((r, g, b, s, a) for s in range(13) for a in range(13)), "shift_audit")
+            final = evaluate(((r, g, b, s, a) for s in range(SHIFT_VALUES) for a in range(SHIFT_VALUES)), "shift_audit")
             selected = final[0]
             verify(selected[0])
 
     source_hashes = {name: hashlib.sha256((args.input / name).read_bytes()).hexdigest() for name in ("reference_blc.pgm", "corrupted_blc.pgm", "defects.csv", "input_metadata.json")}
     summary = {
         "algorithm": ALGORITHM,
+        "pixel_domain": PIXEL_DOMAIN,
+        "experiment": EXPERIMENT,
         "claim": "One-image adaptive_v2 exploratory sweep; no held-out evaluation or generalization claim",
         "input": str(args.input), "input_sha256": source_hashes,
         "evaluator_sha256": hashlib.sha256(args.evaluator.read_bytes()).hexdigest(),

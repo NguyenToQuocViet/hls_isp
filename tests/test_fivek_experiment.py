@@ -27,23 +27,23 @@ def identity(path):
 
 
 def main():
-    # Select adaptive for maximum BRG first, then train baseline under the
-    # selected adaptive operating point's BCR/IOTCR budget.
+    # Keep adaptive BRG within the regret floor, then prefer the safer
+    # operating point before training the matched baseline.
     baseline = np.array([
         [0.0, 0.0, 0.99, 0.90, 0.10],
-        [0.0, 0.0, 0.80, 0.01, 0.001],
-        [0.0, 0.0, 0.70, 0.005, 0.0005],
+        [0.0, 0.0, 0.80, 0.04, 0.004],
+        [0.0, 0.0, 0.70, 0.03, 0.003],
     ])
     adaptive = np.array([
         [0.0, 0.0, 0.95, 0.80, 0.08],
-        [0.0, 0.0, 0.85, 0.009, 0.0009],
+        [0.0, 0.0, 0.947, 0.40, 0.04],
         [0.0, 0.0, 0.75, 0.004, 0.0004],
     ])
     baseline_winner, adaptive_winner, baseline_eligible = \
         fivek_experiment.select_matched_operating_points(
             baseline, adaptive, [(0,), (1,), (2,)])
     assert baseline_winner == 1 and baseline_eligible == [1, 2]
-    assert adaptive_winner == 0
+    assert adaptive_winner == 1
 
     for command in ("sweep", "select", "test"):
         result = subprocess.run(["python3", str(ROOT / "scripts/fivek_experiment.py"), command, "--help"],
@@ -70,6 +70,8 @@ def main():
         split = json.loads((output / "split.json").read_text())
         assigned = split["tuning"] + split["test"]
         assert split["algorithm"] == "adaptive_v2"
+        assert split["pixel_domain"] == "raw10"
+        assert split["experiment"] == "adaptive_v2_raw10"
         assert len(split["tuning"]) == 4 and len(split["test"]) == 1
         assert sorted(row["injection_seed"] for row in assigned) == [1, 2, 3, 4, 5]
         assert {row["path"] for row in assigned} == {row["path"] for row in images}

@@ -27,12 +27,13 @@ This repository contains only work owned by Viet Nguyen To Quoc. It is not the f
 
 For the compatible-image batch workflow (fixed manifest, split, tuning,
 selection, and held-out test), see [FiveK experiment scripts](docs/fivek-experiment.md).
-The `adaptive_v2` workflow reuses the existing compatibility manifest and writes
-all new stage results below `artifacts/adaptive_v2/`.
+The RAW10 `adaptive_v2` workflow reuses the existing compatibility manifest and
+writes all new stage results below `artifacts/adaptive_v2_raw10/`. Existing
+`artifacts/adaptive_v2/` results remain RAW12 history.
 
-The loader decodes a supported DNG, crops/normalizes RGGB RAW12, injects only
+The loader decodes a supported DNG, crops/normalizes RGGB RAW10, injects only
 hot/dead defects, and runs BLC on both reference and corrupted frames. The BPC
-evaluator consumes those post-BLC frames. See [input contract](docs/defect-injection.md#11-blc-pipeline-profile)
+evaluator consumes those post-BLC frames. See [input contract](docs/defect-injection.md#11-current-raw10-blc-pipeline-profile)
 and [evaluation contract](docs/bpc-evaluation-methodology.md#11-one-image-pipeline-experiment).
 
 Dependencies: C++17 compiler, `pkg-config`, LibRaw development package, Python 3
@@ -56,27 +57,29 @@ mkdir -p artifacts/my_image
 cd artifacts/my_image
 ../../build/defect_injector /absolute/path/image.dng
 cd ../..
-python3 scripts/sweep_one_image.py artifacts/my_image --output artifacts/adaptive_v2/one_image
+python3 scripts/sweep_one_image.py artifacts/my_image --output artifacts/adaptive_v2_raw10/one_image
 ```
 
 Use a fresh output directory for each sweep. The script runs coarse search,
 per-CFA separation, refinement and final shift audit; the maximum scheduled
-candidate count is 75,942 before clipping and deduplication. The C++ evaluator
+candidate count is 75,078 before clipping and deduplication. The C++ evaluator
 builds exact per-phase integer metric tables, and Python combines/ranks them.
 The local native-int64 `metrics.bin` is a generated cache, not a portable dataset
-format. It occupies about 85 MiB. No full-frame BPC call is made per candidate;
+format. It occupies about 15.125 MiB. No full-frame BPC call is made per candidate;
 the script checks the cache against the original BPC on 12 configurations and
 the selected configuration.
 
 `candidates.csv` records all unique candidates. `summary.json` records the
 baseline, selected configuration, timings, input/executable hashes and verification
-configurations. Baseline shared threshold defaults to the historical exploratory
-value 1063; override explicitly with `--baseline-threshold`. A one-image sweep
+configurations. Baseline shared threshold defaults to the quarter-scale RAW10
+anchor `266`; override explicitly with `--baseline-threshold`. A one-image sweep
 does not establish generalization or physical-defect ground truth.
 
-For the batch experiment, the highest-mean-BRG adaptive candidate supplies the
-mean BCR/IOTCR comparison budget on tuning data. The baseline threshold is then
-trained for maximum mean BRG without exceeding that adaptive operating point.
+For the batch experiment, the adaptive candidate is selected within the
+documented BRG-regret floor, then the safer BCR/IOTCR operating point is chosen.
+That candidate supplies the mean BCR/IOTCR comparison budget on tuning data.
+The baseline threshold is then trained for maximum mean BRG without exceeding
+that adaptive operating point.
 
 The checked experiment and limitations are recorded in the
 [historical v1 evaluation evidence](docs/bpc-evaluation-methodology.md#12-historical-adaptive-v1-one-image-run-2026-09-07).

@@ -1,0 +1,62 @@
+{
+  "algorithm": "adaptive_v2",
+  "pixel_domain": "raw10",
+  "experiment": "adaptive_v2_raw10",
+  "selection_policy": "adaptive_manual_override_v1",
+  "split_sha256": "9bddd561db29dfeddfaeea150974079b08a1d9f396b8bfd53aad7fc207b445d3",
+  "injector_sha256": "143c4a4ac79185c5dd3f3fde9f6d052621038781a84fecdc93b9543bdfd2fefa",
+  "evaluator_sha256": "d4c24b6ff90d83db19c9c249375a7f65add0480158d791e95d3577f5c2adb8c2",
+  "tuning_images": 883,
+  "candidate_pool": "manual adaptive candidate from an existing tuning table",
+  "top_k": null,
+  "brg_regret": null,
+  "criterion": "manual held-out diagnostic; adaptive config is fixed explicitly and baseline is matched under its tuning BCR/IOTCR budget",
+  "safety_reference": "manual adaptive candidate",
+  "safety_budget": {
+    "BCR": 0.031169749536352025,
+    "IOTCR": 1.7746966721873866e-05
+  },
+  "adaptive_brg_max": 0.9306099794228082,
+  "adaptive_brg_floor": 0.9306099794228082,
+  "adaptive_brg_eligible": 1,
+  "adaptive_safety_reference": {
+    "RG_hot": 0.9785068601067408,
+    "RG_dead": 0.8827130987388752,
+    "BRG": 0.9306099794228082,
+    "BCR": 0.031169749536352025,
+    "IOTCR": 1.7746966721873866e-05
+  },
+  "adaptive_safety_score": {
+    "max_relative": 1.0,
+    "sum_relative": 2.0
+  },
+  "baseline_eligible_thresholds": 980,
+  "adaptive_candidates": 8713,
+  "baseline_threshold": 44,
+  "baseline_mean": {
+    "RG_hot": 0.9806343618820471,
+    "RG_dead": 0.7333016719899317,
+    "BRG": 0.8569680169359889,
+    "BCR": 0.015325670085562315,
+    "IOTCR": 1.771619989206691e-05
+  },
+  "adaptive_config": [
+    4,
+    8,
+    4,
+    3,
+    0
+  ],
+  "adaptive_mean": {
+    "RG_hot": 0.9785068601067408,
+    "RG_dead": 0.8827130987388752,
+    "BRG": 0.9306099794228082,
+    "BCR": 0.031169749536352025,
+    "IOTCR": 1.7746966721873866e-05
+  },
+  "status": "selected",
+  "manual_override": true,
+  "base_selection_sha256": "436e29392825e7b79d5a6735cd4e726a5ab9011ad9ee4dcb6baca2a89144f847",
+  "common_candidates_sha256": "be6ead4f8d035e9b39b9077c6e1ac7b4c552192bbe7807f936f2d491c2560006",
+  "baseline_candidates_sha256": "71b0ef1e0d9ac9378ae30c70a9328655aceae9f8cbc239034bdfcf0abb72d9ef"
+}

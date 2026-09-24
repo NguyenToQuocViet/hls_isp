@@ -18,9 +18,9 @@ The tie-break follows the existing implementation: H, then V, then D1, then D2. 
 The input format remains unchanged from the fixed-threshold baseline:
 
 ```text
-Format     : RGGB RAW12
+Format     : RGGB RAW10
 Resolution : 1920 x 1080
-Range      : [0, 4095]
+Range      : [0, 1023]
 Window     : 5 x 5
 ```
 
@@ -34,7 +34,21 @@ k_a              : local-activity shift
 
 Both green phases use `T0_G`.
 
-The evaluation ranges are T0_CFA in [0, 4095] and k_s, k_a in [0, 12]. Initial values are not calibrated.
+The evaluation ranges are `T0_CFA` in `[0, 1023]` and `k_s`, `k_a` in
+`[0, 10]`. The shift controls remain 4-bit hardware fields. Shift `10` is the
+canonical zero-term endpoint for RAW10 because every valid sample shifted by
+10 is zero; values 11 through 15 are representable but redundant and are not
+searched.
+
+The accepted RAW10 development operating point is Candidate 3:
+
+```text
+T0_R = 4, T0_G = 8, T0_B = 4, k_s = 3, k_a = 0
+```
+
+This is a tuning decision for the current Adaptive BPC implementation, not a
+universal sensor calibration. Its selection rationale and held-out evidence
+are recorded in the [RAW10 evaluation methodology](bpc-evaluation-methodology.md#current-raw10-operating-point).
 
 ## 3. Same-CFA Neighborhood
 
@@ -138,7 +152,7 @@ Input and output buffers must be different objects.
 
 | Processing point | Fixed-threshold baseline | Adaptive directional BPC |
 |---|---|---|
-| Input | RGGB RAW12 | unchanged |
+| Input | RGGB RAW10 | unchanged |
 | Window | Eight same-CFA neighbors | unchanged |
 | Local analysis | Sorted median | directional activity and prediction |
 | Threshold | Fixed for each CFA phase | signal- and activity-dependent |
@@ -158,7 +172,7 @@ Synthetic stuck corruption shall not be used for training, validation, testing, 
 
 `isp_bpc_top` processes one fixed 1920 x 1080 frame per invocation. It consumes exactly one AXI4-Stream beat for each input pixel and produces exactly one beat for each output pixel in row-major order.
 
-The window generator uses four independent line-buffer banks of `FRAME_WIDTH` RAW12 samples and three horizontal shift rows of five samples. The line buffers retain the four preceding samples at the current image column. The horizontal rows select the top, center, and bottom same-CFA rows needed by `bpc_pixel`.
+The window generator uses four independent line-buffer banks of `FRAME_WIDTH` RAW10 samples and three horizontal shift rows of five samples. The line buffers retain the four preceding samples at the current image column. The horizontal rows select the top, center, and bottom same-CFA rows needed by `bpc_pixel`.
 
 The window shifts continuously across row boundaries. It is not cleared or padded between input rows. During the mixed-window interval, the corresponding output centers belong to the two right-border pixels of the preceding row or the two left-border pixels of the next row, so they are copied unchanged. The first interior center of a row is processed only after its complete window is present.
 

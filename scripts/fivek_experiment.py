@@ -23,8 +23,20 @@ from sweep_one_image import table_sums
 
 ROOT = Path(__file__).resolve().parents[1]
 ALGORITHM = "adaptive_v2"
-SELECTION_POLICY = "adaptive_operating_point_budget_v1"
+PIXEL_DOMAIN = "raw10"
+EXPERIMENT = "adaptive_v2_raw10"
+SELECTION_POLICY = "adaptive_operating_point_regret_safety_v1"
+LEGACY_SELECTION_POLICIES = {"adaptive_operating_point_budget_v1"}
+MANUAL_SELECTION_POLICY = "adaptive_manual_override_v1"
+RAW_MAX = 1023
+LEVELS = RAW_MAX + 1
+MAX_SHIFT = 10
+SHIFT_VALUES = MAX_SHIFT + 1
+DEFAULT_BASELINE_THRESHOLD = 266
+DEFAULT_TOP_K = 10
+DEFAULT_BRG_REGRET = 0.01
 NAMES = ("RG_hot", "RG_dead", "BRG", "BCR", "IOTCR")
+CONFIG_NAMES = ("T0_R", "T0_G", "T0_B", "k_s", "k_a")
 OUTPUT_NAMES = {"split": "split", "sweep": "sweeps", "select": "selection", "test": "test"}
 
 
@@ -78,7 +90,9 @@ def specification(args, **extra):
     if args.command == "scan":
         result["injector_sha256"] = digest(args.injector)
     else:
-        result.update(algorithm=ALGORITHM, injector_sha256=digest(args.injector),
+        result.update(algorithm=ALGORITHM, pixel_domain=PIXEL_DOMAIN,
+                      experiment=EXPERIMENT,
+                      injector_sha256=digest(args.injector),
                       evaluator_sha256=digest(args.evaluator),
                       sweep_sha256=digest(ROOT / "scripts/sweep_one_image.py"))
     return result
@@ -159,7 +173,9 @@ def split(args):
     sizes = np.cumsum([len(buckets[k]) for k in keys])
     cut = min(range(1, len(keys)), key=lambda n: abs(int(sizes[n - 1]) - len(images) * 0.2))
     test_keys = set(keys[:cut])
-    result = {"algorithm": ALGORITHM, "manifest_sha256": digest(args.manifest), "seed": args.seed,
+    result = {"algorithm": ALGORITHM, "pixel_domain": PIXEL_DOMAIN,
+              "experiment": EXPERIMENT,
+              "manifest_sha256": digest(args.manifest), "seed": args.seed,
               "grouping": "explicit" if args.groups else "per-image; near-duplicates not checked",
               "groups_sha256": digest(args.groups) if args.groups else None,
               "scan": manifest["scan"],
@@ -173,6 +189,10 @@ def load_split(args):
     data = read(args.split)
     if data.get("algorithm") != ALGORITHM:
         raise ValueError(f"Split is not for {ALGORITHM}; derive a fresh split from the existing compatibility manifest")
+    if data.get("pixel_domain") != PIXEL_DOMAIN:
+        raise ValueError(f"Split is not for {PIXEL_DOMAIN}; derive a fresh split from the existing compatibility manifest")
+    if data.get("experiment") != EXPERIMENT:
+        raise ValueError(f"Split is not for {EXPERIMENT}; derive a fresh split from the existing compatibility manifest")
     for row in data["tuning"] + data["test"]:
         if "injection_seed" not in row:
             raise ValueError("Split has no per-image injection seeds; create a fresh split")
@@ -197,10 +217,34 @@ def select_under_budget(values, keys, bcr_budget, iotcr_budget):
     return winner, eligible
 
 
-def select_matched_operating_points(baseline_values, adaptive_values, configs):
-    adaptive_winner = min(range(len(configs)),
+def relative_safety_score(metrics, reference):
+    ratios = []
+    for index in (3, 4):
+        denominator = reference[index]
+        ratios.append(metrics[index] / denominator if denominator > 0 else
+                      (0.0 if metrics[index] == 0 else float("inf")))
+    return max(ratios), sum(ratios)
+
+
+def select_adaptive_operating_point(adaptive_values, configs, brg_regret):
+    if not configs:
+        raise ValueError("No adaptive candidates")
+    reference_index = min(range(len(configs)),
                           key=lambda i: (-adaptive_values[i, 2], adaptive_values[i, 4],
                                          adaptive_values[i, 3], configs[i]))
+    reference = adaptive_values[reference_index]
+    brg_floor = reference[2] * (1.0 - brg_regret)
+    eligible = [i for i, metrics in enumerate(adaptive_values)
+                if metrics[2] >= brg_floor]
+    winner = min(eligible, key=lambda i: (*relative_safety_score(adaptive_values[i], reference),
+                                           -adaptive_values[i, 2], configs[i]))
+    return winner, eligible, reference_index, brg_floor
+
+
+def select_matched_operating_points(baseline_values, adaptive_values, configs,
+                                    brg_regret=DEFAULT_BRG_REGRET):
+    adaptive_winner, _, _, _ = select_adaptive_operating_point(
+        adaptive_values, configs, brg_regret)
     bcr_budget = adaptive_values[adaptive_winner, 3]
     iotcr_budget = adaptive_values[adaptive_winner, 4]
     baseline_winner, baseline_eligible = select_under_budget(
@@ -211,7 +255,7 @@ def select_matched_operating_points(baseline_values, adaptive_values, configs):
 def baseline_bank(args, temp, log):
     path = temp / "baseline.bin"
     meta = json.loads(invoke([args.evaluator, temp, "--baseline-bank", path], log))
-    return np.fromfile(path, dtype=np.int64).reshape(4096, 4), meta
+    return np.fromfile(path, dtype=np.int64).reshape(LEVELS, 4), meta
 
 
 def image_rows(args, out, images, action):
@@ -286,37 +330,65 @@ def sweep(args):
               ["path", "config", "status"] + [p + n for n in NAMES for p in ("baseline_", "adaptive_")])
 
 
+def read_top_k_candidates(path, top_k):
+    with Path(path).open(newline="") as file:
+        rows = list(csv.DictReader(file))
+    eligible = [row for row in rows if row["eligible"].lower() == "true"]
+    eligible.sort(key=lambda row: (
+        -float(row["BRG"]), float(row["IOTCR"]), float(row["BCR"]),
+        tuple(int(row[name]) for name in CONFIG_NAMES)))
+    return eligible[:top_k]
+
+
 def select(args):
     data = load_split(args)
     previous = read(args.sweeps / "run.json")
     expected = specification(args, split_sha256=digest(args.split),
                              baseline_threshold=previous["baseline_threshold"])
     expected["command"] = "sweep"
-    if previous != expected:
+    previous_inputs = dict(previous)
+    expected_inputs = dict(expected)
+    # Selection changes may reuse a completed sweep. The sweep-stage runner
+    # hash is not an input to the retained per-image candidate artifacts.
+    previous_inputs.pop("runner_sha256", None)
+    expected_inputs.pop("runner_sha256", None)
+    if previous_inputs != expected_inputs:
         raise ValueError("Sweep provenance differs from current split/tools")
     configs = set()
-    baseline_values = np.zeros((4096, 5))
+    baseline_values = np.zeros((LEVELS, 5))
     sweep_hashes = {}
+    shortlist_rows = []
     for row in data["tuning"]:
         directory = args.sweeps / row["id"]
-        result = read(directory / "done.json")
-        if result["selected"]:
-            configs.add(tuple(result["selected"][0]))
+        shortlist = read_top_k_candidates(directory / "candidates.csv", args.top_k)
+        for rank, candidate in enumerate(shortlist, 1):
+            config = tuple(int(candidate[name]) for name in CONFIG_NAMES)
+            configs.add(config)
+            shortlist_rows.append({
+                "path": row["path"], "rank": rank,
+                "config": json.dumps(config),
+                **{name: float(candidate[name]) for name in NAMES},
+            })
         baseline_values += np.load(directory / "baseline.npy", allow_pickle=False)
-        sweep_hashes[row["id"]] = {n: digest(directory / n) for n in ("done.json", "baseline.npy")}
+        sweep_hashes[row["id"]] = {n: digest(directory / n)
+                                     for n in ("done.json", "baseline.npy", "candidates.csv")}
     if not configs:
-        raise ValueError("No eligible per-image winner; no common candidate pool")
+        raise ValueError("No eligible per-image top-k candidate; no common candidate pool")
     configs = sorted(configs)
     baseline_values /= len(data["tuning"])
     out = workspace(args.output, specification(args, split_sha256=digest(args.split),
                                               sweep_hashes=sweep_hashes, configs=configs,
+                                              top_k=args.top_k, brg_regret=args.brg_regret,
                                               selection_policy=SELECTION_POLICY))
+
+    csv_write(out / "per_image_topk.csv", shortlist_rows,
+              ["path", "rank", "config", *NAMES])
 
     def action(row, temp, directory, log):
         path = temp / "metrics.bin"
         meta = json.loads(invoke([args.evaluator, temp, "--bank", path,
                                   previous["baseline_threshold"]], log))
-        bank = np.memmap(path, mode="r", dtype=np.int64, shape=(13, 13, 4, 4096, 4))
+        bank = np.memmap(path, mode="r", dtype=np.int64, shape=(SHIFT_VALUES, SHIFT_VALUES, 4, LEVELS, 4))
         values = rates(np.array([table_sums(bank, c) for c in configs]), meta)
         del bank
         np.save(directory / "adaptive.npy", values)
@@ -327,8 +399,10 @@ def select(args):
     for row in data["tuning"]:
         means += np.load(out / row["id"] / "adaptive.npy", allow_pickle=False)
     means /= len(data["tuning"])
-    baseline_t, winner, baseline_eligible = select_matched_operating_points(
-        baseline_values, means, configs)
+    winner, adaptive_eligible, reference_index, brg_floor = select_adaptive_operating_point(
+        means, configs, args.brg_regret)
+    baseline_t, baseline_eligible = select_under_budget(
+        baseline_values, range(len(baseline_values)), means[winner, 3], means[winner, 4])
     if baseline_t is None:
         raise RuntimeError("No baseline threshold satisfies the selected adaptive safety budget")
     baseline_mean = baseline_values[baseline_t]
@@ -336,6 +410,8 @@ def select(args):
     bcr_budget = adaptive_mean[3]
     iotcr_budget = adaptive_mean[4]
     baseline_eligible = set(baseline_eligible)
+    adaptive_reference = means[reference_index]
+    adaptive_safety_score = relative_safety_score(adaptive_mean, adaptive_reference)
     csv_write(out / "baseline_candidates.csv",
               [{"threshold": t, **dict(zip(NAMES, map(float, m))), "eligible": t in baseline_eligible}
                for t, m in enumerate(baseline_values)], ["threshold", *NAMES, "eligible"])
@@ -343,13 +419,23 @@ def select(args):
               [{"config": json.dumps(c), **dict(zip(NAMES, map(float, m))), "eligible": True}
                for c, m in zip(configs, means)], ["config", *NAMES, "eligible"])
     save(out / "selection.json", {
-        "algorithm": ALGORITHM, "selection_policy": SELECTION_POLICY,
+        "algorithm": ALGORITHM, "pixel_domain": PIXEL_DOMAIN,
+        "experiment": EXPERIMENT,
+        "selection_policy": SELECTION_POLICY,
         "split_sha256": digest(args.split), "injector_sha256": digest(args.injector),
         "evaluator_sha256": digest(args.evaluator), "tuning_images": len(data["tuning"]),
-        "candidate_pool": "union of eligible per-image tuning winners",
-        "criterion": "adaptive maximizes mean BRG; baseline maximizes mean BRG under the selected adaptive BCR/IOTCR budget; equal image weights",
-        "safety_reference": "selected adaptive operating point",
+        "candidate_pool": "union of top-k eligible per-image tuning candidates",
+        "top_k": args.top_k,
+        "brg_regret": args.brg_regret,
+        "criterion": "adaptive stays within the BRG regret floor, then minimizes relative BCR/IOTCR safety score; baseline maximizes mean BRG under the selected adaptive BCR/IOTCR budget; equal image weights",
+        "safety_reference": "BRG-max adaptive operating point",
         "safety_budget": {"BCR": float(bcr_budget), "IOTCR": float(iotcr_budget)},
+        "adaptive_brg_max": float(adaptive_reference[2]),
+        "adaptive_brg_floor": float(brg_floor),
+        "adaptive_brg_eligible": len(adaptive_eligible),
+        "adaptive_safety_reference": dict(zip(NAMES, map(float, adaptive_reference))),
+        "adaptive_safety_score": {"max_relative": adaptive_safety_score[0],
+                                   "sum_relative": adaptive_safety_score[1]},
         "baseline_eligible_thresholds": len(baseline_eligible),
         "adaptive_candidates": len(configs),
         "baseline_threshold": baseline_t, "baseline_mean": dict(zip(NAMES, map(float, baseline_mean))),
@@ -358,13 +444,78 @@ def select(args):
         "status": "selected" if winner is not None else "no eligible common candidate"})
 
 
+def freeze(args):
+    base = read(args.base_selection)
+    for key, expected in (("algorithm", ALGORITHM), ("pixel_domain", PIXEL_DOMAIN),
+                          ("experiment", EXPERIMENT)):
+        if base.get(key) != expected:
+            raise ValueError(f"Base selection is not for {expected}")
+
+    config = tuple(args.adaptive_config)
+    with args.common_candidates.open(newline="") as file:
+        candidates = list(csv.DictReader(file))
+    candidate = next((row for row in candidates
+                      if tuple(json.loads(row["config"])) == config), None)
+    if candidate is None:
+        raise ValueError(f"Adaptive config is absent from {args.common_candidates}: {config}")
+    adaptive_mean = {name: float(candidate[name]) for name in NAMES}
+
+    with args.baseline_candidates.open(newline="") as file:
+        thresholds = list(csv.DictReader(file))
+    baseline_eligible = [row for row in thresholds
+                         if float(row["BCR"]) <= adaptive_mean["BCR"]
+                         and float(row["IOTCR"]) <= adaptive_mean["IOTCR"]]
+    if not baseline_eligible:
+        raise ValueError("No baseline threshold satisfies the manual adaptive safety budget")
+    baseline = min(baseline_eligible,
+                   key=lambda row: (-float(row["BRG"]), float(row["IOTCR"]),
+                                    float(row["BCR"]), int(row["threshold"])))
+    baseline_mean = {name: float(baseline[name]) for name in NAMES}
+
+    output = args.output.resolve()
+    if output.exists():
+        raise ValueError(f"Output already exists; use a fresh path: {output}")
+    output.parent.mkdir(parents=True, exist_ok=True)
+    selection = dict(base)
+    selection.update({
+        "selection_policy": MANUAL_SELECTION_POLICY,
+        "candidate_pool": "manual adaptive candidate from an existing tuning table",
+        "top_k": None,
+        "brg_regret": None,
+        "criterion": "manual held-out diagnostic; adaptive config is fixed explicitly and baseline is matched under its tuning BCR/IOTCR budget",
+        "safety_reference": "manual adaptive candidate",
+        "safety_budget": {"BCR": adaptive_mean["BCR"], "IOTCR": adaptive_mean["IOTCR"]},
+        "adaptive_brg_max": adaptive_mean["BRG"],
+        "adaptive_brg_floor": adaptive_mean["BRG"],
+        "adaptive_brg_eligible": 1,
+        "adaptive_safety_reference": adaptive_mean,
+        "adaptive_safety_score": {"max_relative": 1.0, "sum_relative": 2.0},
+        "baseline_eligible_thresholds": len(baseline_eligible),
+        "baseline_threshold": int(baseline["threshold"]),
+        "baseline_mean": baseline_mean,
+        "adaptive_config": list(config),
+        "adaptive_mean": adaptive_mean,
+        "manual_override": True,
+        "base_selection_sha256": digest(args.base_selection),
+        "common_candidates_sha256": digest(args.common_candidates),
+        "baseline_candidates_sha256": digest(args.baseline_candidates),
+        "status": "selected",
+    })
+    save(output, selection)
+
+
 def test(args):
     data = load_split(args)
     chosen = read(args.selection)
     if chosen.get("algorithm") != ALGORITHM:
         raise ValueError(f"Selection is not for {ALGORITHM}")
-    if chosen.get("selection_policy") != SELECTION_POLICY:
-        raise ValueError(f"Selection does not use {SELECTION_POLICY}")
+    if chosen.get("pixel_domain") != PIXEL_DOMAIN:
+        raise ValueError(f"Selection is not for {PIXEL_DOMAIN}")
+    if chosen.get("experiment") != EXPERIMENT:
+        raise ValueError(f"Selection is not for {EXPERIMENT}")
+    if chosen.get("selection_policy") not in ({SELECTION_POLICY, MANUAL_SELECTION_POLICY} |
+                                               LEGACY_SELECTION_POLICIES):
+        raise ValueError("Selection does not use a supported operating-point policy")
     for key, value in (("split_sha256", digest(args.split)), ("injector_sha256", digest(args.injector)),
                        ("evaluator_sha256", digest(args.evaluator))):
         if chosen[key] != value:
@@ -414,27 +565,52 @@ def main():
     p.add_argument("manifest", type=Path)
     p.add_argument("--groups", type=Path, help="CSV path,group; absolute source paths, all compatible images")
     p.add_argument("--seed", type=int, default=20260907)
+    p = commands.add_parser("freeze")
+    p.add_argument("base_selection", type=Path,
+                   help="existing tuning selection JSON used for provenance")
+    p.add_argument("--common-candidates", type=Path, required=True,
+                   help="tuning mean table containing the requested adaptive config")
+    p.add_argument("--baseline-candidates", type=Path, required=True,
+                   help="tuning mean table used to derive the matched baseline threshold")
+    p.add_argument("--adaptive-config", type=int, nargs=5, required=True,
+                   metavar=("T0_R", "T0_G", "T0_B", "K_S", "K_A"))
+    p.add_argument("--output", type=Path, required=True)
     for name in ("sweep", "select", "test"):
         p = commands.add_parser(name)
         p.add_argument("split", type=Path)
         p.add_argument("--jobs", type=int, default=1, help="number of images processed concurrently")
         if name == "sweep":
-            p.add_argument("--baseline-threshold", type=int, default=1063)
+            p.add_argument("--baseline-threshold", type=int, default=DEFAULT_BASELINE_THRESHOLD)
         elif name == "select":
             p.add_argument("--sweeps", type=Path, required=True)
+            p.add_argument("--top-k", type=int, default=DEFAULT_TOP_K,
+                           help="number of eligible per-image candidates retained in the common pool")
+            p.add_argument("--brg-regret", type=float, default=DEFAULT_BRG_REGRET,
+                           help="relative BRG loss allowed from the BRG-max adaptive candidate")
         else:
             p.add_argument("--selection", type=Path, required=True)
     commands.choices["scan"].add_argument("--output", type=Path, required=True)
     for name, directory in OUTPUT_NAMES.items():
         commands.choices[name].add_argument("--output", type=Path,
-                                            default=ROOT / "artifacts" / ALGORITHM / directory)
+                                            default=ROOT / "artifacts" / EXPERIMENT / directory)
     args = parser.parse_args()
     args.injector = args.injector.resolve()
     args.evaluator = args.evaluator.resolve()
-    if hasattr(args, "baseline_threshold") and not 0 <= args.baseline_threshold <= 4095:
-        parser.error("baseline threshold must be in [0,4095]")
+    if hasattr(args, "baseline_threshold") and not 0 <= args.baseline_threshold <= RAW_MAX:
+        parser.error(f"baseline threshold must be in [0,{RAW_MAX}]")
     if hasattr(args, "jobs") and args.jobs < 1:
         parser.error("jobs must be at least 1")
+    if hasattr(args, "top_k") and args.top_k < 1:
+        parser.error("top-k must be at least 1")
+    if hasattr(args, "brg_regret") and not 0 <= args.brg_regret < 1:
+        parser.error("brg-regret must be in [0,1)")
+    if hasattr(args, "adaptive_config"):
+        thresholds = args.adaptive_config[:3]
+        shifts = args.adaptive_config[3:]
+        if any(not 0 <= value <= RAW_MAX for value in thresholds):
+            parser.error(f"adaptive T0 values must be in [0,{RAW_MAX}]")
+        if any(not 0 <= value <= MAX_SHIFT for value in shifts):
+            parser.error(f"adaptive shifts must be in [0,{MAX_SHIFT}]")
     try:
         globals()[args.command](args)
     except (OSError, ValueError, RuntimeError, KeyError) as error:
