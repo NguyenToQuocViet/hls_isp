@@ -18,7 +18,7 @@ namespace {
 // https://github.com/cruxopen/openISP/blob/d4947e1aa5f4af83c3640131dbca8a675b613ec6/model/dpc.py
 // OpenISP uses a reflected 5 x 5 Bayer patch, compares the center against all
 // eight same-CFA neighbors with a strict threshold, and uses gradient mode by
-// default. The published 10-bit threshold 30 maps to 120 in this RAW12 model.
+// default. The published 10-bit threshold is used directly in this RAW10 model.
 
 int reflect_index(int index, int extent) {
     if (index < 0) {
@@ -165,7 +165,7 @@ void bpc_frame(
 
 } // namespace openisp_bpc
 
-extern "C" int openisp_bpc_process_raw12(
+extern "C" int openisp_bpc_process_raw10(
     const std::uint16_t* input,
     std::uint16_t* output,
     std::size_t pixel_count,

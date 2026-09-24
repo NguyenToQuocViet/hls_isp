@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Project: Adaptive Directional BPC and BLC
 # Module: AMD BPC Held-Out Benchmark
-# Description: Evaluate the parameter-free AMD BPC reference on the frozen adaptive-v2 held-out split.
+# Description: Evaluate the parameter-free AMD BPC reference on the frozen RAW10 adaptive-v2 held-out split.
 # Author: Viet Nguyen To Quoc
 
 import argparse
@@ -74,13 +74,13 @@ def read_pgm(path):
         height = int(token(file))
         maximum = int(token(file))
         payload = file.read()
-    if magic != b"P5" or width != WIDTH or height != HEIGHT or maximum != 4095:
-        raise ValueError(f"Expected injector P5 RAW12 frame: {path}")
+    if magic != b"P5" or width != WIDTH or height != HEIGHT or maximum != 1023:
+        raise ValueError(f"Expected injector P5 RAW10 frame: {path}")
     if len(payload) != PIXELS * 2:
-        raise ValueError(f"Invalid RAW12 PGM payload length: {path}")
+        raise ValueError(f"Invalid RAW10 PGM payload length: {path}")
     values = np.frombuffer(payload, dtype=">u2").astype(np.uint16)
-    if np.any(values > 4095):
-        raise ValueError(f"RAW12 sample exceeds 4095: {path}")
+    if np.any(values > 1023):
+        raise ValueError(f"RAW10 sample exceeds 1023: {path}")
     return values
 
 
@@ -106,7 +106,7 @@ def read_labels(path):
 
 def load_library(path):
     library = ctypes.CDLL(str(Path(path).resolve()))
-    function = library.amd_bpc_process_raw12
+    function = library.amd_bpc_process_raw10
     pointer = ctypes.POINTER(ctypes.c_uint16)
     function.argtypes = (pointer, pointer, ctypes.c_size_t)
     function.restype = ctypes.c_int
@@ -123,7 +123,7 @@ def run_amd(function, frame):
         source.size,
     )
     if status != 0:
-        raise RuntimeError(f"amd_bpc_process_raw12 failed with status {status}")
+        raise RuntimeError(f"amd_bpc_process_raw10 failed with status {status}")
     return output
 
 
@@ -201,13 +201,13 @@ def fractions(left, right):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--split", type=Path, default=ROOT / "artifacts/adaptive_v2/split/split.json")
-    parser.add_argument("--selection", type=Path, default=ROOT / "artifacts/adaptive_v2/adaptive_budget/selection/selection.json")
-    parser.add_argument("--frozen-test", type=Path, default=ROOT / "artifacts/adaptive_v2/adaptive_budget/test/per_image.csv")
-    parser.add_argument("--frozen-report", type=Path, default=ROOT / "artifacts/adaptive_v2/adaptive_budget/test/report.json")
+    parser.add_argument("--split", type=Path, default=ROOT / "artifacts/adaptive_v2_raw10/split/split.json")
+    parser.add_argument("--selection", type=Path, default=ROOT / "artifacts/adaptive_v2_raw10/candidate_3/selection.json")
+    parser.add_argument("--frozen-test", type=Path, default=ROOT / "artifacts/adaptive_v2_raw10/candidate_3/test/per_image.csv")
+    parser.add_argument("--frozen-report", type=Path, default=ROOT / "artifacts/adaptive_v2_raw10/candidate_3/test/report.json")
     parser.add_argument("--injector", type=Path, default=ROOT / "build/defect_injector")
     parser.add_argument("--library", type=Path, default=ROOT / "build/libbpc_amd.so")
-    parser.add_argument("--output", type=Path, default=ROOT / "artifacts/amd_bpc/test")
+    parser.add_argument("--output", type=Path, default=ROOT / "artifacts/amd_bpc_raw10/test")
     parser.add_argument("--jobs", type=int, default=1)
     args = parser.parse_args()
     if args.jobs < 1:
@@ -216,10 +216,16 @@ def main():
     split = read_json(args.split)
     selection = read_json(args.selection)
     frozen_report = read_json(args.frozen_report)
-    if split.get("algorithm") != "adaptive_v2":
-        raise ValueError("Split is not the frozen adaptive_v2 split")
-    if selection.get("selection_policy") != "adaptive_operating_point_budget_v1":
-        raise ValueError("Selection is not the adaptive-budget operating point")
+    if split.get("algorithm") != "adaptive_v2" or split.get("pixel_domain") != "raw10":
+        raise ValueError("Split is not the frozen RAW10 adaptive_v2 split")
+    if selection.get("pixel_domain") != "raw10":
+        raise ValueError("Selection is not the RAW10 operating point")
+    if selection.get("selection_policy") not in {
+        "adaptive_operating_point_budget_v1",
+        "adaptive_operating_point_regret_safety_v1",
+        "adaptive_manual_override_v1",
+    }:
+        raise ValueError("Selection is not a supported adaptive operating point")
     if selection.get("split_sha256") != digest(args.split):
         raise ValueError("Selection does not match the supplied split")
     if selection.get("injector_sha256") != digest(args.injector):
@@ -239,7 +245,9 @@ def main():
 
     specification = {
         "algorithm": "amd_vitis_vision_badpixelcorrection",
-        "comparison": "parameter-free AMD baseline on frozen adaptive_v2 held-out split",
+        "comparison": "parameter-free AMD baseline on frozen RAW10 adaptive_v2 held-out split",
+        "pixel_domain": "raw10",
+        "frame_max": 1023,
         "runner_sha256": digest(__file__),
         "amd_reference_header_sha256": digest(ROOT / "reference/bpc_amd.hpp"),
         "amd_reference_sha256": digest(ROOT / "reference/bpc_amd.cpp"),

@@ -47,7 +47,7 @@ void bpc_frame(
 // Stable C entry point used by scripts/amd_bpc_benchmark.py through ctypes.
 // Returns 0 on success, -1 for a null pointer, -2 for an invalid frame size,
 // -3 for aliased input/output, and -4 for an unexpected implementation error.
-extern "C" int amd_bpc_process_raw12(
+extern "C" int amd_bpc_process_raw10(
     const std::uint16_t* input,
     std::uint16_t* output,
     std::size_t pixel_count

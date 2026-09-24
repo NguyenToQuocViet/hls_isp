@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Project: Adaptive Directional BPC and BLC
 # Module: OpenISP BPC Held-Out Benchmark
-# Description: Evaluate the fixed published OpenISP gradient DPC operating point on the frozen adaptive-v2 held-out split.
+# Description: Evaluate the fixed published OpenISP gradient DPC operating point on the frozen RAW10 adaptive-v2 held-out split.
 # Author: Viet Nguyen To Quoc
 
 import argparse
@@ -28,8 +28,8 @@ OPENISP_SOURCE = (
     "https://github.com/cruxopen/openISP/blob/"
     f"{OPENISP_COMMIT}/model/dpc.py"
 )
-SOURCE_THRESHOLD_10BIT = 30
-DEFAULT_THRESHOLD_RAW12 = SOURCE_THRESHOLD_10BIT * 4
+SOURCE_THRESHOLD_RAW10 = 30
+DEFAULT_THRESHOLD_RAW10 = SOURCE_THRESHOLD_RAW10
 
 
 def read_json(path):
@@ -81,13 +81,13 @@ def read_pgm(path):
         height = int(token(file))
         maximum = int(token(file))
         payload = file.read()
-    if magic != b"P5" or width != WIDTH or height != HEIGHT or maximum != 4095:
-        raise ValueError(f"Expected injector P5 RAW12 frame: {path}")
+    if magic != b"P5" or width != WIDTH or height != HEIGHT or maximum != 1023:
+        raise ValueError(f"Expected injector P5 RAW10 frame: {path}")
     if len(payload) != PIXELS * 2:
-        raise ValueError(f"Invalid RAW12 PGM payload length: {path}")
+        raise ValueError(f"Invalid RAW10 PGM payload length: {path}")
     values = np.frombuffer(payload, dtype=">u2").astype(np.uint16)
-    if np.any(values > 4095):
-        raise ValueError(f"RAW12 sample exceeds 4095: {path}")
+    if np.any(values > 1023):
+        raise ValueError(f"RAW10 sample exceeds 1023: {path}")
     return values
 
 
@@ -113,7 +113,7 @@ def read_labels(path):
 
 def load_library(path):
     library = ctypes.CDLL(str(Path(path).resolve()))
-    function = library.openisp_bpc_process_raw12
+    function = library.openisp_bpc_process_raw10
     pointer = ctypes.POINTER(ctypes.c_uint16)
     function.argtypes = (pointer, pointer, ctypes.c_size_t, ctypes.c_uint16)
     function.restype = ctypes.c_int
@@ -131,7 +131,7 @@ def run_openisp(function, frame, threshold):
         threshold,
     )
     if status != 0:
-        raise RuntimeError(f"openisp_bpc_process_raw12 failed with status {status}")
+        raise RuntimeError(f"openisp_bpc_process_raw10 failed with status {status}")
     return output
 
 
@@ -209,28 +209,34 @@ def fractions(left, right):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--split", type=Path, default=ROOT / "artifacts/adaptive_v2/split/split.json")
-    parser.add_argument("--selection", type=Path, default=ROOT / "artifacts/adaptive_v2/adaptive_budget/selection/selection.json")
-    parser.add_argument("--frozen-test", type=Path, default=ROOT / "artifacts/adaptive_v2/adaptive_budget/test/per_image.csv")
-    parser.add_argument("--frozen-report", type=Path, default=ROOT / "artifacts/adaptive_v2/adaptive_budget/test/report.json")
+    parser.add_argument("--split", type=Path, default=ROOT / "artifacts/adaptive_v2_raw10/split/split.json")
+    parser.add_argument("--selection", type=Path, default=ROOT / "artifacts/adaptive_v2_raw10/candidate_3/selection.json")
+    parser.add_argument("--frozen-test", type=Path, default=ROOT / "artifacts/adaptive_v2_raw10/candidate_3/test/per_image.csv")
+    parser.add_argument("--frozen-report", type=Path, default=ROOT / "artifacts/adaptive_v2_raw10/candidate_3/test/report.json")
     parser.add_argument("--injector", type=Path, default=ROOT / "build/defect_injector")
     parser.add_argument("--library", type=Path, default=ROOT / "build/libbpc_openisp.so")
-    parser.add_argument("--output", type=Path, default=ROOT / "artifacts/openisp_bpc/test")
-    parser.add_argument("--threshold", type=int, default=DEFAULT_THRESHOLD_RAW12)
+    parser.add_argument("--output", type=Path, default=ROOT / "artifacts/openisp_bpc_raw10/test")
+    parser.add_argument("--threshold", type=int, default=DEFAULT_THRESHOLD_RAW10)
     parser.add_argument("--jobs", type=int, default=1)
     args = parser.parse_args()
     if args.jobs < 1:
         parser.error("jobs must be at least 1")
-    if not 0 <= args.threshold <= 4095:
-        parser.error("threshold must be in [0, 4095]")
+    if not 0 <= args.threshold <= 1023:
+        parser.error("threshold must be in [0, 1023]")
 
     split = read_json(args.split)
     selection = read_json(args.selection)
     frozen_report = read_json(args.frozen_report)
-    if split.get("algorithm") != "adaptive_v2":
-        raise ValueError("Split is not the frozen adaptive_v2 split")
-    if selection.get("selection_policy") != "adaptive_operating_point_budget_v1":
-        raise ValueError("Selection is not the adaptive-budget operating point")
+    if split.get("algorithm") != "adaptive_v2" or split.get("pixel_domain") != "raw10":
+        raise ValueError("Split is not the frozen RAW10 adaptive_v2 split")
+    if selection.get("pixel_domain") != "raw10":
+        raise ValueError("Selection is not the RAW10 operating point")
+    if selection.get("selection_policy") not in {
+        "adaptive_operating_point_budget_v1",
+        "adaptive_operating_point_regret_safety_v1",
+        "adaptive_manual_override_v1",
+    }:
+        raise ValueError("Selection is not a supported adaptive operating point")
     if selection.get("split_sha256") != digest(args.split):
         raise ValueError("Selection does not match the supplied split")
     if selection.get("injector_sha256") != digest(args.injector):
@@ -250,14 +256,16 @@ def main():
 
     specification = {
         "algorithm": "cruxopen_openisp_gradient_dpc",
-        "comparison": "fixed published OpenISP operating point on frozen adaptive_v2 held-out split",
+        "comparison": "fixed published OpenISP operating point on frozen RAW10 adaptive_v2 held-out split",
+        "pixel_domain": "raw10",
+        "frame_max": 1023,
         "openisp_source": OPENISP_SOURCE,
         "openisp_commit": OPENISP_COMMIT,
         "openisp_mode": "gradient",
-        "source_threshold_10bit": SOURCE_THRESHOLD_10BIT,
-        "source_clip_10bit": 1023,
-        "threshold_raw12": args.threshold,
-        "threshold_mapping": "published 10-bit threshold multiplied by four for RAW12",
+        "source_threshold_raw10": SOURCE_THRESHOLD_RAW10,
+        "source_clip_raw10": 1023,
+        "threshold_raw10": args.threshold,
+        "threshold_mapping": "published 10-bit threshold used directly for RAW10",
         "runner_sha256": digest(__file__),
         "openisp_reference_header_sha256": digest(ROOT / "reference/bpc_openisp.hpp"),
         "openisp_reference_sha256": digest(ROOT / "reference/bpc_openisp.cpp"),
@@ -311,7 +319,7 @@ def main():
                 )
             save_json(done, {
                 "path": row["path"],
-                "threshold_raw12": args.threshold,
+                "threshold_raw10": args.threshold,
                 "openisp": dict(zip(NAMES, values)),
             })
             (directory / "error.json").unlink(missing_ok=True)

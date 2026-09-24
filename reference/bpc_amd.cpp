@@ -125,7 +125,7 @@ void bpc_frame(
 
 } // namespace amd_bpc
 
-extern "C" int amd_bpc_process_raw12(
+extern "C" int amd_bpc_process_raw10(
     const std::uint16_t* input,
     std::uint16_t* output,
     std::size_t pixel_count
