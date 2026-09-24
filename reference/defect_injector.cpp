@@ -33,11 +33,11 @@ constexpr std::size_t TOTAL_DEFECT_COUNT = HOT_DEFECT_COUNT + DEAD_DEFECT_COUNT;
 constexpr std::size_t BORDER_WIDTH = 2;
 constexpr std::size_t MIN_DEFECT_SPACING = 10;
 constexpr std::size_t MAX_PLACEMENT_ATTEMPTS = 1000000;
-constexpr unsigned int RAW12_MAX = 4095;
+constexpr unsigned int RAW10_MAX = 1023;
 constexpr unsigned int WHITE_LEVEL_MAX = 65535;
 constexpr unsigned int RNG_SEED = 0;
-constexpr int HOT_OFFSET_MIN = 256;
-constexpr int HOT_OFFSET_MAX = 2048;
+constexpr int HOT_OFFSET_MIN = 64;
+constexpr int HOT_OFFSET_MAX = 512;
 constexpr double DEAD_GAIN_MIN = 0.0;
 constexpr double DEAD_GAIN_MAX = 0.75;
 constexpr const char* CLEAN_OUTPUT_PATH = "clean_rggb.pgm";
@@ -99,7 +99,7 @@ bool write_pgm(const char* path, const std::vector<unsigned short>& image) {
         return false;
     }
 
-    output << "P5\n" << OUTPUT_WIDTH << ' ' << OUTPUT_HEIGHT << "\n" << RAW12_MAX << "\n";
+    output << "P5\n" << OUTPUT_WIDTH << ' ' << OUTPUT_HEIGHT << "\n" << RAW10_MAX << "\n";
 
     std::vector<unsigned char> encoded_image(image.size() * 2);
 
@@ -193,7 +193,7 @@ bool inject_defects(const std::vector<unsigned short>& clean_rggb, std::vector<u
         }
 
         const long rounded_value = std::lround(defect.a * defect.input_value + defect.b);
-        const long clipped_value = std::clamp(rounded_value, 0L, static_cast<long>(RAW12_MAX));
+        const long clipped_value = std::clamp(rounded_value, 0L, static_cast<long>(RAW10_MAX));
 
         defect.output_value = static_cast<unsigned short>(clipped_value);
         corrupted_rggb[pixel_index] = defect.output_value;
@@ -241,7 +241,7 @@ bool black_levels_for_crop(const libraw_dng_levels_t& levels, std::size_t row_of
             std::cerr << "BlackLevel must be finite and in [0, WhiteLevel)\n";
             return false;
         }
-        scaled[phase] = static_cast<std::uint16_t>(std::floor(native[phase] * RAW12_MAX / white_level + 0.5));
+        scaled[phase] = static_cast<std::uint16_t>(std::floor(native[phase] * RAW10_MAX / white_level + 0.5));
     }
     config = {scaled[0], scaled[1], scaled[2], scaled[3]};
     return true;
@@ -387,7 +387,7 @@ int main(int argc, char* argv[]) {
     //check white level
     const unsigned int white_level = dng_levels.dng_whitelevel[0];
 
-    if (white_level < RAW12_MAX || white_level > WHITE_LEVEL_MAX) {
+    if (white_level < RAW10_MAX || white_level > WHITE_LEVEL_MAX) {
         std::cerr << "Unsupported WhiteLevel: " << white_level << "\n";
 
         return EXIT_FAILURE;
@@ -479,7 +479,7 @@ int main(int argc, char* argv[]) {
             const std::size_t output_index = row * OUTPUT_WIDTH + col;
             const unsigned int sample = raw_image[source_index];
             const unsigned int clipped_sample = sample > white_level ? white_level : sample;
-            const std::uint64_t numerator = 2ULL * clipped_sample * RAW12_MAX + white_level;
+            const std::uint64_t numerator = 2ULL * clipped_sample * RAW10_MAX + white_level;
 
             clean_rggb[output_index] = static_cast<unsigned short>(numerator / (2ULL * white_level));
         }
@@ -512,9 +512,12 @@ int main(int argc, char* argv[]) {
              << ",\n  \"width\": " << OUTPUT_WIDTH << ", \"height\": " << OUTPUT_HEIGHT
              << ",\n  \"crop_top\": " << crop_top << ", \"crop_left\": " << crop_left
              << ",\n  \"white_level\": " << white_level
+             << ",\n  \"bit_depth\": 10, \"pixel_max\": " << RAW10_MAX
              << ",\n  \"native_black_r_gr_gb_b\": [" << native_black[0] << ',' << native_black[1] << ',' << native_black[2] << ',' << native_black[3] << ']'
              << ",\n  \"black_r_gr_gb_b\": [" << blc_config.black_level_r << ',' << blc_config.black_level_gr << ',' << blc_config.black_level_gb << ',' << blc_config.black_level_b << ']'
-             << ",\n  \"seed\": " << seed << ", \"hot\": " << HOT_DEFECT_COUNT << ", \"dead\": " << DEAD_DEFECT_COUNT << ", \"stuck\": 0\n}\n";
+             << ",\n  \"seed\": " << seed << ", \"hot\": " << HOT_DEFECT_COUNT << ", \"dead\": " << DEAD_DEFECT_COUNT << ", \"stuck\": 0"
+             << ",\n  \"hot_offset_min\": " << HOT_OFFSET_MIN << ", \"hot_offset_max\": " << HOT_OFFSET_MAX
+             << ", \"dead_gain_min\": " << DEAD_GAIN_MIN << ", \"dead_gain_max\": " << DEAD_GAIN_MAX << "\n}\n";
     metadata.close();
     if (!metadata) {
         std::cerr << "Cannot write input_metadata.json\n";

@@ -22,7 +22,9 @@ Author: Viet Nguyen To Quoc
 namespace {
 constexpr int WIDTH = 1920;
 constexpr int HEIGHT = 1080;
-constexpr int LEVELS = 4096;
+constexpr int RAW_MAX = 1023;
+constexpr int LEVELS = RAW_MAX + 1;
+constexpr int MAX_SHIFT = 10;
 // E_residual_hot, E_residual_dead, background changes, injection-induced changes.
 using Stats = std::array<std::int64_t, 4>;
 using Frame = std::vector<std::uint16_t>;
@@ -32,13 +34,13 @@ Frame read_pgm(const std::string& path) {
     std::string magic;
     int width = 0, height = 0, maximum = 0;
     file >> magic >> width >> height >> maximum;
-    if (!file || magic != "P5" || width != WIDTH || height != HEIGHT || maximum != 4095 || file.get() != '\n') {
-        throw std::runtime_error("Expected injector P5 RAW12 frame: " + path);
+    if (!file || magic != "P5" || width != WIDTH || height != HEIGHT || maximum != RAW_MAX || file.get() != '\n') {
+        throw std::runtime_error("Expected injector P5 RAW10 frame: " + path);
     }
     Frame frame(WIDTH * HEIGHT);
     for (auto& value : frame) {
         const int high = file.get(), low = file.get();
-        if (high < 0 || low < 0 || high > 15) throw std::runtime_error("Invalid RAW12 PGM payload");
+        if (high < 0 || low < 0 || high > 3) throw std::runtime_error("Invalid RAW10 PGM payload");
         value = static_cast<std::uint16_t>((high << 8) | low);
     }
     if (file.peek() != EOF) throw std::runtime_error("Unexpected trailing PGM data");
@@ -207,7 +209,7 @@ int main(int argc, char** argv) {
         const Dataset data(argv[1]);
         const std::string mode(argv[2]);
         if (mode == "--oracle" && argc == 8) {
-            const adaptive_bpc::BpcConfig config{static_cast<std::uint16_t>(integer(argv[3], 4095)), static_cast<std::uint16_t>(integer(argv[4], 4095)), static_cast<std::uint16_t>(integer(argv[5], 4095)), static_cast<std::uint8_t>(integer(argv[6], 12)), static_cast<std::uint8_t>(integer(argv[7], 12))};
+            const adaptive_bpc::BpcConfig config{static_cast<std::uint16_t>(integer(argv[3], RAW_MAX)), static_cast<std::uint16_t>(integer(argv[4], RAW_MAX)), static_cast<std::uint16_t>(integer(argv[5], RAW_MAX)), static_cast<std::uint8_t>(integer(argv[6], MAX_SHIFT)), static_cast<std::uint8_t>(integer(argv[7], MAX_SHIFT))};
             print_stats(oracle(data, config));
             std::cout << '\n';
         } else if (mode == "--baseline-bank" && argc == 4) {
@@ -219,7 +221,7 @@ int main(int argc, char** argv) {
                 }
             }
             // Check the accelerated baseline against the unchanged reference implementation.
-            for (int t : {0, 1, 1063, 2048, 4095}) {
+            for (int t : {0, 1, 266, 512, RAW_MAX}) {
                 if (combined[t] != baseline(data, t)) throw std::runtime_error("Baseline bank differs from reference");
             }
             std::ofstream file(argv[3], std::ios::binary);
@@ -229,8 +231,8 @@ int main(int argc, char** argv) {
             print_metadata(data);
             std::cout << "}\n";
         } else if (mode == "--fixed" && argc == 9) {
-            const int threshold = integer(argv[3], 4095);
-            const adaptive_bpc::BpcConfig config{static_cast<std::uint16_t>(integer(argv[4], 4095)), static_cast<std::uint16_t>(integer(argv[5], 4095)), static_cast<std::uint16_t>(integer(argv[6], 4095)), static_cast<std::uint8_t>(integer(argv[7], 12)), static_cast<std::uint8_t>(integer(argv[8], 12))};
+            const int threshold = integer(argv[3], RAW_MAX);
+            const adaptive_bpc::BpcConfig config{static_cast<std::uint16_t>(integer(argv[4], RAW_MAX)), static_cast<std::uint16_t>(integer(argv[5], RAW_MAX)), static_cast<std::uint16_t>(integer(argv[6], RAW_MAX)), static_cast<std::uint8_t>(integer(argv[7], MAX_SHIFT)), static_cast<std::uint8_t>(integer(argv[8], MAX_SHIFT))};
             print_metadata(data);
             std::cout << ",\"baseline\":";
             print_stats(baseline(data, threshold));
@@ -238,17 +240,17 @@ int main(int argc, char** argv) {
             print_stats(oracle(data, config));
             std::cout << "}\n";
         } else if (mode == "--bank" && argc == 5) {
-            const int threshold = integer(argv[4], 4095);
+            const int threshold = integer(argv[4], RAW_MAX);
             const auto started = std::chrono::steady_clock::now();
             const auto pixels = prepare(data);
             std::ofstream file(argv[3], std::ios::binary);
             if (!file) throw std::runtime_error("Cannot create metric bank");
-            for (int signal = 0; signal <= 12; signal++) {
-                for (int activity = 0; activity <= 12; activity++) {
+            for (int signal = 0; signal <= MAX_SHIFT; signal++) {
+                for (int activity = 0; activity <= MAX_SHIFT; activity++) {
                     const auto table = make_table(pixels, signal, activity);
                     file.write(reinterpret_cast<const char*>(table.data()), table.size() * sizeof(Stats));
                 }
-                std::cerr << "metric bank k_s=" << signal << "/12\n";
+                std::cerr << "metric bank k_s=" << signal << '/' << MAX_SHIFT << '\n';
             }
             file.close();
             if (!file) throw std::runtime_error("Failed writing metric bank");

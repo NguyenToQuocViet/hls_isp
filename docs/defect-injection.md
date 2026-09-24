@@ -1,7 +1,7 @@
 <!--
 Project: Adaptive Directional BPC and BLC
 Module: Defect Injection Contract
-Description: Define the accepted input, RAW12 normalization, defect model, placement, reproducibility, and outputs.
+Description: Define historical injection behavior and the current RAW10 BLC/BPC dataset profile.
 Author: Viet Nguyen To Quoc
 -->
 
@@ -13,7 +13,7 @@ This document is the authoritative behavioral contract for the first host-side s
 
 This contract defines intended behavior. It does not claim that an implementation exists, passes tests, matches physical sensor statistics, or is suitable for HLS synthesis.
 
-Section 11 defines the current BLC pipeline profile and overrides the historical restrictions and counts below. Sections 3 through 10 preserve the version 0.1 profile with 150 hot, 150 dead, and 25 stuck assignments for historical baseline reproducibility. That profile is not valid for new single-frame BPC tuning. Under [ADR 0001](adr/0001-exclude-stuck-from-single-frame-bpc.md), every new training, validation, and test dataset shall contain only hot and dead corruption and shall set the stuck count to zero. The revised hot/dead density remains a separate pending contract decision and must be recorded with each experimental run until fixed.
+Section 11 defines the current RAW10 BLC pipeline profile and overrides the historical numeric domain, restrictions and counts below. Sections 3 through 10 preserve the version 0.1 RAW12 profile with 150 hot, 150 dead, and 25 stuck assignments for historical baseline reproducibility. That profile is not valid for new single-frame BPC tuning. Under [ADR 0001](adr/0001-exclude-stuck-from-single-frame-bpc.md), every new training, validation, and test dataset shall contain only hot and dead corruption and shall set the stuck count to zero.
 
 ## 2. Scope and Non-Goals
 
@@ -217,28 +217,31 @@ The version 0.1 values are frozen for reproducible baseline work, not asserted t
 
 Version 0.2 records the accepted single-frame scope decision without rewriting the historical version 0.1 profile. New tuning data containing stuck assignments is non-conforming. The current injector source still implements version 0.1 and must be revised or given an explicit hot/dead-only profile before it generates new tuning datasets.
 
-## 11. BLC Pipeline Profile
+## 11. Current RAW10 BLC Pipeline Profile
 
-The accepted integration order is decoded Bayer, RGGB crop/RAW12 normalization,
+The accepted integration order is decoded Bayer, RGGB crop/RAW10 normalization,
 hot/dead injection, BLC, then BPC. The reference branch omits injection but uses
 the same BLC coefficients. This supports the actual BLC-before-BPC application
 without requiring the source BlackLevel to be zero.
 
-This profile retains 150 hot and 150 dead assignments, spacing and severity from
-Section 6, and uses no stuck assignments. The one-image smoke experiment retains
+This profile retains 150 hot and 150 dead assignments and the Section 6 spacing,
+but scales the hot offset from RAW12 `[256,2048]` to RAW10 `[64,512]`. The dead
+gain remains `[0,0.75)`. It uses no stuck assignments. The one-image smoke experiment retains
 seed 0 and records it; this is not the image-identity split experiment in the
 evaluation methodology. No full-corpus compatibility claim is made.
 
 The loader accepts explicitly parsed scalar or at most 2 x 2 repeating DNG black
 levels. It maps the repeating pattern relative to the visible/active-area origin
 through the RGGB-aligned crop. Fractional black levels use the DNG floating fields;
-integer mirrors must not be added again. Black levels are scaled by 4095/WL and
+integer mirrors must not be added again. Pixels and Black Levels are scaled by
+`1023/WL` and
 rounded half-up, just like pixels, to obtain R/Gr/Gb/B integer coefficients.
 The loader never subtracts black. BLC performs the sole saturating subtraction;
 there is no rescale after subtraction.
 
-The previous Bayer, pitch, visible-area, orientation and WhiteLevel restrictions
-remain. BlackLevelDeltaH/V tags are conservatively rejected, including zero-valued
+The previous Bayer, pitch, visible-area and orientation restrictions remain.
+The accepted WhiteLevel range is `[1023,65535]`; every applicable entry must
+match. BlackLevelDeltaH/V tags are conservatively rejected, including zero-valued
 tags, because the current profile does not decode their arrays. DNG linearization is performed by LibRaw unpack (its DNG decoder applies the
 curve when copying decoded samples); the loader must not apply it twice. Explicit
 opcode processing is outside this profile. These input
@@ -255,8 +258,9 @@ The CLI remains `defect_injector [--check-only] image.dng`. Run it in a separate
 artifact directory. Check-only performs loading and metadata validation without
 writing files. A normal run writes the three historical pre-BLC files plus
 `reference_blc.pgm`, `corrupted_blc.pgm`, and `input_metadata.json` containing the
-source path, LibRaw version, crop origin, WhiteLevel, native and RAW12 four-phase
-black levels, and injection profile. BPC evaluation reads the two post-BLC files;
+source path, LibRaw version, crop origin, WhiteLevel, native and RAW10 four-phase
+black levels, `bit_depth=10`, `pixel_max=1023`, and injection profile. All PGM
+outputs use `maxval=1023` and two-byte big-endian samples. BPC evaluation reads the two post-BLC files;
 the CSV coordinates are unchanged but its values remain explicitly pre-BLC.
 
 Acceptance: nonzero scalar and phase-specific metadata map correctly through

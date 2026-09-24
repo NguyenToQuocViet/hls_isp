@@ -17,9 +17,9 @@ This document defines the fixed-threshold BPC reference model used as the baseli
 The input is one row-major RAW Bayer frame:
 
 ```text
-Format     : RGGB RAW12
+Format     : RGGB RAW10
 Resolution : 1920 x 1080
-Range      : [0, 4095]
+Range      : [0, 1023]
 ```
 
 The caller provides one fixed threshold for each color phase:

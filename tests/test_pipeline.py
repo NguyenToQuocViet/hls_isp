@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Project: Adaptive Directional BPC and BLC
 # Module: Loader Pipeline Tests
-# Description: Generate controlled DNG fixtures and verify crop, RAW12 scaling, BLC and injection.
+# Description: Generate controlled DNG fixtures and verify crop, RAW10 scaling, BLC and injection.
 # Author: Viet Nguyen To Quoc
 
 import csv
@@ -71,7 +71,7 @@ def write_dng(path, black, delta=False):
 
 def read_pgm(path):
     header = path.read_bytes().split(b'\n', 3)
-    assert header[:3] == [b'P5', b'1920 1080', b'4095']
+    assert header[:3] == [b'P5', b'1920 1080', b'1023']
     return np.frombuffer(header[3], dtype='>u2').astype(np.int32).reshape(1080, 1920)
 
 
@@ -88,13 +88,17 @@ def main():
             assert not list(first.iterdir())
             subprocess.run(command + [str(source)], cwd=first, check=True)
             metadata = json.loads((first / 'input_metadata.json').read_text())
+            assert metadata['bit_depth'] == 10 and metadata['pixel_max'] == 1023
+            assert metadata['hot_offset_min'] == 64 and metadata['hot_offset_max'] == 512
+            assert metadata['dead_gain_min'] == 0 and metadata['dead_gain_max'] == 0.75
             top, left = metadata['crop_top'], metadata['crop_left']
             native_phase = [native[(top + row - 2) % 2, (left + col - 2) % 2] for row in range(2) for col in range(2)]
-            expected_black = np.floor(np.array(native_phase) / 4 + 0.5).astype(int).tolist()
+            expected_black = np.floor(np.array(native_phase) * 1023 / 16380 + 0.5).astype(int).tolist()
             assert metadata['native_black_r_gr_gb_b'] == native_phase
             assert metadata['black_r_gr_gb_b'] == expected_black
             clean = read_pgm(first / 'clean_rggb.pgm')
-            expected = np.floor(raw[top:top + 1080, left:left + 1920].astype(float) / 4 + 0.5).astype(int)
+            cropped = np.minimum(raw[top:top + 1080, left:left + 1920].astype(np.uint64), 16380)
+            expected = ((2 * cropped * 1023 + 16380) // (2 * 16380)).astype(int)
             np.testing.assert_array_equal(clean, expected)
             corrupted = read_pgm(first / 'corrupted_rggb.pgm')
             rr, cc = np.indices(clean.shape)
@@ -116,7 +120,7 @@ def main():
                 mask[y, x] = True
                 assert int(defect['input_value']) == clean[y, x]
                 assert int(defect['output_value']) == corrupted[y, x]
-                expected_defect = min(4095, max(0, int(np.floor(float(defect['a']) * clean[y, x] + float(defect['b']) + 0.5))))
+                expected_defect = min(1023, max(0, int(np.floor(float(defect['a']) * clean[y, x] + float(defect['b']) + 0.5))))
                 assert corrupted[y, x] == expected_defect
             np.testing.assert_array_equal(clean[~mask], corrupted[~mask])
             second = directory / (name + '_repeat')
