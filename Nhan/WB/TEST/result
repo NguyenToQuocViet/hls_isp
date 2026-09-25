@@ -1,0 +1,6 @@
+C Simulation:
+  WB HLS-fixed mismatches=0/6144
+  WB fixed-float MAE=0.263672 MSE=0.0947266 MAX=0.5
+
+C Synthesis:
+  
