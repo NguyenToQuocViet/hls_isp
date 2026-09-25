@@ -9,29 +9,26 @@ using namespace std;
 // ap_axiu <DataWidth, UserWidth, DestWidth, IdWidth>
 
 // Module signature
-void gamma_correction(hls::stream<axis_pixel_36b>& stream_in,
-                      hls::stream<axis_pixel_24b>& stream_out,
+void gamma_correction(hls::stream<IspPixelPacket<36>>& stream_in,
+                      hls::stream<IspPixelPacket<24>>& stream_out,
                       const ap_uint<8> gamma_lut_r[4096],
                       const ap_uint<8> gamma_lut_g[4096],
-                      const ap_uint<8> gamma_lut_b[4096], int height, int width)
+                      const ap_uint<8> gamma_lut_b[4096])
 {
 #pragma HLS INTERFACE axis port = stream_in
 #pragma HLS INTERFACE axis port = stream_out
 #pragma HLS INTERFACE s_axilite port = gamma_lut_r bundle = CTRL
 #pragma HLS INTERFACE s_axilite port = gamma_lut_g bundle = CTRL
 #pragma HLS INTERFACE s_axilite port = gamma_lut_b bundle = CTRL
-#pragma HLS INTERFACE s_axilite port = height bundle = CTRL
-#pragma HLS INTERFACE s_axilite port = width bundle = CTRL
 #pragma HLS INTERFACE s_axilite port = return bundle = CTRL
-
-    for (int i = 0; i < height; i++)
+    for (int i = 0; i < HEIGHT; i++)
     {
-        for (int j = 0; j < width; j++)
+        for (int j = 0; j < WIDTH; j++)
         {
 #pragma HLS PIPELINE II = 1
 
-            axis_pixel_36b pixel_in;
-            axis_pixel_24b pixel_out;
+            IspPixelPacket<36> pixel_in;
+            IspPixelPacket<24> pixel_out;
 
             pixel_in = stream_in.read();
 
@@ -44,8 +41,6 @@ void gamma_correction(hls::stream<axis_pixel_36b>& stream_in,
             ap_uint<8> r_out = gamma_lut_r[r_in];
             ap_uint<8> g_out = gamma_lut_g[g_in];
             ap_uint<8> b_out = gamma_lut_b[b_in];
-
-            cout << r_in << " " << r_out << endl;
 
             // Pack RGB channels
             pixel_out.data.range(7, 0) = r_out;

@@ -13,8 +13,8 @@
 #include <cmath>
 #include "../isp_pixel_packet.hpp"
 
-#define MAX_WIDTH 713
-#define MAX_HEIGHT 535
+#define WIDTH 1920
+#define HEIGHT 1080
 #define DEBUG
 
 // AXI-Stream video interface using Vitis library struct
@@ -56,27 +56,25 @@ typedef ap_uint<22> img_size_t;
 
 // Top-level function
 #ifdef DEBUG
-void ltm(hls::stream<AXI_PIXEL_IN>& s_axis, hls::stream<AXI_PIXEL_OUT>& m_axis,
+void ltm(hls::stream<IspPixelPacket<36>>& s_axis, hls::stream<IspPixelPacket<36>>& m_axis,
          const log_t log_lut[4096], const log_t reinhard_lut[1024],
          const exp_out_t exp_lut[1024],
          volatile int& debug_pixels);
 #else
-void ltm(hls::stream<AXI_PIXEL_IN>& s_axis, hls::stream<AXI_PIXEL_OUT>& m_axis,
+void ltm(hls::stream<IspPixelPacket<36>>& s_axis, hls::stream<IspPixelPacket<36>>& m_axis,
          const log_t log_lut[4096], const log_t reinhard_lut[1024],
          const exp_out_t exp_lut[1024]);
 #endif
 
-void gamma_correction(
-    hls::stream<axis_pixel_36b>& stream_in,
-    hls::stream<axis_pixel_24b>& stream_out,
-    const ap_uint<8> gamma_lut[4096],
-    int height,
-    int width
-);
+void gamma_correction(hls::stream<IspPixelPacket<36>>& stream_in,
+                      hls::stream<IspPixelPacket<24>>& stream_out,
+                      const ap_uint<8> gamma_lut_r[4096],
+                      const ap_uint<8> gamma_lut_g[4096],
+                      const ap_uint<8> gamma_lut_b[4096]);
 
 void rgb2yuv(
-    hls::stream<axis_pixel_24b>& stream_in,
-    hls::stream<axis_pixel_16b>& stream_out,
+    hls::stream<IspPixelPacket<24>>& stream_in,
+    hls::stream<IspPixelPacket<16>>& stream_out,
     int height,
     int width
 );

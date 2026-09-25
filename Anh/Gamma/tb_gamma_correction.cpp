@@ -1,21 +1,19 @@
-#include "../header.hpp"
 #include <ap_axi_sdata.h>
 #include <ap_int.h>
 #include <cmath>
 #include <hls_stream.h>
 #include <iostream>
+#include "../LTM_Gamma.hpp"
 using namespace std;
 
-// Define AXI-Stream structs based on module signature
-typedef ap_axiu<36, 1, 0, 0> axis_pixel_12b;
-typedef ap_axiu<24, 1, 0, 0> axis_pixel_8b;
+
 
 #ifdef GAMMA
 int main()
 {
     std::cout << "GAMMA CORRECTION TESTBENCH" << endl;
-    hls::stream<axis_pixel_12b> src("stream_in");
-    hls::stream<axis_pixel_8b> dst("stream_out");
+    hls::stream<RGBPacket36> src("stream_in");
+    hls::stream<RGBPacket24> dst("stream_out");
     ap_uint<8> gamma_lut[4096];
 
     // 1. Calculate Gamma LUT using double precision math
@@ -31,20 +29,16 @@ int main()
         gamma_lut[i] = (ap_uint<8>)(std::round(val));
     }
 
-    int wait = 1000;
-    while (wait)
-        wait--;
     // 2. Generate input test data
-    // NOTE: We must generate exactly MAX_HEIGHT * MAX_WIDTH pixels because
-    // the hardware module uses hardcoded for-loops for the frame resolution.
-    std::cout << "Generating " << MAX_WIDTH << "x" << MAX_HEIGHT
+    
+    std::cout << "Generating " << WIDTH << "x" << HEIGHT
               << " Input Stream..." << std::endl;
 
-    for (int i = 0; i < MAX_HEIGHT; i++)
+    for (int i = 0; i < HEIGHT; i++)
     {
-        for (int j = 0; j < MAX_WIDTH; j++)
+        for (int j = 0; j < WIDTH; j++)
         {
-            axis_pixel_12b pixel_in;
+            RGBPacket36 pixel_in;
 
             // Generate a deterministic gradient pattern to test all channels
             ap_uint<12> r_val = (i + j) % 4096;
@@ -59,7 +53,7 @@ int main()
             // Set AXI sideband signals
             pixel_in.user =
                 (i == 0 && j == 0) ? 1 : 0; // TUSER = Start of Frame
-            pixel_in.last = (j == MAX_WIDTH - 1) ? 1 : 0; // TLAST = End of Line
+            pixel_in.last = (j == WIDTH - 1) ? 1 : 0; // TLAST = End of Line
 
             src.write(pixel_in);
         }
@@ -67,18 +61,17 @@ int main()
 
     // 3. Call the hardware module
     std::cout << "Running Hardware Module (C-Simulation)..." << std::endl;
-    gamma_correction(src, dst, gamma_lut, gamma_lut, gamma_lut, MAX_HEIGHT,
-                     MAX_WIDTH);
+    gamma_correction(src, dst, gamma_lut, gamma_lut, gamma_lut);
 
     // 4. Verify output data against Software Golden Model
     std::cout << "Verifying Output Stream..." << std::endl;
     int error_count = 0;
 
-    for (int i = 0; i < MAX_HEIGHT; i++)
+    for (int i = 0; i < HEIGHT; i++)
     {
-        for (int j = 0; j < MAX_WIDTH; j++)
+        for (int j = 0; j < WIDTH; j++)
         {
-            axis_pixel_8b pixel_out = dst.read();
+            RGBPacket24 pixel_out = dst.read();
 
             // Re-calculate the expected input values
             ap_uint<12> r_val = (i + j) % 4096;
@@ -116,7 +109,7 @@ int main()
                           << ")" << std::endl;
                 error_count++;
             }
-            if (pixel_out.last != (j == MAX_WIDTH - 1))
+            if (pixel_out.last != (j == WIDTH - 1))
             {
                 std::cout << "TLAST (EOL) flag incorrect at (" << i << "," << j
                           << ")" << std::endl;

@@ -8,21 +8,21 @@ struct rgb_pack_t
 };
 
 #ifdef DEBUG
-void read_and_log(hls::stream<AXI_PIXEL_IN>& s_axis,
+void read_and_log(hls::stream<IspPixelPacket<36>>& s_axis,
                   hls::stream<log_t>& out_log, hls::stream<rgb_pack_t>& out_rgb,
                   const log_t log_lut[4096],
                   volatile int& debug_pixels)
 #else
-void read_and_log(hls::stream<AXI_PIXEL_IN>& s_axis,
+void read_and_log(hls::stream<IspPixelPacket<36>>& s_axis,
                   hls::stream<log_t>& out_log, hls::stream<rgb_pack_t>& out_rgb,
                   const log_t log_lut[4096])
 #endif
 {
-    img_size_t total_pixels = (img_size_t)MAX_HEIGHT * (img_size_t)MAX_WIDTH;
+    img_size_t total_pixels = (img_size_t)HEIGHT * (img_size_t)WIDTH;
     for (img_size_t i = 0; i < total_pixels; i++)
     {
 #pragma HLS PIPELINE II = 1
-        AXI_PIXEL_IN p = s_axis.read();
+        IspPixelPacket<36> p = s_axis.read();
 #ifdef DEBUG
         int current_pixel = i + 1;
         debug_pixels = current_pixel;
@@ -57,16 +57,16 @@ void read_and_log(hls::stream<AXI_PIXEL_IN>& s_axis,
 void conv1(hls::stream<log_t>& src, hls::stream<weight_a_t>& out_a,
            hls::stream<weight_b_t>& out_b)
 {
-    hls::LineBuffer<6, MAX_WIDTH, log_t> lb;
-    hls::LineBuffer<6, MAX_WIDTH, var_t> lb_sq;
+    hls::LineBuffer<6, WIDTH, log_t> lb;
+    hls::LineBuffer<6, WIDTH, var_t> lb_sq;
 
     ap_fixed<18, 7> col_sum_I_reg[7] = {0, 0, 0, 0, 0, 0, 0};
     ap_fixed<20, 10> col_sum_II_reg[7] = {0, 0, 0, 0, 0, 0, 0};
 #pragma HLS ARRAY_PARTITION variable = col_sum_I_reg complete dim = 1
 #pragma HLS ARRAY_PARTITION variable = col_sum_II_reg complete dim = 1
 
-    img_size_t total_pixels = (img_size_t)MAX_HEIGHT * (img_size_t)MAX_WIDTH;
-    img_size_t total_cycles = total_pixels + 3 * (img_size_t)MAX_WIDTH + 3;
+    img_size_t total_pixels = (img_size_t)HEIGHT * (img_size_t)WIDTH;
+    img_size_t total_cycles = total_pixels + 3 * (img_size_t)WIDTH + 3;
 
     dim_t r_in = 0, c_in = 0;
     dim_t r_out = 0, c_out = 0;
@@ -113,10 +113,10 @@ void conv1(hls::stream<log_t>& src, hls::stream<weight_a_t>& out_a,
             s_dim_t clamped_r = r_center + (s_dim_t)(wi - 3);
             if (clamped_r < 0)
                 clamped_r = 0;
-            else if (clamped_r >= (s_dim_t)MAX_HEIGHT)
-                clamped_r = (s_dim_t)MAX_HEIGHT - 1;
+            else if (clamped_r >= (s_dim_t)HEIGHT)
+                clamped_r = (s_dim_t)HEIGHT - 1;
             
-            int base_row = (r_in < MAX_HEIGHT) ? ((int)r_in - 6) : (MAX_HEIGHT - 6);
+            int base_row = (r_in < HEIGHT) ? ((int)r_in - 6) : (HEIGHT - 6);
             int wr = clamped_r - base_row;
 
             new_col_sum_I += col_data[wr];
@@ -132,7 +132,7 @@ void conv1(hls::stream<log_t>& src, hls::stream<weight_a_t>& out_a,
         col_sum_I_reg[6] = new_col_sum_I;
         col_sum_II_reg[6] = new_col_sum_II;
 
-        ap_int<24> i_out = (ap_int<24>)i - (3 * (ap_int<24>)MAX_WIDTH + 3);
+        ap_int<24> i_out = (ap_int<24>)i - (3 * (ap_int<24>)WIDTH + 3);
         if (i_out >= 0)
         {
             ap_fixed<21, 10> sum_I = 0;
@@ -143,8 +143,8 @@ void conv1(hls::stream<log_t>& src, hls::stream<weight_a_t>& out_a,
                 s_dim_t clamped_c = (s_dim_t)c_out + (s_dim_t)(wj - 3);
                 if (clamped_c < 0)
                     clamped_c = 0;
-                else if (clamped_c >= (s_dim_t)MAX_WIDTH)
-                    clamped_c = (s_dim_t)MAX_WIDTH - 1;
+                else if (clamped_c >= (s_dim_t)WIDTH)
+                    clamped_c = (s_dim_t)WIDTH - 1;
                 int wc = clamped_c - (s_dim_t)c_out + 3;
 
                 sum_I += col_sum_I_reg[wc];
@@ -174,7 +174,7 @@ void conv1(hls::stream<log_t>& src, hls::stream<weight_a_t>& out_a,
             out_b.write(out_b_val);
 
             c_out++;
-            if (c_out == MAX_WIDTH)
+            if (c_out == WIDTH)
             {
                 c_out = 0;
                 r_out++;
@@ -182,7 +182,7 @@ void conv1(hls::stream<log_t>& src, hls::stream<weight_a_t>& out_a,
         }
 
         c_in++;
-        if (c_in == MAX_WIDTH)
+        if (c_in == WIDTH)
         {
             c_in = 0;
             r_in++;
@@ -194,16 +194,16 @@ void conv2(hls::stream<weight_a_t>& src_a, hls::stream<weight_b_t>& src_b,
            hls::stream<weight_a_t>& out_mean_a,
            hls::stream<weight_b_t>& out_mean_b)
 {
-    hls::LineBuffer<6, MAX_WIDTH, weight_a_t> lb_a;
-    hls::LineBuffer<6, MAX_WIDTH, weight_b_t> lb_b;
+    hls::LineBuffer<6, WIDTH, weight_a_t> lb_a;
+    hls::LineBuffer<6, WIDTH, weight_b_t> lb_b;
 
     ap_ufixed<14, 3> col_sum_a_reg[7] = {0, 0, 0, 0, 0, 0, 0};
     ap_fixed<17, 7> col_sum_b_reg[7] = {0, 0, 0, 0, 0, 0, 0};
 #pragma HLS ARRAY_PARTITION variable = col_sum_a_reg complete dim = 1
 #pragma HLS ARRAY_PARTITION variable = col_sum_b_reg complete dim = 1
 
-    img_size_t total_pixels = (img_size_t)MAX_HEIGHT * (img_size_t)MAX_WIDTH;
-    img_size_t total_cycles = total_pixels + 3 * (img_size_t)MAX_WIDTH + 3;
+    img_size_t total_pixels = (img_size_t)HEIGHT * (img_size_t)WIDTH;
+    img_size_t total_cycles = total_pixels + 3 * (img_size_t)WIDTH + 3;
 
     dim_t r_in = 0, c_in = 0;
     dim_t r_out = 0, c_out = 0;
@@ -249,10 +249,10 @@ void conv2(hls::stream<weight_a_t>& src_a, hls::stream<weight_b_t>& src_b,
             s_dim_t clamped_r = r_center + (s_dim_t)(wi - 3);
             if (clamped_r < 0)
                 clamped_r = 0;
-            else if (clamped_r >= (s_dim_t)MAX_HEIGHT)
-                clamped_r = (s_dim_t)MAX_HEIGHT - 1;
+            else if (clamped_r >= (s_dim_t)HEIGHT)
+                clamped_r = (s_dim_t)HEIGHT - 1;
             
-            int base_row = (r_in < MAX_HEIGHT) ? ((int)r_in - 6) : (MAX_HEIGHT - 6);
+            int base_row = (r_in < HEIGHT) ? ((int)r_in - 6) : (HEIGHT - 6);
             int wr = clamped_r - base_row;
 
             new_col_sum_a += col_data_a[wr];
@@ -267,7 +267,7 @@ void conv2(hls::stream<weight_a_t>& src_a, hls::stream<weight_b_t>& src_b,
         col_sum_a_reg[6] = new_col_sum_a;
         col_sum_b_reg[6] = new_col_sum_b;
 
-        ap_int<24> i_out = (ap_int<24>)i - (3 * (ap_int<24>)MAX_WIDTH + 3);
+        ap_int<24> i_out = (ap_int<24>)i - (3 * (ap_int<24>)WIDTH + 3);
         if (i_out >= 0)
         {
             ap_ufixed<17, 6> sum_a = 0;
@@ -278,8 +278,8 @@ void conv2(hls::stream<weight_a_t>& src_a, hls::stream<weight_b_t>& src_b,
                 s_dim_t clamped_c = (s_dim_t)c_out + (s_dim_t)(wj - 3);
                 if (clamped_c < 0)
                     clamped_c = 0;
-                else if (clamped_c >= (s_dim_t)MAX_WIDTH)
-                    clamped_c = (s_dim_t)MAX_WIDTH - 1;
+                else if (clamped_c >= (s_dim_t)WIDTH)
+                    clamped_c = (s_dim_t)WIDTH - 1;
                 int wc = clamped_c - (s_dim_t)c_out + 3;
 
                 sum_a += col_sum_a_reg[wc];
@@ -293,7 +293,7 @@ void conv2(hls::stream<weight_a_t>& src_a, hls::stream<weight_b_t>& src_b,
             out_mean_b.write(mean_b);
 
             c_out++;
-            if (c_out == MAX_WIDTH)
+            if (c_out == WIDTH)
             {
                 c_out = 0;
                 r_out++;
@@ -301,7 +301,7 @@ void conv2(hls::stream<weight_a_t>& src_a, hls::stream<weight_b_t>& src_b,
         }
 
         c_in++;
-        if (c_in == MAX_WIDTH)
+        if (c_in == WIDTH)
         {
             c_in = 0;
             r_in++;
@@ -311,7 +311,7 @@ void conv2(hls::stream<weight_a_t>& src_a, hls::stream<weight_b_t>& src_b,
 
 void recombine_and_pack(
     hls::stream<weight_a_t>& src_mean_a, hls::stream<weight_b_t>& src_mean_b,
-    hls::stream<rgb_pack_t>& delay_rgb, hls::stream<AXI_PIXEL_OUT>& m_axis,
+    hls::stream<rgb_pack_t>& delay_rgb, hls::stream<IspPixelPacket<36>>& m_axis,
     const log_t log_lut[4096], const log_t reinhard_lut[1024],
     const exp_out_t exp_lut[1024])
 {
@@ -319,7 +319,7 @@ void recombine_and_pack(
     bool is_first = true;
     dim_t r = 0, c = 0;
     // Exactly H * W iterations
-    img_size_t total_pixels = (img_size_t)MAX_HEIGHT * (img_size_t)MAX_WIDTH;
+    img_size_t total_pixels = (img_size_t)HEIGHT * (img_size_t)WIDTH;
     for (img_size_t i = 0; i < total_pixels; i++)
     {
 #pragma HLS PIPELINE II = 1
@@ -386,7 +386,7 @@ void recombine_and_pack(
         rgb_out_t g_out = g_out_raw;
         rgb_out_t b_out = b_out_raw;
 
-        AXI_PIXEL_OUT p_out;
+        IspPixelPacket<36> p_out;
         p_out.data.range(11, 0) = r_out;
         p_out.data.range(23, 12) = g_out;
         p_out.data.range(35, 24) = b_out;
@@ -394,13 +394,13 @@ void recombine_and_pack(
 
 
         p_out.user = is_first ? 1 : 0;
-        p_out.last = (c == (dim_t)(MAX_WIDTH - 1)) ? 1 : 0;
+        p_out.last = (c == (dim_t)(WIDTH - 1)) ? 1 : 0;
 
         is_first = false;
         m_axis.write(p_out);
 
         c++;
-        if (c == MAX_WIDTH)
+        if (c == WIDTH)
         {
             c = 0;
             r++;
@@ -409,12 +409,12 @@ void recombine_and_pack(
 }
 
 #ifdef DEBUG
-void ltm(hls::stream<AXI_PIXEL_IN>& s_axis, hls::stream<AXI_PIXEL_OUT>& m_axis,
+void ltm(hls::stream<IspPixelPacket<36>>& s_axis, hls::stream<IspPixelPacket<36>>& m_axis,
          const log_t log_lut[4096], const log_t reinhard_lut[1024],
          const exp_out_t exp_lut[1024],
          volatile int& debug_pixels)
 #else
-void ltm(hls::stream<AXI_PIXEL_IN>& s_axis, hls::stream<AXI_PIXEL_OUT>& m_axis,
+void ltm(hls::stream<IspPixelPacket<36>>& s_axis, hls::stream<IspPixelPacket<36>>& m_axis,
          const log_t log_lut[4096], const log_t reinhard_lut[1024],
          const exp_out_t exp_lut[1024])
 #endif
