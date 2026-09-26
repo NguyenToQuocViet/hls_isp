@@ -1,22 +1,21 @@
-#include "ltm.h"
+#include "../ltm_gamma.hpp"
 #include <iostream>
 #include <fstream>
 #include <vector>
 #include <string>
-
 #include <dirent.h>
 #include <algorithm>
 
-std::string in_dir = "/home/asura/Work/ISP/dataset/input_csim/Video/Sequence/";
-std::string out_dir = "/home/asura/Work/ISP/dataset/output_csim/Video/Sequence/";
-std::string golden_dir = "/home/asura/Work/ISP/dataset/output_csim_golden/Sequence/";
+std::string in_dir_ltm = "/home/asura/Work/ISP/hls_isp/Anh/dataset/input_csim/Sequence/";
+std::string out_dir_ltm = "/home/asura/Work/ISP/hls_isp/Anh/dataset/output_csim/LTM/Sequence/";
+std::string golden_dir_ltm = "/home/asura/Work/ISP/hls_isp/Anh/dataset/output_csim_golden/LTM/Sequence/";
 
 #ifdef LTM
 int main()
 {
     std::cout << "Starting LTM Testbench..." << std::endl;
 
-    // 1. Generate LUTs in C++ Testbench
+    // Generate LUTs 
     log_t log_lut[4096];
     log_t reinhard_lut[1024];
     exp_out_t exp_lut[1024];
@@ -63,7 +62,7 @@ int main()
 
     // 2. Get list of all binary files in directory
     std::vector<std::string> bin_files;
-    DIR* dir = opendir(in_dir.c_str());
+    DIR* dir = opendir(in_dir_ltm.c_str());
     if (dir != nullptr) {
         struct dirent* entry;
         while ((entry = readdir(dir)) != nullptr) {
@@ -76,7 +75,7 @@ int main()
     }
 
     if (bin_files.empty()) {
-        std::cerr << "No .bin files found in " << in_dir << std::endl;
+        std::cerr << "No .bin files found in " << in_dir_ltm << std::endl;
         return 1;
     }
 
@@ -92,14 +91,14 @@ int main()
     int common_width = 0;
     int common_height = 0;
 
-    hls::stream<AXI_PIXEL_IN> s_axis("s_axis");
-    hls::stream<AXI_PIXEL_OUT> m_axis("m_axis");
+    hls::stream<IspPixelPacket<36>> s_axis("s_axis");
+    hls::stream<IspPixelPacket<36>> m_axis("m_axis");
 
     std::cout << "\n========================================" << std::endl;
     std::cout << "Pushing all frames to input stream..." << std::endl;
 
     for (const auto& filename : bin_files) {
-        std::string in_path = in_dir + filename;
+        std::string in_path = in_dir_ltm + filename;
 
         FILE *f_in = fopen(in_path.c_str(), "rb");
         if (!f_in) {
@@ -136,7 +135,7 @@ int main()
         {
             for (int c = 0; c < width; c++)
             {
-                AXI_PIXEL_IN p;
+                IspPixelPacket<36> p;
 
                 int idx = (r * width + c) * 3;
                 ap_uint<12> r_val = input_image[idx + 0];
@@ -163,18 +162,14 @@ int main()
     
     int debug_pixels = 0;
     for (int i = 0; i < total_processed; i++) {
-        #ifdef DEBUG
-        ltm(s_axis, m_axis, log_lut, reinhard_lut, exp_lut, debug_pixels);
-        #else
-        ltm(s_axis, m_axis, log_lut, reinhard_lut, exp_lut);
-        #endif
+        isp_ltm_top(s_axis, m_axis, log_lut, reinhard_lut, exp_lut);
     }
 
-    std::string out_path = out_dir + "output_video.ppm";
+    std::string out_path = out_dir_ltm + "output_video.ppm";
     std::cout << "\n========================================" << std::endl;
     std::cout << "Reading output stream and saving to " << out_path << "..." << std::endl;
     
-    std::string golden_path = golden_dir + "golden_output_video.ppm";
+    std::string golden_path = golden_dir_ltm + "golden_output_video.ppm";
     std::ifstream golden_img(golden_path);
     bool check_golden = true;
     if (!golden_img.is_open()) {
@@ -198,7 +193,7 @@ int main()
     int mismatches = 0;
     while (!m_axis.empty())
     {
-        AXI_PIXEL_OUT p_out = m_axis.read();
+        IspPixelPacket<36> p_out = m_axis.read();
         
         int r_val = p_out.data.range(11, 0);
         int g_val = p_out.data.range(23, 12);

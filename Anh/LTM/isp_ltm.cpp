@@ -1,32 +1,16 @@
-#include "../LTM_Gamma.hpp"
+#include "../ltm_gamma.hpp"
 
-struct rgb_pack_t
-{
-    ap_uint<12> r;
-    ap_uint<12> g;
-    ap_uint<12> b;
-};
 
-#ifdef DEBUG
-void read_and_log(hls::stream<IspPixelPacket<36>>& s_axis,
-                  hls::stream<log_t>& out_log, hls::stream<rgb_pack_t>& out_rgb,
-                  const log_t log_lut[4096],
-                  volatile int& debug_pixels)
-#else
+
 void read_and_log(hls::stream<IspPixelPacket<36>>& s_axis,
                   hls::stream<log_t>& out_log, hls::stream<rgb_pack_t>& out_rgb,
                   const log_t log_lut[4096])
-#endif
 {
     img_size_t total_pixels = (img_size_t)HEIGHT * (img_size_t)WIDTH;
     for (img_size_t i = 0; i < total_pixels; i++)
     {
 #pragma HLS PIPELINE II = 1
         IspPixelPacket<36> p = s_axis.read();
-#ifdef DEBUG
-        int current_pixel = i + 1;
-        debug_pixels = current_pixel;
-#endif
 
         ap_uint<12> r_val = p.data.range(11, 0);
         ap_uint<12> g_val = p.data.range(23, 12);
@@ -50,6 +34,8 @@ void read_and_log(hls::stream<IspPixelPacket<36>>& s_axis,
         rgb.r = r_val;
         rgb.g = g_val;
         rgb.b = b_val;
+        rgb.log_y = log_y;
+        rgb.y_int = y_int;
         out_rgb.write(rgb);
     }
 }
@@ -312,7 +298,7 @@ void conv2(hls::stream<weight_a_t>& src_a, hls::stream<weight_b_t>& src_b,
 void recombine_and_pack(
     hls::stream<weight_a_t>& src_mean_a, hls::stream<weight_b_t>& src_mean_b,
     hls::stream<rgb_pack_t>& delay_rgb, hls::stream<IspPixelPacket<36>>& m_axis,
-    const log_t log_lut[4096], const log_t reinhard_lut[1024],
+    const log_t reinhard_lut[1024],
     const exp_out_t exp_lut[1024])
 {
 
@@ -333,15 +319,8 @@ void recombine_and_pack(
         ap_uint<12> g_val = rgb.g;
         ap_uint<12> b_val = rgb.b;
 
-        ap_ufixed<18, 12> r_f = rgb.r * (ap_ufixed<16, 0>)0.299f;
-        ap_ufixed<18, 12> g_f = rgb.g * (ap_ufixed<16, 0>)0.587f;
-        ap_ufixed<18, 12> b_f = rgb.b * (ap_ufixed<16, 0>)0.114f;
-        ap_ufixed<18, 12> y_f = r_f + g_f + b_f + (ap_ufixed<18, 12>)0.5f;
-        ap_uint<12> y_int = (ap_uint<12>)y_f;
-        if (y_int > 4095)
-            y_int = 4095;
-
-        log_t log_I = log_lut[y_int];
+        ap_uint<12> y_int = rgb.y_int;
+        log_t log_I = rgb.log_y;
 
         ap_fixed<16, 6> log_I_base =
             (ap_fixed<16, 6>)mean_a * (ap_fixed<16, 6>)log_I +
@@ -408,29 +387,18 @@ void recombine_and_pack(
     }
 }
 
-#ifdef DEBUG
-void ltm(hls::stream<IspPixelPacket<36>>& s_axis, hls::stream<IspPixelPacket<36>>& m_axis,
-         const log_t log_lut[4096], const log_t reinhard_lut[1024],
-         const exp_out_t exp_lut[1024],
-         volatile int& debug_pixels)
-#else
-void ltm(hls::stream<IspPixelPacket<36>>& s_axis, hls::stream<IspPixelPacket<36>>& m_axis,
+
+void isp_ltm_top(hls::stream<IspPixelPacket<36>>& s_axis, hls::stream<IspPixelPacket<36>>& m_axis,
          const log_t log_lut[4096], const log_t reinhard_lut[1024],
          const exp_out_t exp_lut[1024])
-#endif
 {
 
 #pragma HLS INTERFACE axis port = s_axis
 #pragma HLS INTERFACE axis port = m_axis
 #pragma HLS INTERFACE s_axilite port = return
-
-#ifdef DEBUG
-#pragma HLS INTERFACE s_axilite port = debug_pixels
-#endif
-
-#pragma HLS INTERFACE bram port = log_lut
-#pragma HLS INTERFACE bram port = reinhard_lut
-#pragma HLS INTERFACE bram port = exp_lut
+#pragma HLS INTERFACE s_axilite port = log_lut
+#pragma HLS INTERFACE s_axilite port = reinhard_lut
+#pragma HLS INTERFACE s_axilite port = exp_lut
 
 #pragma HLS DATAFLOW
 
@@ -446,14 +414,10 @@ void ltm(hls::stream<IspPixelPacket<36>>& s_axis, hls::stream<IspPixelPacket<36>
     hls::stream<weight_a_t> stream_mean_a("stream_mean_a");
     hls::stream<weight_b_t> stream_mean_b("stream_mean_b");
 
-#ifdef DEBUG
-    read_and_log(s_axis, stream_log, stream_rgb, log_lut,
-                 debug_pixels);
-#else
+
     read_and_log(s_axis, stream_log, stream_rgb, log_lut);
-#endif
     conv1(stream_log, stream_a, stream_b);
     conv2(stream_a, stream_b, stream_mean_a, stream_mean_b);
     recombine_and_pack(stream_mean_a, stream_mean_b, stream_rgb, m_axis,
-                       log_lut, reinhard_lut, exp_lut);
+                       reinhard_lut, exp_lut);
 }

@@ -1,15 +1,8 @@
-#include "../LTM_Gamma.hpp"
-#include <ap_axi_sdata.h>
-#include <ap_int.h>
-#include <hls_stream.h>
-#include <iostream>
-using namespace std;
+#include "../ltm_gamma.hpp"
 
-// Use built-in AXI-Stream structs
-// ap_axiu <DataWidth, UserWidth, DestWidth, IdWidth>
 
-// Module signature
-void gamma_correction(hls::stream<IspPixelPacket<36>>& stream_in,
+
+void isp_gamma_top(hls::stream<IspPixelPacket<36>>& stream_in,
                       hls::stream<IspPixelPacket<24>>& stream_out,
                       const ap_uint<8> gamma_lut_r[4096],
                       const ap_uint<8> gamma_lut_g[4096],
@@ -21,6 +14,7 @@ void gamma_correction(hls::stream<IspPixelPacket<36>>& stream_in,
 #pragma HLS INTERFACE s_axilite port = gamma_lut_g bundle = CTRL
 #pragma HLS INTERFACE s_axilite port = gamma_lut_b bundle = CTRL
 #pragma HLS INTERFACE s_axilite port = return bundle = CTRL
+
     for (int i = 0; i < HEIGHT; i++)
     {
         for (int j = 0; j < WIDTH; j++)
