@@ -170,9 +170,9 @@ Synthetic stuck corruption shall not be used for training, validation, testing, 
 
 ## 11. HLS Streaming Architecture
 
-### Current implementation and target
+### Rebuild baseline and target
 
-The existing `isp_bpc_top` and `isp_top` process one 1920 × 1080 frame per invocation. The experimental `isp_top_frames` processes a caller-supplied `frame_count` in one invocation and drains after the last frame. These describe current source, **not** the target video-stream contract. Preserve the standalone entry points for block verification; the production streaming datapath must not require a future frame count or a restart between frames. The finite-frame experiment and its limits are recorded in [ADR 0002](adr/0002-overlap-bpc-frame-tail.md).
+This rebuild branch retains the HLS `blc_pixel()` and `bpc_pixel()` algorithms and the reference models; it has no streaming HLS worker or top yet. The former one-frame tops and finite `isp_top_frames` experiment are preserved at commit `b55eb38` on branch `archive/bpc-agent-hls-2026-09-26`. They are historical implementations, **not** the target video-stream contract. Standalone block entry points may be rebuilt for verification; the production streaming datapath must not require a future frame count or a restart between frames. The finite-frame experiment and its limits are recorded in [ADR 0002](adr/0002-overlap-bpc-frame-tail.md).
 
 The target consumes and emits one RAW10 pixel per real image pixel, in row-major order, for an indefinite sequence of fixed-size RGGB frames. `TUSER` denotes SOF on the first pixel and `TLAST` denotes EOL on the last pixel of every row; there is no separate EOF. A handshaken EOL on row `FRAME_HEIGHT - 1` ends the input frame. The stream must contain exactly `FRAME_WIDTH` real pixels per row and `FRAME_HEIGHT` rows per frame. How malformed sidebands are handled remains an interface decision before implementation; they must not silently redefine image geometry.
 
@@ -202,6 +202,6 @@ For each valid center, the logical output coordinates determine the outer-two-ro
 
 ### System boundary and acceptance evidence
 
-The production BLC worker, AXI adapters, and composite `DATAFLOW` top must also run for an unknown number of frames and preserve SOF/EOL. The final HLS block-control style and safe configuration-update rule must be selected and documented before code changes; the current AXI4-Lite `ap_ctrl_hs` invocation and `frame_count` cannot by themselves provide this behavior. Configuration must be stable for every frame being processed, including its delayed output tail. The required observable behavior does not mandate a particular FSM, nonblocking-read primitive, or per-pixel valid-bit implementation.
+The production BLC worker, AXI adapters, and composite `DATAFLOW` top must also run for an unknown number of frames and preserve SOF/EOL. The HLS block-control style and safe configuration-update rule must be selected and documented before implementing those modules; the archived AXI4-Lite `ap_ctrl_hs` invocation and `frame_count` cannot by themselves provide this behavior. Configuration must be stable for every frame being processed, including its delayed output tail. The required observable behavior does not mandate a particular FSM, nonblocking-read primitive, or per-pixel valid-bit implementation.
 
 Verification must compare output data and sidebands with independent, per-frame BLC→BPC reference results and check `real input beats = valid output beats` after drain. Cover zero gap, short gap, arrival just before tail completion, gap longer than drain, an in-frame input stall, output backpressure, synthetic centers reaching the physical center, and many frames with mixed gaps. Check both CSim and generated-RTL CoSim handshakes; inspect synthesis for II, memory-port scheduling, and control compatibility. `II=1` is a target for a progressing pixel loop, not proof of zero inter-frame bubble, backpressure correctness, or indefinite operation.

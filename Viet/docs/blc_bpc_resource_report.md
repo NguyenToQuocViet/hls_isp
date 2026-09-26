@@ -7,7 +7,7 @@ Author: Viet Nguyen To Quoc
 
 # HLS RAW10 C Synthesis — Week 5.2
 
-Đây là kết quả C Synthesis của source RAW10.
+Đây là kết quả C Synthesis lịch sử của source RAW10 trước branch rebuild. Các top trong bảng đã được lưu ở branch `archive/bpc-agent-hls-2026-09-26`; branch rebuild hiện chưa có top HLS để tổng hợp.
 
 ## Run configuration
 

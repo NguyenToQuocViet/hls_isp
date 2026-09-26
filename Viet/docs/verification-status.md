@@ -7,6 +7,8 @@ Author: Viet Nguyen To Quoc
 
 # Tình hình Verification BLC và BPC
 
+Các kết quả HLS bên dưới là bằng chứng lịch sử của source đã lưu ở branch `archive/bpc-agent-hls-2026-09-26`. Branch rebuild hiện chỉ giữ hàm pixel HLS và reference; chưa có top streaming hay CoSim cho kiến trúc mới. Số liệu cũ không xác nhận contract streaming mới.
+
 Verification được chia thành ba lớp: kiểm tra reference bằng expected value tính tay, dùng reference làm golden model cho HLS CSim, rồi dùng cùng testbench để kiểm tra RTL sinh ra bằng CoSim.
 
 ## Tổng quan
@@ -16,7 +18,7 @@ Verification được chia thành ba lớp: kiểm tra reference bằng expected
 | BLC | 64 pass, 0 fail | 2.074.622 pass, 0 fail | 2.074.622 pass, 0 fail | Pass; sau đó chỉ inline type alias |
 | BPC | 54 pass, 0 fail | 2.083.600 pass, 0 fail | 2.073.600 pass, 0 fail | Pass trên revision trước tối ưu critical path |
 
-Reference test đã được build và chạy lại từ source hiện tại: BLC `64/64`, BPC `54/54`.
+Ở lượt chạy được ghi nhận trước khi rebuild, reference test đã được build và chạy lại: BLC `64/64`, BPC `54/54`.
 
 ## BLC
 
@@ -83,7 +85,7 @@ Kết quả: **2.073.600 pass, 0 fail**, `C/RTL co-simulation finished: PASS`, t
 
 ## Tích hợp HLS BLC → BPC (2026-09-23)
 
-Top ghép hiện tại là `isp_top` trong `hls/isp_top.hpp/.cpp`; config local hiện tại là `build/isp_top_hls.cfg`. Bằng chứng bên dưới được tạo trước lần đổi tên, khi top còn là `isp_blc_bpc_top`. Tên, đường dẫn và hash trong bản ghi của lượt chạy đó được giữ nguyên để truy xuất đúng artifact lịch sử; chưa có CoSim cho top dưới tên mới.
+Top ghép của bản HLS cũ là `isp_top` trong `hls/isp_top.hpp/.cpp`; config local khi đó là `build/isp_top_hls.cfg`. Bằng chứng bên dưới được tạo trước lần đổi tên, khi top còn là `isp_blc_bpc_top`. Tên, đường dẫn và hash trong bản ghi của lượt chạy đó được giữ nguyên để truy xuất đúng artifact lịch sử; chưa có CoSim cho top dưới tên mới.
 
 Trong lượt chạy này, `tests/test_blc_bpc_hls.cpp` gọi duy nhất `isp_blc_bpc_top`. Stimulus là một frame RAW10 phẳng giá trị 100, Black Level theo `R/Gr/Gb/B = 20/30/40/50`, một hot và một dead pixel nội vùng, và một hot pixel ở biên. Test tính expected qua `blc::blc_frame` rồi `adaptive_bpc::bpc_frame`, kiểm tra thêm các giá trị tính tay, và so toàn bộ 2.073.600 output cùng `TUSER`, `TLAST`, `TKEEP`, `TSTRB`.
 
