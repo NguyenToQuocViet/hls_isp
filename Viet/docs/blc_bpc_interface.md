@@ -20,13 +20,15 @@ Author: Viet Nguyen To Quoc
 
 ## BLC
 
-Input BLC là RAW10 trước Black Level Correction. Bốn hệ số `bl_r`, `bl_gr`, `bl_gb`, `bl_b` cùng miền RAW10; giao diện cập nhật cấu hình HLS sẽ được chốt khi thiết kế lại top.
+Input BLC là RAW10 trước Black Level Correction. Bốn hệ số `bl_r`, `bl_gr`, `bl_gb`, `bl_b` cùng miền RAW10.
 
 ```text
 Y = max(X - BL_CFA, 0)
 ```
 
-Output BLC giữ nguyên kích thước, CFA alignment và AXI sideband. Output này là input của BPC.
+Output BLC giữ nguyên kích thước và CFA alignment; SOF/EOL được tạo từ tọa độ nội bộ. Với input hợp lệ, sideband output giống input. Output này là input của BPC.
+
+`blc_engine` khởi tạo tọa độ `(0,0)` và chỉ bắt đầu mỗi frame khi packet tại vị trí chờ này có `user = 1`. Packet có `user = 0` trong lúc chờ bị đọc bỏ, không tạo output và không làm tiến tọa độ. Packet SOF được xử lý ngay tại `(0,0)`. Trong frame, `user` đến thêm bị bỏ qua và `last` không điều khiển bộ đếm. Sau mỗi pixel được xử lý và ghi output, bộ đếm tăng cột, wrap cuối dòng và wrap về `(0,0)` sau đúng `FRAME_WIDTH * FRAME_HEIGHT` pixel để chờ SOF tiếp theo. Không lưu cờ lỗi sideband. Cơ chế này giữ hình học cố định; không phục hồi frame bị mất hoặc chèn pixel giữa frame. Cấu hình phải ổn định trong suốt frame đang xử lý.
 
 ## Adaptive Directional BPC
 
