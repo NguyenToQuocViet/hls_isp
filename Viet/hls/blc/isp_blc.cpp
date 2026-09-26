@@ -53,13 +53,14 @@ ap_ufixed<10, 10> blc_pixel(
     return (input - black_level);
 }
 
-void blc_process_frame(
+void blc_process_frames(
     hls::stream<IspStreamPixel>& input,
     hls::stream<IspStreamPixel>& output,
     ap_ufixed<10, 10> bl_r,
     ap_ufixed<10, 10> bl_gr,
     ap_ufixed<10, 10> bl_gb,
-    ap_ufixed<10, 10> bl_b
+    ap_ufixed<10, 10> bl_b,
+    ap_uint<32> frame_count
 ) {
 #pragma HLS INLINE off
 
@@ -71,26 +72,51 @@ void blc_process_frame(
         bl_b
     };
 
-    //Full-HD raster scan
-row_loop:
-    for (ap_uint<11> row = 0; row < FRAME_HEIGHT; row++) {
-    col_loop:
-        for (ap_uint<11> col = 0; col < FRAME_WIDTH; col++) {
+    ap_uint<32> frame = 0;
+    ap_uint<11> row = 0;
+    ap_uint<11> col = 0;
+
+pixel_loop:
+    while (frame < frame_count) {
 #pragma HLS PIPELINE II=1
 
-            //unpack and correct RAW10
-            IspStreamPixel input_packet = input.read();
-            ap_ufixed<10, 10> input_pixel = input_packet.data.range(9, 0);
-            ap_ufixed<10, 10> result = blc_pixel(input_pixel, row, col, config);
+        //unpack and correct RAW10
+        IspStreamPixel input_packet = input.read();
+        ap_ufixed<10, 10> input_pixel = input_packet.data.range(9, 0);
+        ap_ufixed<10, 10> result = blc_pixel(input_pixel, row, col, config);
 
-            //preserve sidebands, replace RAW10 payload
-            IspStreamPixel output_packet = input_packet;
-            output_packet.data = 0;
-            output_packet.data.range(9, 0) = result;
+        //preserve sidebands, replace RAW10 payload
+        IspStreamPixel output_packet = input_packet;
+        output_packet.data = 0;
+        output_packet.data.range(9, 0) = result;
 
-            output.write(output_packet);
+        output.write(output_packet);
+
+        if (col == FRAME_WIDTH - 1) {
+            col = 0;
+
+            if (row == FRAME_HEIGHT - 1) {
+                row = 0;
+                frame++;
+            } else {
+                row++;
+            }
+        } else {
+            col++;
         }
     }
+}
+
+void blc_process_frame(
+    hls::stream<IspStreamPixel>& input,
+    hls::stream<IspStreamPixel>& output,
+    ap_ufixed<10, 10> bl_r,
+    ap_ufixed<10, 10> bl_gr,
+    ap_ufixed<10, 10> bl_gb,
+    ap_ufixed<10, 10> bl_b
+) {
+#pragma HLS INLINE off
+    blc_process_frames(input, output, bl_r, bl_gr, bl_gb, bl_b, 1);
 }
 
 void isp_blc_top(
@@ -117,6 +143,7 @@ void isp_blc_top(
 #pragma HLS STREAM variable=corrected_pixels depth=2
 
     axis_to_internal_frame(input, raw_pixels);
+
     blc_process_frame(
         raw_pixels,
         corrected_pixels,
@@ -125,5 +152,6 @@ void isp_blc_top(
         bl_gb,
         bl_b
     );
+    
     internal_to_axis_frame(corrected_pixels, output);
 }

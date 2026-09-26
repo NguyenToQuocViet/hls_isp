@@ -53,6 +53,17 @@ void bpc_process_frame(
     ap_uint<4> shift_gradient
 );
 
+void bpc_process_frames(
+    hls::stream<IspStreamPixel>& input,
+    hls::stream<IspStreamPixel>& output,
+    ap_ufixed<10, 10> thresh_r,
+    ap_ufixed<10, 10> thresh_g,
+    ap_ufixed<10, 10> thresh_b,
+    ap_uint<4> shift_signal,
+    ap_uint<4> shift_gradient,
+    ap_uint<32> frame_count
+);
+
 void isp_bpc_top(
     hls::stream<ap_axiu<16, 1, 0, 0>>& input,
     hls::stream<ap_axiu<16, 1, 0, 0>>& output,

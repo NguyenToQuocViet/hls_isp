@@ -43,10 +43,12 @@ Config đang dùng là `(T0_R, T0_G, T0_B, k_s, k_a) = (4, 8, 4, 3, 0)`. BPC tr�
 
 `isp_top` xử lý đúng một frame 1920 × 1080 mỗi lần gọi. Top nhận stream RAW10 trước BLC, chạy BLC rồi BPC, và xuất đúng 2.073.600 pixel theo cùng format AXI4-Stream. Bốn hệ số BLC và năm tham số BPC là các scalar AXI4-Lite của top ghép; cấu hình phải ổn định trong suốt frame.
 
+`isp_top_frames` hiện là entry point thử nghiệm để xử lý `frame_count` frame liên tiếp trong một lần gọi, dùng cùng định dạng AXI4-Stream và cùng các hệ số. Tham số `frame_count` đặt tại offset AXI4-Lite `0x58`; cấu hình ổn định trong toàn bộ lần gọi. Ranh giới giữa hai frame trong cùng lần gọi không có bước drain, còn sau frame cuối có drain nội bộ để xuất đủ pixel. Đây chưa phải giao diện video streaming đích: kiến trúc đích không cần biết trước số frame, nhận SOF/EOL theo handshake và có thể drain phần đuôi frame trong khoảng trống giữa hai frame. Xem [contract HLS streaming](bpc-adaptive-directional.md#11-hls-streaming-architecture).
+
 | Tham số AXI4-Lite | Offset |
 |---|---:|
 | `bl_r`, `bl_gr`, `bl_gb`, `bl_b` | `0x10`, `0x18`, `0x20`, `0x28` |
 | `thresh_r`, `thresh_g`, `thresh_b` | `0x30`, `0x38`, `0x40` |
 | `shift_signal`, `shift_gradient` | `0x48`, `0x50` |
 
-Top ghép dùng hai hàm xử lý stream chung với `isp_blc_top` và `isp_bpc_top`. Hai top độc lập vẫn là entry point để kiểm tra riêng từng IP. AXI4-Stream chỉ xuất hiện ở cổng ngoài; các adapter đổi sang packet nội bộ giữ `data`, `keep`, `strb`, `user` và `last`. Trong top ghép, hai hàm xử lý chạy đồng thời qua stream nội bộ bằng HLS `DATAFLOW`; stream này không phải frame buffer. BPC vẫn tự tạo `TUSER` và `TLAST` của output từ tọa độ, đồng thời drain các pixel còn lại sau input cuối theo [streaming contract](bpc-adaptive-directional.md#11-hls-streaming-architecture).
+Top ghép hiện dùng hai hàm xử lý stream chung với `isp_blc_top` và `isp_bpc_top`. Hai top độc lập vẫn là entry point để kiểm tra riêng từng IP. AXI4-Stream chỉ xuất hiện ở cổng ngoài; các adapter đổi sang packet nội bộ giữ `data`, `keep`, `strb`, `user` và `last`. Trong top ghép, hai hàm xử lý chạy đồng thời qua stream nội bộ bằng HLS `DATAFLOW`; stream này không phải frame buffer. BPC tự tạo `TUSER` và `TLAST` của output từ tọa độ. Giao diện điều khiển HLS cho streaming vô hạn và quy tắc cập nhật cấu hình chưa được chốt; các offset AXI4-Lite ở bảng trên mô tả top hiện tại.

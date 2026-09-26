@@ -170,22 +170,38 @@ Synthetic stuck corruption shall not be used for training, validation, testing, 
 
 ## 11. HLS Streaming Architecture
 
-`isp_bpc_top` processes one fixed 1920 x 1080 frame per invocation. It consumes exactly one AXI4-Stream beat for each input pixel and produces exactly one beat for each output pixel in row-major order.
+### Current implementation and target
 
-The window generator uses four independent line-buffer banks of `FRAME_WIDTH` RAW10 samples and three horizontal shift rows of five samples. The line buffers retain the four preceding samples at the current image column. The horizontal rows select the top, center, and bottom same-CFA rows needed by `bpc_pixel`.
+The existing `isp_bpc_top` and `isp_top` process one 1920 × 1080 frame per invocation. The experimental `isp_top_frames` processes a caller-supplied `frame_count` in one invocation and drains after the last frame. These describe current source, **not** the target video-stream contract. Preserve the standalone entry points for block verification; the production streaming datapath must not require a future frame count or a restart between frames. The finite-frame experiment and its limits are recorded in [ADR 0002](adr/0002-overlap-bpc-frame-tail.md).
 
-The window shifts continuously across row boundaries. It is not cleared or padded between input rows. During the mixed-window interval, the corresponding output centers belong to the two right-border pixels of the preceding row or the two left-border pixels of the next row, so they are copied unchanged. The first interior center of a row is processed only after its complete window is present.
+The target consumes and emits one RAW10 pixel per real image pixel, in row-major order, for an indefinite sequence of fixed-size RGGB frames. `TUSER` denotes SOF on the first pixel and `TLAST` denotes EOL on the last pixel of every row; there is no separate EOF. A handshaken EOL on row `FRAME_HEIGHT - 1` ends the input frame. The stream must contain exactly `FRAME_WIDTH` real pixels per row and `FRAME_HEIGHT` rows per frame. How malformed sidebands are handled remains an interface decision before implementation; they must not silently redefine image geometry.
 
-The output center trails the flattened input stream by:
+### Storage and three progress domains
 
-```text
-CENTER_DELAY = 2 * FRAME_WIDTH + 2
-```
+The algorithm and arithmetic in Sections 3–7 remain unchanged. The target retains four independent `FRAME_WIDTH` line-buffer banks, a `horizontal[3][5]` window, and the sparse same-CFA 3 × 3 computing window. Each committed internal advance reads old bank values, writes the new token and shifted history, then shifts/loads the horizontal window. The center is evaluated after the shift/load. The center delay in **committed internal advances** is `CENTER_DELAY = 2 * FRAME_WIDTH + 2` (3842 at 1920 pixels); it is not a fixed cycle latency under stalls.
 
-The initial delay fills the window. After the final input beat, the block performs `CENTER_DELAY` internal zero-valued drain steps to emit the remaining real centers. Drain samples are internal state transitions and are not AXI input beats or output pixels.
+Keep these domains separate:
 
-Border selection uses the output-center coordinates. The outer two rows and columns bypass `bpc_pixel` and emit the stored center sample. Interior centers use the adaptive algorithm in Sections 3 through 6.
+| Domain | Advances on | Purpose |
+|---|---|---|
+| Logical input `in_row/in_col` | Real input handshake only | SOF/EOL, BLC CFA phase, input geometry |
+| Physical `lb_addr` | Committed internal advance with real or synthetic token | Circular line-buffer access; wraps modulo `FRAME_WIDTH` |
+| Logical output `out_row/out_col` | Valid real output handshake only | BPC border/CFA phase, output SOF/EOL, frame retirement |
 
-Output sidebands are generated from output coordinates: `TUSER` marks output `(0, 0)` and `TLAST` marks column `FRAME_WIDTH - 1`. Input sidebands do not transfer directly because the input beat and output center represent different coordinates.
+SOF resets logical input coordinates to `(0,0)`; it does not clear the banks/window, reset `lb_addr`, or force a new full warmup. EOL advances the logical input row. `lb_addr` is never forced to the logical input column: after a gap of `g` synthetic advances, the next frame's column zero starts at the current physical address. Every full real row has `FRAME_WIDTH` pixels, so the same logical column in successive rows of that frame reaches the same physical bank address. Freeze all three domains as applicable when their enabling handshake/advance does not occur.
 
-The pixel loop requests `II=1`. This is an implementation target, not measured evidence; achieved initiation interval, latency, timing, and resource use require HLS synthesis reports.
+### Between-frame drain and valid centers
+
+After the last real pixel of a frame, up to `CENTER_DELAY` further committed advances are needed to expose its remaining centers. All such centers belong to the bottom two rows or the final two columns and therefore bypass `bpc_pixel`; the delayed center value must still be preserved exactly. While those centers remain and the next real SOF is unavailable, inject synthetic zero tokens **only between frames**. A real next-frame pixel has priority over a synthetic token as soon as it can be accepted, subject to normal downstream flow control. It may enter while the previous frame's border tail is still leaving. With no input gap and no backpressure, there must be no architecture-imposed frame-boundary acceptance bubble.
+
+Within an active input frame, an upstream stall freezes the BPC storage: no synthetic insertion, window shift, or `lb_addr` advance. Once the previous frame's last center has been exposed, synthetic advancement is no longer needed. When that last valid output handshakes, the frame is retired; if no next frame is active, remain idle until its SOF. An output buffer may cause exposure and retirement to occur at different times, so control must track both safely. A pending output must remain stable under backpressure, and storage may advance only if the output can be retained without loss or duplication.
+
+Synthetic tokens never count as input pixels and never produce output beats. A gap can put synthetic centers between the final center of one frame and the first center of the next. Track token validity/ownership or equivalent bounded control so these positions are suppressed while all real centers are emitted exactly once and in order. The output coordinate alone cannot identify a synthetic position; it only identifies the next **valid** output coordinate. In particular, do not advance the output coordinate to skip a synthetic position. A long gap may leave synthetic history in the pipeline; the next frame then takes as many committed advances as its actual history requires before its first valid center appears. Do not reset a fixed warmup at each SOF.
+
+For each valid center, the logical output coordinates determine the outer-two-row/column border bypass, CFA phase, `TUSER` at `(0,0)`, and `TLAST` at column `FRAME_WIDTH - 1`. `bpc_pixel()` runs only for valid interior centers. Synthetic positions emit no payload or sidebands. An implementation with output buffering may need separate generated-center and retired-output state; the externally visible `out_row/out_col` advances only on the AXI output handshake. Input acceptance, storage update, output buffering, and output retirement must remain transactionally consistent under stalls.
+
+### System boundary and acceptance evidence
+
+The production BLC worker, AXI adapters, and composite `DATAFLOW` top must also run for an unknown number of frames and preserve SOF/EOL. The final HLS block-control style and safe configuration-update rule must be selected and documented before code changes; the current AXI4-Lite `ap_ctrl_hs` invocation and `frame_count` cannot by themselves provide this behavior. Configuration must be stable for every frame being processed, including its delayed output tail. The required observable behavior does not mandate a particular FSM, nonblocking-read primitive, or per-pixel valid-bit implementation.
+
+Verification must compare output data and sidebands with independent, per-frame BLC→BPC reference results and check `real input beats = valid output beats` after drain. Cover zero gap, short gap, arrival just before tail completion, gap longer than drain, an in-frame input stall, output backpressure, synthetic centers reaching the physical center, and many frames with mixed gaps. Check both CSim and generated-RTL CoSim handshakes; inspect synthesis for II, memory-port scheduling, and control compatibility. `II=1` is a target for a progressing pixel loop, not proof of zero inter-frame bubble, backpressure correctness, or indefinite operation.

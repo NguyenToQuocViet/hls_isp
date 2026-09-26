@@ -38,6 +38,16 @@ void blc_process_frame(
     ap_ufixed<10, 10> bl_b
 );
 
+void blc_process_frames(
+    hls::stream<IspStreamPixel>& input,
+    hls::stream<IspStreamPixel>& output,
+    ap_ufixed<10, 10> bl_r,
+    ap_ufixed<10, 10> bl_gr,
+    ap_ufixed<10, 10> bl_gb,
+    ap_ufixed<10, 10> bl_b,
+    ap_uint<32> frame_count
+);
+
 void isp_blc_top(
     hls::stream<ap_axiu<16, 1, 0, 0>>& input,
     hls::stream<ap_axiu<16, 1, 0, 0>>& output,

@@ -21,13 +21,17 @@ struct IspStreamPixel {
     ap_uint<1> last;
 };
 
-inline void axis_to_internal_frame(
+inline void axis_to_internal_frames(
     hls::stream<ap_axiu<16, 1, 0, 0>>& input,
-    hls::stream<IspStreamPixel>& output
+    hls::stream<IspStreamPixel>& output,
+    ap_uint<32> frame_count
 ) {
 #pragma HLS INLINE off
 
-    for (int i = 0; i < FRAME_WIDTH * FRAME_HEIGHT; i++) {
+    ap_uint<32> frame = 0;
+    ap_uint<21> pixel_index = 0;
+
+    while (frame < frame_count) {
 #pragma HLS PIPELINE II=1
         const ap_axiu<16, 1, 0, 0> axis_pixel = input.read();
         IspStreamPixel pixel;
@@ -37,16 +41,35 @@ inline void axis_to_internal_frame(
         pixel.user = axis_pixel.user;
         pixel.last = axis_pixel.last;
         output.write(pixel);
+
+        if (pixel_index == FRAME_WIDTH * FRAME_HEIGHT - 1) {
+            pixel_index = 0;
+            frame++;
+        } else {
+            pixel_index++;
+        }
     }
 }
 
-inline void internal_to_axis_frame(
+inline void axis_to_internal_frame(
+    hls::stream<ap_axiu<16, 1, 0, 0>>& input,
+    hls::stream<IspStreamPixel>& output
+) {
+#pragma HLS INLINE off
+    axis_to_internal_frames(input, output, 1);
+}
+
+inline void internal_to_axis_frames(
     hls::stream<IspStreamPixel>& input,
-    hls::stream<ap_axiu<16, 1, 0, 0>>& output
+    hls::stream<ap_axiu<16, 1, 0, 0>>& output,
+    ap_uint<32> frame_count
 ) {
 #pragma HLS INLINE off
 
-    for (int i = 0; i < FRAME_WIDTH * FRAME_HEIGHT; i++) {
+    ap_uint<32> frame = 0;
+    ap_uint<21> pixel_index = 0;
+
+    while (frame < frame_count) {
 #pragma HLS PIPELINE II=1
         const IspStreamPixel pixel = input.read();
         ap_axiu<16, 1, 0, 0> axis_pixel;
@@ -56,5 +79,20 @@ inline void internal_to_axis_frame(
         axis_pixel.user = pixel.user;
         axis_pixel.last = pixel.last;
         output.write(axis_pixel);
+
+        if (pixel_index == FRAME_WIDTH * FRAME_HEIGHT - 1) {
+            pixel_index = 0;
+            frame++;
+        } else {
+            pixel_index++;
+        }
     }
+}
+
+inline void internal_to_axis_frame(
+    hls::stream<IspStreamPixel>& input,
+    hls::stream<ap_axiu<16, 1, 0, 0>>& output
+) {
+#pragma HLS INLINE off
+    internal_to_axis_frames(input, output, 1);
 }

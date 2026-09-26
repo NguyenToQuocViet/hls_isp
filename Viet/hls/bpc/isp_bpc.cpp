@@ -125,20 +125,23 @@ ap_ufixed<10, 10> bpc_pixel(
     return input.center;
 }
 
-void bpc_process_frame(
+void bpc_process_frames(
     hls::stream<IspStreamPixel>& input,
     hls::stream<IspStreamPixel>& output,
     ap_ufixed<10, 10> thresh_r,
     ap_ufixed<10, 10> thresh_g,
     ap_ufixed<10, 10> thresh_b,
     ap_uint<4> shift_signal,
-    ap_uint<4> shift_gradient
+    ap_uint<4> shift_gradient,
+    ap_uint<32> frame_count
 ) {
 #pragma HLS INLINE off
 
-    constexpr int PIXEL_COUNT = FRAME_WIDTH * FRAME_HEIGHT;
     constexpr int CENTER_DELAY = (2 * FRAME_WIDTH) + 2;
-    constexpr int PROCESS_COUNT = PIXEL_COUNT + CENTER_DELAY;
+
+    if (frame_count == 0) {
+        return;
+    }
 
     //streaming window storage
     ap_ufixed<10, 10> line_buffer[4][FRAME_WIDTH];
@@ -155,21 +158,25 @@ void bpc_process_frame(
         shift_gradient
     };
 
+    ap_uint<32> input_frame = 0;
     ap_uint<11> input_row = 0;
     ap_uint<11> input_col = 0;
     ap_uint<11> output_row = 0;
     ap_uint<11> output_col = 0;
+    ap_uint<3> valid_rows = 0;
+    ap_uint<12> warmup = CENTER_DELAY;
+    ap_uint<12> drain_count = 0;
 
-    //full-frame stream and drain
+    // Continue across frame boundaries; only the final frame has a drain.
 pixel_loop:
-    for (int step = 0; step < PROCESS_COUNT; step++) {
+    while (input_frame < frame_count || drain_count < CENTER_DELAY) {
 #pragma HLS PIPELINE II=1
 
         const ap_uint<1> receive_pixel =
-            step < PIXEL_COUNT;
+            input_frame < frame_count;
 
         const ap_uint<1> produce_pixel =
-            step >= CENTER_DELAY;
+            warmup == 0;
 
         ap_ufixed<10, 10> new_pixel = 0;
 
@@ -178,6 +185,8 @@ pixel_loop:
                 input.read();
 
             new_pixel = input_packet.data.range(9, 0);
+        } else {
+            drain_count++;
         }
 
         //vertical history at current column
@@ -186,19 +195,19 @@ pixel_loop:
         ap_ufixed<10, 10> old_lb3 = 0;
         ap_ufixed<10, 10> old_lb4 = 0;
 
-        if (input_row >= 1) {
+        if (valid_rows >= 1) {
             old_lb1 = line_buffer[0][input_col];
         }
 
-        if (input_row >= 2) {
+        if (valid_rows >= 2) {
             old_lb2 = line_buffer[1][input_col];
         }
 
-        if (input_row >= 3) {
+        if (valid_rows >= 3) {
             old_lb3 = line_buffer[2][input_col];
         }
 
-        if (input_row >= 4) {
+        if (valid_rows >= 4) {
             old_lb4 = line_buffer[3][input_col];
         }
 
@@ -274,19 +283,56 @@ shift_col_loop:
 
             if (output_col == (FRAME_WIDTH - 1)) {
                 output_col = 0;
-                output_row++;
+
+                if (output_row == (FRAME_HEIGHT - 1)) {
+                    output_row = 0;
+                } else {
+                    output_row++;
+                }
             } else {
                 output_col++;
             }
         }
 
+        if (warmup != 0) {
+            warmup--;
+        }
+
         if (input_col == (FRAME_WIDTH - 1)) {
             input_col = 0;
-            input_row++;
+
+            if (valid_rows < 4) {
+                valid_rows++;
+            }
+
+            if (receive_pixel) {
+                if (input_row == (FRAME_HEIGHT - 1)) {
+                    input_row = 0;
+                    input_frame++;
+                } else {
+                    input_row++;
+                }
+            }
         } else {
             input_col++;
         }
     }
+}
+
+void bpc_process_frame(
+    hls::stream<IspStreamPixel>& input,
+    hls::stream<IspStreamPixel>& output,
+    ap_ufixed<10, 10> thresh_r,
+    ap_ufixed<10, 10> thresh_g,
+    ap_ufixed<10, 10> thresh_b,
+    ap_uint<4> shift_signal,
+    ap_uint<4> shift_gradient
+) {
+#pragma HLS INLINE off
+    bpc_process_frames(
+        input, output, thresh_r, thresh_g, thresh_b,
+        shift_signal, shift_gradient, 1
+    );
 }
 
 void isp_bpc_top(
