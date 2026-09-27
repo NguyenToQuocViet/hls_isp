@@ -176,8 +176,8 @@ def process_frame(img_in):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input_dir", type=str, default="../dataset/input_csim/Sequence/")
-    parser.add_argument("--output", type=str, default="../dataset/output_csim_golden/LTM/Sequence/golden_ltm_output.ppm")
+    parser.add_argument("--input_dir", type=str, default="../dataset/input_csim/Sequence_small/")
+    parser.add_argument("--output", type=str, default="../dataset/output_csim_golden/LTM/Sequence_small/golden_ltm_output.ppm")
     args = parser.parse_args()
     
     bin_files = glob.glob(os.path.join(args.input_dir, "*.bin"))
@@ -216,5 +216,52 @@ if __name__ == "__main__":
         for r in range(final_img.shape[0]):
             row_data = final_img[r].flatten()
             f.write(" ".join(map(str, row_data)) + "\n")
+            
+    print("Generating ltm_lut.h...")
+    with open("ltm_lut.h", "w") as f:
+        f.write("#ifndef LTM_LUT_H\n#define LTM_LUT_H\n\n")
+        f.write("#include \"../ltm_gamma.hpp\"\n\n")
+        
+        # Generate LOG LUT
+        f.write("const log_t LOG_LUT[4096] = {\n")
+        log_lut = []
+        for i in range(4096):
+            val = np.log(i + 1.0)
+            v = int(np.floor(val * 2048)) & 0xFFFF
+            if v >= 32768: v -= 65536
+            log_lut.append(str(v / 2048.0))
+        f.write(",\n".join(log_lut))
+        f.write("\n};\n\n")
+
+        # Generate REINHARD LUT
+        f.write("const log_t REINHARD_LUT[1024] = {\n")
+        reinhard_lut = []
+        exposure_gain = 3.0
+        target_max = 4095.0
+        log_target_max = np.log(target_max + 1.0)
+        for i in range(1024):
+            log_I_base = i / 123.0
+            L = (log_I_base / log_target_max) * exposure_gain
+            L_white = exposure_gain
+            L_mapped = (L * (1.0 + (L / (L_white * L_white)))) / (1.0 + L)
+            log_I_mapped_base = L_mapped * log_target_max
+            v = int(np.floor(log_I_mapped_base * 2048)) & 0xFFFF
+            if v >= 32768: v -= 65536
+            reinhard_lut.append(str(v / 2048.0))
+        f.write(",\n".join(reinhard_lut))
+        f.write("\n};\n\n")
+
+        # Generate EXP LUT
+        f.write("const exp_out_t EXP_LUT[1024] = {\n")
+        exp_lut = []
+        for i in range(1024):
+            log_I_final = i / 123.0
+            I_final = np.exp(log_I_final) - 1.0
+            if I_final > 4095.0: I_final = 4095.0
+            if I_final < 0.0: I_final = 0.0
+            v = int(np.floor(I_final * 64)) & 0x3FFFF
+            exp_lut.append(str(v / 64.0))
+        f.write(",\n".join(exp_lut))
+        f.write("\n};\n\n#endif\n")
             
     print("Done!")

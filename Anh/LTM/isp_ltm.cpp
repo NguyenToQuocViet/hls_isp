@@ -1,10 +1,8 @@
 #include "../ltm_gamma.hpp"
-
-
+#include "ltm_lut.h"
 
 void read_and_log(hls::stream<IspPixelPacket<36>>& s_axis,
-                  hls::stream<log_t>& out_log, hls::stream<rgb_pack_t>& out_rgb,
-                  const log_t log_lut[4096])
+                  hls::stream<log_t>& out_log, hls::stream<rgb_pack_t>& out_rgb)
 {
     img_size_t total_pixels = (img_size_t)HEIGHT * (img_size_t)WIDTH;
     for (img_size_t i = 0; i < total_pixels; i++)
@@ -25,7 +23,7 @@ void read_and_log(hls::stream<IspPixelPacket<36>>& s_axis,
             y_int = 4095;
         // hls::print("luminance: %0d\n", y_int);
 
-        log_t log_y = log_lut[y_int];
+        log_t log_y = LOG_LUT[y_int];
         // hls::print("log luminance: %0f\n", log_y);
 
         out_log.write(log_y);
@@ -297,9 +295,7 @@ void conv2(hls::stream<weight_a_t>& src_a, hls::stream<weight_b_t>& src_b,
 
 void recombine_and_pack(
     hls::stream<weight_a_t>& src_mean_a, hls::stream<weight_b_t>& src_mean_b,
-    hls::stream<rgb_pack_t>& delay_rgb, hls::stream<IspPixelPacket<36>>& m_axis,
-    const log_t reinhard_lut[1024],
-    const exp_out_t exp_lut[1024])
+    hls::stream<rgb_pack_t>& delay_rgb, hls::stream<IspPixelPacket<36>>& m_axis)
 {
 
     bool is_first = true;
@@ -336,7 +332,7 @@ void recombine_and_pack(
         if (lut_idx > 1023)
             lut_idx = 1023;
 
-        log_t log_I_mapped_base = reinhard_lut[lut_idx];
+        log_t log_I_mapped_base = REINHARD_LUT[lut_idx];
 
         ap_fixed<14, 3> w =
             (ap_fixed<14, 3>)1.56 -
@@ -351,7 +347,7 @@ void recombine_and_pack(
         if (exp_lut_idx > 1023)
             exp_lut_idx = 1023;
 
-        exp_out_t I_final = exp_lut[exp_lut_idx];
+        exp_out_t I_final = EXP_LUT[exp_lut_idx];
 
         // Trap C solved: Calculate manual division instead of relying on a huge LUT
         ap_ufixed<24, 12> y_divisor = (y_int == 0) ? (ap_ufixed<24, 12>)1.0f : (ap_ufixed<24, 12>)y_int;
@@ -388,17 +384,15 @@ void recombine_and_pack(
 }
 
 
-void isp_ltm_top(hls::stream<IspPixelPacket<36>>& s_axis, hls::stream<IspPixelPacket<36>>& m_axis,
-         const log_t log_lut[4096], const log_t reinhard_lut[1024],
-         const exp_out_t exp_lut[1024])
+void isp_ltm_top(hls::stream<IspPixelPacket<36>>& s_axis, hls::stream<IspPixelPacket<36>>& m_axis)
 {
 
 #pragma HLS INTERFACE axis port = s_axis
 #pragma HLS INTERFACE axis port = m_axis
 #pragma HLS INTERFACE s_axilite port = return
-#pragma HLS INTERFACE s_axilite port = log_lut
-#pragma HLS INTERFACE s_axilite port = reinhard_lut
-#pragma HLS INTERFACE s_axilite port = exp_lut
+#pragma HLS BIND_STORAGE variable=LOG_LUT impl=bram
+#pragma HLS BIND_STORAGE variable=REINHARD_LUT impl=bram
+#pragma HLS BIND_STORAGE variable=EXP_LUT impl=bram
 
 #pragma HLS DATAFLOW
 
@@ -415,9 +409,8 @@ void isp_ltm_top(hls::stream<IspPixelPacket<36>>& s_axis, hls::stream<IspPixelPa
     hls::stream<weight_b_t> stream_mean_b("stream_mean_b");
 
 
-    read_and_log(s_axis, stream_log, stream_rgb, log_lut);
+    read_and_log(s_axis, stream_log, stream_rgb);
     conv1(stream_log, stream_a, stream_b);
     conv2(stream_a, stream_b, stream_mean_a, stream_mean_b);
-    recombine_and_pack(stream_mean_a, stream_mean_b, stream_rgb, m_axis,
-                       reinhard_lut, exp_lut);
+    recombine_and_pack(stream_mean_a, stream_mean_b, stream_rgb, m_axis);
 }

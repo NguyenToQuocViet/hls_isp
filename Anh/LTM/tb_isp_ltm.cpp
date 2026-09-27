@@ -6,59 +6,16 @@
 #include <dirent.h>
 #include <algorithm>
 
-std::string in_dir_ltm = "/home/asura/Work/ISP/hls_isp/Anh/dataset/input_csim/Sequence/";
-std::string out_dir_ltm = "/home/asura/Work/ISP/hls_isp/Anh/dataset/output_csim/LTM/Sequence/";
-std::string golden_dir_ltm = "/home/asura/Work/ISP/hls_isp/Anh/dataset/output_csim_golden/LTM/Sequence/";
+std::string in_dir_ltm = "/home/asura/Work/ISP/hls_isp/Anh/dataset/input_csim/Sequence_small/";
+std::string out_dir_ltm = "/home/asura/Work/ISP/hls_isp/Anh/dataset/output_csim/LTM/Sequence_small/";
+std::string golden_dir_ltm = "/home/asura/Work/ISP/hls_isp/Anh/dataset/output_csim_golden/LTM/Sequence_small/";
 
 #ifdef LTM
 int main()
 {
     std::cout << "Starting LTM Testbench..." << std::endl;
 
-    // Generate LUTs 
-    log_t log_lut[4096];
-    log_t reinhard_lut[1024];
-    exp_out_t exp_lut[1024];
-
-    std::cout << "Generating log_lut..." << std::endl;
-    for (int i = 0; i < 4096; i++)
-    {
-        double val = std::log((double)i + 1.0);
-        log_lut[i] = (log_t)val;
-    }
-
-    std::cout << "Generating reinhard_lut..." << std::endl;
-    double exposure_gain = 3.0;
-    double target_max = 4095.0;
-    double log_target_max = std::log(target_max + 1.0);
-    for (int i = 0; i < 1024; i++)
-    {
-        double log_I_base = (double)i / 123.0;
-
-        double L = (log_I_base / log_target_max) * exposure_gain;
-        double L_white = exposure_gain;
-        double L_mapped = (L * (1.0 + (L / (L_white * L_white)))) / (1.0 + L);
-
-        double log_I_mapped_base = L_mapped * log_target_max;
-
-        reinhard_lut[i] = (log_t)log_I_mapped_base;
-    }
-
-    std::cout << "Generating exp_lut..." << std::endl;
-    for (int i = 0; i < 1024; i++)
-    {
-        double log_I_final = (double)i / 123.0;
-        double I_final = std::exp(log_I_final) - 1.0;
-
-        if (I_final > 4095.0)
-            I_final = 4095.0;
-        if (I_final < 0.0)
-            I_final = 0.0;
-
-        exp_lut[i] = (exp_out_t)I_final;
-    }
-
-
+    // LUTs are now compiled as BRAM ROMs from ltm_lut.h
 
     // 2. Get list of all binary files in directory
     std::vector<std::string> bin_files;
@@ -162,14 +119,14 @@ int main()
     
     int debug_pixels = 0;
     for (int i = 0; i < total_processed; i++) {
-        isp_ltm_top(s_axis, m_axis, log_lut, reinhard_lut, exp_lut);
+        isp_ltm_top(s_axis, m_axis);
     }
 
-    std::string out_path = out_dir_ltm + "output_video.ppm";
+    std::string out_path = out_dir_ltm + "ltm_output.ppm";
     std::cout << "\n========================================" << std::endl;
     std::cout << "Reading output stream and saving to " << out_path << "..." << std::endl;
     
-    std::string golden_path = golden_dir_ltm + "golden_output_video.ppm";
+    std::string golden_path = golden_dir_ltm + "golden_ltm_output.ppm";
     std::ifstream golden_img(golden_path);
     bool check_golden = true;
     if (!golden_img.is_open()) {

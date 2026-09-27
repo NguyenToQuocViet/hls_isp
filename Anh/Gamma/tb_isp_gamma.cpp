@@ -12,32 +12,19 @@
 using namespace std;
 
     std::string in_dir_gamma =
-        "/home/asura/Work/ISP/hls_isp/Anh/dataset/input_csim/Sequence/";
+        "/home/asura/Work/ISP/hls_isp/Anh/dataset/input_csim/Sequence_small/";
     std::string out_dir_gamma =
-        "/home/asura/Work/ISP/hls_isp/Anh/dataset/output_csim/Gamma/Sequence/";
-    std::string out_dir_golden_gamma = "/home/asura/Work/ISP/hls_isp/Anh/dataset/output_csim_golden/Gamma/Sequence/golden_gamma_output.ppm";
+        "/home/asura/Work/ISP/hls_isp/Anh/dataset/output_csim/Gamma/Sequence_small/";
+    std::string out_dir_golden_gamma = "/home/asura/Work/ISP/hls_isp/Anh/dataset/output_csim_golden/Gamma/Sequence_small/golden_gamma_output.ppm";
 
 
 #ifdef GAMMA
 int main()
 {
     std::cout << "GAMMA CORRECTION TESTBENCH" << endl;
-    hls::stream<IspPixelPacket<36>> src("stream_in");
-    hls::stream<IspPixelPacket<24>> dst("stream_out");
-    ap_uint<8> gamma_lut[4096];
+    hls::stream<gamma_in_t> src("stream_in");
+    hls::stream<gamma_out_t> dst("stream_out");
 
-    // 1. Calculate Gamma LUT using double precision math
-    std::cout << "Generating Gamma LUT (Double Precision)..." << std::endl;
-    double gamma = 0.45; // Standard gamma curve (approx 1/2.2)
-    for (int i = 0; i < 4096; i++)
-    {
-        // Normalize 12-bit index to [0.0, 1.0]
-        double normalized = (double)i / 4095.0;
-        // Apply power function and scale to 8-bit [0.0, 255.0]
-        double val = std::pow(normalized, gamma) * 255.0;
-        // Round to nearest integer and cast to uint8
-        gamma_lut[i] = (ap_uint<8>)(std::round(val));
-    }
 
     std::vector<std::string> bin_files;
     DIR* dir = opendir(in_dir_gamma.c_str());
@@ -123,7 +110,7 @@ int main()
         {
             for (int j = 0; j < WIDTH; j++)
             {
-                IspPixelPacket<36> pixel_in;
+                gamma_in_t pixel_in;
 
                 int idx = (i * WIDTH + j) * 3;
                 pixel_in.data.range(11, 0) = std::min((uint16_t)4095, input_image[idx + 0]);
@@ -132,6 +119,10 @@ int main()
 
                 pixel_in.user = (i == 0 && j == 0) ? 1 : 0;
                 pixel_in.last = (j == WIDTH - 1) ? 1 : 0;
+#ifdef USE_AP_AXIU
+                pixel_in.keep = -1;
+                pixel_in.strb = -1;
+#endif
 
                 src.write(pixel_in);
             }
@@ -144,14 +135,18 @@ int main()
     volatile int debug_pixels = 0;
 #endif
 
+#ifdef VER2
+    isp_gamma_top_ver2(src, dst);
+#else
     for (int f = 0; f < frames_to_process; f++)
     {
-        isp_gamma_top(src, dst, gamma_lut, gamma_lut, gamma_lut);
+        isp_gamma_top(src, dst);
     }
+#endif
 
     // 4. Extract outputs and save to PPM
     std::cout << "Saving Output Streams and Checking against Golden..." << std::endl;
-    std::string out_path = out_dir_gamma + "output.ppm";
+    std::string out_path = out_dir_gamma + "gamma_output.ppm";
     std::ofstream out_img(out_path);
     if (!out_img.is_open())
     {
@@ -186,7 +181,7 @@ int main()
         {
             for (int j = 0; j < WIDTH; j++)
             {
-                IspPixelPacket<24> pixel_out = dst.read();
+                gamma_out_t pixel_out = dst.read();
 
                 ap_uint<8> act_r = pixel_out.data.range(7, 0);
                 ap_uint<8> act_g = pixel_out.data.range(15, 8);

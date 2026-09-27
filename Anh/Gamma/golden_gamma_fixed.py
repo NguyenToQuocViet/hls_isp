@@ -39,8 +39,8 @@ def process_frame(img_in, lut):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--input_dir", type=str, default="../dataset/input_csim/Sequence/")
-    parser.add_argument("--output", type=str, default="../dataset/output_csim_golden/Gamma/Sequence/golden_gamma_output.ppm")
+    parser.add_argument("--input_dir", type=str, default="../dataset/input_csim/Sequence_small/")
+    parser.add_argument("--output", type=str, default="../dataset/output_csim_golden/Gamma/Sequence_small/golden_gamma_output.ppm")
     parser.add_argument("--gamma", type=float, default=0.45)
     args = parser.parse_args()
     
