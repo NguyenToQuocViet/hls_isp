@@ -22,7 +22,7 @@ void isp_3blocks_dataflow_top(
     ccm_coeff_t a22,
     frame_count_t frame_count
 ) {
-    #pragma HLS INTERFACE axis port=stream_in register_mode=off
+    #pragma HLS INTERFACE axis port=stream_in 
     #pragma HLS INTERFACE axis port=stream_out
 
     #pragma HLS INTERFACE s_axilite port=gain_r         bundle=CTRL offset=0x10
