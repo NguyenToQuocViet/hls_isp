@@ -58,8 +58,7 @@ static bool interpolate_green_step(
     // Hai direction line buffer ping-pong, moi phan tu chi 1 bit:
     //   - mot bank chi doc direction cua hang truoc;
     //   - bank con lai chi ghi direction cua hang hien tai.
-    // Cuoi moi hang, hai bank doi vai tro. Nhu vay khong con read/write
-    // lien tiep tren cung mot RAM nhu phien ban dir_line duy nhat.
+    // Cuoi moi hang, hai bank doi vai tro.
     static ap_uint<1> dir_bank0[MAX_WIDTH];
     static ap_uint<1> dir_bank1[MAX_WIDTH];
     #pragma HLS BIND_STORAGE variable=dir_bank0 type=RAM_S2P impl=LUTRAM
@@ -139,7 +138,7 @@ static bool interpolate_green_step(
     bool left_boundary = (green_col == 0);
     bool right_boundary = (green_col == width - 1);
 
-    // Mirror-101 giong code cu:
+    // Mirror-101
     // x=-1 -> x=1, x=width -> x=width-2,
     // y=-1 -> y=1, y=height -> y=height-2.
     int left_slot = left_boundary ? 2 : 0;
@@ -436,7 +435,6 @@ static bool interpolate_red_blue_step(
     }
 
     // Dong goi AXIS. TKEEP/TSTRB bao toan bo 36 bit RGB la hop le.
-    // TID/TDEST khong duoc dung trong pipeline nay nen duoc dua ve 0.
     p_out.data = 0;
     p_out.keep = -1;
     p_out.strb = -1;
@@ -498,8 +496,6 @@ void isp_demosaicing_top(
             p_out
         );
 
-        // Khong can them bit valid vao payload: khi chua co RGB, core
-        // khong goi write(); giao tiep AXIS se tu ha TVALID.
         if (rgb_ready) {
             stream_out.write(p_out);
         }
