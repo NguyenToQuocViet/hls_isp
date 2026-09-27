@@ -25,7 +25,7 @@ std::vector<double> wb_float(
     for (int r = 0; r < h; ++r) for (int c = 0; c < w; ++c) {
         const double gain = !(r & 1) ? (!(c & 1) ? g.r : g.gr)
                                          : (!(c & 1) ? g.gb : g.b);
-        out[r * w + c] = std::max(0.0, std::min(4095.0, raw[r * w + c] * gain));
+        out[r * w + c] = std::max(0.0, std::min(4095.0, raw[r * w + c] * 4.0 * gain));
     }
     return out;
 }
@@ -39,9 +39,15 @@ std::vector<std::uint16_t> wb_fixed(
         if (raw[r * w + c] > 1023) throw std::invalid_argument("WB: input is not RAW10");
         const std::uint16_t gain = !(r & 1) ? (!(c & 1) ? g.r : g.gr)
                                                 : (!(c & 1) ? g.gb : g.b);
+        
         const std::uint64_t product_q12 =
             static_cast<std::uint64_t>(raw[r * w + c]) * gain;
-        const std::uint64_t rounded = (product_q12 + 2048) >> 12;
+
+        // RAW10 -> mien 12bit bang cach nhan 4
+        const std::uint64_t scaled_product_q12 = product_q12 << 2;
+
+        // lam tron Q4.12 roi saturation ve 12bit
+        const std::uint64_t rounded = (scaled_product_q12 + 2048) >> 12;
         out[r * w + c] = static_cast<std::uint16_t>(std::min<std::uint64_t>(rounded, 4095));
     }
     return out;

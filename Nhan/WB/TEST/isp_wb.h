@@ -14,13 +14,19 @@
 #define offset_gb    0x20
 #define offset_b     0x28
 
-// Input is one 10-bit Bayer sample. Output is one saturated 12-bit sample.
+// Input RAW10
 typedef ap_uint<10> i_pixel;
+
+// RAW10 duoc dich trai 2 bit thanh mien 12-bit
+typedef ap_uint<12> wb_scaled_input_t;
+
+// Output 12-bit, lam tron va saturation
 typedef ap_ufixed<12, 12, AP_RND, AP_SAT> o_pixel;
 
-// Gain format: four integer bits and twelve fractional bits.
 typedef ap_ufixed<16, 4> gain_t;
-typedef ap_ufixed<26, 14> wb_product_t;
+
+// 12-bit integer x Q4.12
+typedef ap_ufixed<28, 16> wb_product_t;
 
 // AXI4-Stream video packets:
 //   TUSER[0] = Start Of Frame

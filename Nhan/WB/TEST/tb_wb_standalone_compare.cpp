@@ -8,14 +8,23 @@
 
 int main() {
     const int W=64, H=48, F=2, N=W*H;
-    const gain_t gr=(gain_t)1.125, ggr=(gain_t)0.9375;
-    const gain_t ggb=(gain_t)1.0625, gb=(gain_t)1.25;
-    const golden_wb_model::FloatGains gf={1.125,0.9375,1.0625,1.25};
-    const golden_wb_model::FixedGainsQ12 gq={
+    const golden_wb_model::FloatGains gf = {
+        1.125, 0.9375, 1.0625, 1.25
+    };
+
+    const golden_wb_model::FixedGainsQ12 gq = {
         golden_wb_model::quantize_gain_q4_12(gf.r),
         golden_wb_model::quantize_gain_q4_12(gf.gr),
         golden_wb_model::quantize_gain_q4_12(gf.gb),
-        golden_wb_model::quantize_gain_q4_12(gf.b)};
+        golden_wb_model::quantize_gain_q4_12(gf.b)
+    };
+
+    // Nạp trực tiếp bit Q4.12 để tránh ap_ufixed tự truncate
+    gain_t gr, ggr, ggb, gb;
+    gr.range(15, 0)  = gq.r;
+    ggr.range(15, 0) = gq.gr;
+    ggb.range(15, 0) = gq.gb;
+    gb.range(15, 0)  = gq.b;
     hls::stream<video_in_t> si; hls::stream<video_out_t> so;
     std::uint64_t mismatch=0, samples=0; double sae=0, sse=0, maxe=0;
     for(int f=0;f<F;++f){

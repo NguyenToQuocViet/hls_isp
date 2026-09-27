@@ -74,7 +74,11 @@ void isp_wb_top(
     }
 
     const i_pixel input_pixel = axis_get_input_pixel(p_in);
-    const wb_product_t product = input_pixel * current_gain;
+
+    const wb_scaled_input_t input_pixel_12 = ((wb_scaled_input_t)input_pixel) << 2;
+
+    const wb_product_t product = input_pixel_12 * current_gain;
+
     const o_pixel output_pixel = (o_pixel)product;
 
     video_out_t p_out;
