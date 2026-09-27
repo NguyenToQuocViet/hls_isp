@@ -24,26 +24,15 @@ void isp2axis(hls::stream<IspPixelPacket<24>>& isp_in, hls::stream<axis_pixel_24
     }
 }
 
+#ifndef USE_AP_AXIU
 void isp_ltm_gamma_top(
     hls::stream<axis_pixel_36b>& s_axis,
-    hls::stream<axis_pixel_24b>& m_axis,
-    const log_t log_lut[4096],
-    const log_t reinhard_lut[1024],
-    const exp_out_t exp_lut[1024],
-    const ap_uint<8> gamma_lut_r[4096],
-    const ap_uint<8> gamma_lut_g[4096],
-    const ap_uint<8> gamma_lut_b[4096]
+    hls::stream<axis_pixel_24b>& m_axis
 )
 {
 #pragma HLS INTERFACE axis port=s_axis
 #pragma HLS INTERFACE axis port=m_axis
 #pragma HLS INTERFACE s_axilite port=return bundle=CTRL
-#pragma HLS INTERFACE s_axilite port=log_lut bundle=CTRL
-#pragma HLS INTERFACE s_axilite port=reinhard_lut bundle=CTRL
-#pragma HLS INTERFACE s_axilite port=exp_lut bundle=CTRL
-#pragma HLS INTERFACE s_axilite port=gamma_lut_r bundle=CTRL
-#pragma HLS INTERFACE s_axilite port=gamma_lut_g bundle=CTRL
-#pragma HLS INTERFACE s_axilite port=gamma_lut_b bundle=CTRL
 
 #pragma HLS DATAFLOW
 
@@ -53,8 +42,9 @@ void isp_ltm_gamma_top(
 
     axis2isp(s_axis, isp_stream_in);
     
-    isp_ltm_top(isp_stream_in, isp_stream_ltm_out, log_lut, reinhard_lut, exp_lut);
-    isp_gamma_top(isp_stream_ltm_out, isp_stream_gamma_out, gamma_lut_r, gamma_lut_g, gamma_lut_b);
+    isp_ltm_top(isp_stream_in, isp_stream_ltm_out);
+    isp_gamma_top(isp_stream_ltm_out, isp_stream_gamma_out);
 
     isp2axis(isp_stream_gamma_out, m_axis);
 }
+#endif

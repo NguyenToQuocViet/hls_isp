@@ -9,12 +9,15 @@
 #include "hls_print.h"
 #include "hls_stream.h"
 #include "hls_video_mem.h" // Includes hls::LineBuffer and hls::Window
+#include "hls_task.h"
 #include <cmath>
 #include <fstream>
 #include <iostream>
 
-#define WIDTH 713
-#define HEIGHT 535
+#define WIDTH 100
+#define HEIGHT 100
+// #define VER2
+#define USE_AP_AXIU
 // #define DEBUG
 
 
@@ -22,6 +25,17 @@
 // AXI-Stream video interface using Vitis library struct
 typedef ap_axiu<36, 1, 0, 0> axis_pixel_36b;
 typedef ap_axiu<24, 1, 0, 0> axis_pixel_24b;
+
+// Uncomment or define in project settings to use ap_axiu for gamma module simulation
+// #define USE_AP_AXIU
+
+#ifdef USE_AP_AXIU
+typedef axis_pixel_36b gamma_in_t;
+typedef axis_pixel_24b gamma_out_t;
+#else
+typedef IspPixelPacket<36> gamma_in_t;
+typedef IspPixelPacket<24> gamma_out_t;
+#endif
 
 // Data Types based on the specification
 typedef ap_ufixed<12, 12> rgb_in_t;
@@ -53,15 +67,14 @@ struct rgb_pack_t
 // Top-level function
 
 void isp_ltm_top(hls::stream<IspPixelPacket<36>>& s_axis,
-         hls::stream<IspPixelPacket<36>>& m_axis, const log_t log_lut[4096],
-         const log_t reinhard_lut[1024], const exp_out_t exp_lut[1024]);
+         hls::stream<IspPixelPacket<36>>& m_axis);
 
 
-void isp_gamma_top(hls::stream<IspPixelPacket<36>>& stream_in,
-                      hls::stream<IspPixelPacket<24>>& stream_out,
-                      const ap_uint<8> gamma_lut_r[4096],
-                      const ap_uint<8> gamma_lut_g[4096],
-                      const ap_uint<8> gamma_lut_b[4096]);
+void isp_gamma_top(hls::stream<gamma_in_t>& stream_in,
+                      hls::stream<gamma_out_t>& stream_out);
+
+void isp_gamma_top_ver2(hls::stream<gamma_in_t>& stream_in,
+                      hls::stream<gamma_out_t>& stream_out);
 
 
 // void rgb2yuv(hls::stream<IspPixelPacket<24>>& stream_in,
@@ -70,13 +83,7 @@ void isp_gamma_top(hls::stream<IspPixelPacket<36>>& stream_in,
 
 void isp_ltm_gamma_top(
     hls::stream<axis_pixel_36b>& s_axis,
-    hls::stream<axis_pixel_24b>& m_axis,
-    const log_t log_lut[4096],
-    const log_t reinhard_lut[1024],
-    const exp_out_t exp_lut[1024],
-    const ap_uint<8> gamma_lut_r[4096],
-    const ap_uint<8> gamma_lut_g[4096],
-    const ap_uint<8> gamma_lut_b[4096]
+    hls::stream<axis_pixel_24b>& m_axis
 );
 
 #endif
