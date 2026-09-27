@@ -16,9 +16,7 @@
 
 #define WIDTH 100
 #define HEIGHT 100
-// #define VER2
-#define USE_AP_AXIU
-// #define DEBUG
+#define VER2
 
 
 
