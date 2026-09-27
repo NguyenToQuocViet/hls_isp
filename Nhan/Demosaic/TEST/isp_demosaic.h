@@ -13,14 +13,6 @@
 #define THRESHOLD_T 270
 #define EDGE_MAG_T  23
 
-// Dia chi nay thuoc wrapper AXI-Lite cua ISP hoan chinh. Ban than core
-// demosaic la free-running va nhan bon tin hieu cau hinh qua cong ap_none.
-#define base_addr_demosaic    0x44A40000
-#define offset_edge_threshold 0x10
-#define offset_edge_mag       0x18
-#define offset_width          0x20
-#define offset_height         0x28
-
 // RAW vao va moi kenh RGB ra deu co 12 bit khong dau.
 typedef ap_ufixed<12, 12> i_pixel;
 typedef ap_ufixed<12, 12, AP_RND, AP_SAT> o_pixel;
@@ -34,8 +26,6 @@ typedef ap_ufixed<16, 12> g_pixel;
 //           TDATA[23:12] = G
 //           TDATA[35:24] = B
 //   TUSER[0] = Start Of Frame, TLAST = End Of Line.
-// Dung ap_axiu de user/last duoc tao thanh sideband AXIS that, khong bi dong
-// goi chung vao TDATA nhu mot struct C++ thong thuong.
 typedef ap_axiu<12, 1, 1, 1> video_in_t;
 typedef ap_axiu<36, 1, 1, 1> video_out_t;
 
@@ -70,7 +60,6 @@ static inline void axis_set_rgb(
                | ((ap_uint<36>)b << 24);
 }
 
-// Dieu kien su dung:
 //   8 <= width <= MAX_WIDTH, height >= 2;
 //   Gioi han width toi thieu bao dam hai direction bank ping-pong da ghi xong
 //   truoc khi doi vai tro trong RTL pipeline II=1.
