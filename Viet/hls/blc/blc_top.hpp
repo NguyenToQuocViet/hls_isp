@@ -18,5 +18,6 @@ void blc_top(
     hls::ap_none<ap_uint<10>>& bl_r,
     hls::ap_none<ap_uint<10>>& bl_gr,
     hls::ap_none<ap_uint<10>>& bl_gb,
-    hls::ap_none<ap_uint<10>>& bl_b
+    hls::ap_none<ap_uint<10>>& bl_b,
+    hls::ap_none<ap_uint<1>>& config_valid
 );

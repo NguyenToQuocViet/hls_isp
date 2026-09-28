@@ -9,7 +9,6 @@ Author: Viet Nguyen To Quoc
 
 #include <ap_int.h>
 #include <ap_fixed.h>
-#include <hls_directio.h>
 #include <hls_stream.h>
 #include "isp_frame.hpp"
 #include "isp_pixel_packet.hpp"
@@ -31,8 +30,5 @@ ap_ufixed<10, 10> blc_pixel(
 void blc_engine(
     hls::stream<IspPixelPacket<10>>& input,
     hls::stream<IspPixelPacket<10>>& output,
-    hls::ap_none<ap_uint<10>>& bl_r,
-    hls::ap_none<ap_uint<10>>& bl_gr,
-    hls::ap_none<ap_uint<10>>& bl_gb,
-    hls::ap_none<ap_uint<10>>& bl_b
+    const BlcConfig& config
 );

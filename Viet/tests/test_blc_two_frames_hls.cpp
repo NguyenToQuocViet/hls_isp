@@ -36,20 +36,13 @@ int main() {
     hls::ap_none<ap_uint<10>> bl_gr;
     hls::ap_none<ap_uint<10>> bl_gb;
     hls::ap_none<ap_uint<10>> bl_b;
+    hls::ap_none<ap_uint<1>> config_valid;
 
     bl_r.write(config.black_level_r);
     bl_gr.write(config.black_level_gr);
     bl_gb.write(config.black_level_gb);
     bl_b.write(config.black_level_b);
-
-    //Allow AXI-Lite configuration writes to complete before the first SOF.
-    constexpr int PREAMBLE_PIXELS = 64;
-    for (int index = 0; index < PREAMBLE_PIXELS; index++) {
-        ap_axiu<16, 1, 0, 0> pixel{};
-        pixel.keep = 0b11;
-        pixel.strb = 0b11;
-        input.write(pixel);
-    }
+    config_valid.write(1);
 
     for (std::size_t index = 0; index < total_pixels; index++) {
         const std::size_t position = index % frame_pixels;
@@ -64,7 +57,7 @@ int main() {
 
     blc_top(
         input, output,
-        bl_r, bl_gr, bl_gb, bl_b
+        bl_r, bl_gr, bl_gb, bl_b, config_valid
     );
 
     int failures = 0;

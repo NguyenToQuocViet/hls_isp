@@ -32,7 +32,9 @@ Output BLC giữ nguyên kích thước và CFA alignment; SOF/EOL được tạ
 
 `blc_top` là IP BLC độc lập và là top HLS để đánh giá riêng BLC. Hai cổng pixel dùng AXI4-Stream `ap_axiu<16,1,0,0>`; wrapper đổi sang packet RAW10 nội bộ trước `blc_engine` và đổi lại tại output. Input hợp lệ có `keep = strb = 0b11` và `TDATA[15:10] = 0`; wrapper chỉ lấy `TDATA[9:0]`, `user`, `last`. Output đặt các bit dữ liệu cao bằng 0, `keep = strb = 0b11`, còn `user` và `last` lấy từ engine. Không quy định phục hồi input có `keep/strb` hoặc bit dữ liệu cao sai.
 
-Bốn black level là thanh ghi AXI4-Lite của `blc_top`. Phần mềm ghi đủ bốn giá trị và đợi các giao dịch ghi hoàn tất trước SOF đầu tiên sau reset. Engine chốt cấu hình tại SOF đó và dùng cho các frame tiếp theo. Top tự chạy sau reset; muốn đổi cấu hình, dừng nguồn pixel, reset top và ghi lại bốn thanh ghi. Không có cập nhật cấu hình giữa các frame trong cùng lần chạy.
+Bốn black level và `config_valid` là thanh ghi AXI4-Lite của `blc_top`; `config_valid` reset về 0. Sau reset, phần mềm ghi đủ bốn black level, đợi các giao dịch ghi hoàn tất và bảo đảm thứ tự MMIO, rồi ghi `config_valid = 1` sau cùng. Phần mềm giữ cả năm giá trị ổn định đến reset kế tiếp. Không hỗ trợ đổi cấu hình giữa các frame trong cùng lần chạy.
+
+Wrapper đọc các thanh ghi sau khi thấy `config_valid = 1`, phát đúng một snapshot `BlcConfig` cho runner và một token mở ingress. Runner nhận snapshot trước khi gọi `blc_engine` và giữ nó cho mọi frame đến reset. Engine không đọc thanh ghi AXI-Lite và không chốt lại cấu hình tại SOF. Pixel đến sớm có thể được nhận vào buffer AXI do HLS tạo; mọi beat đã được nhận phải giữ đúng thứ tự hoặc bị backpressure khi buffer đầy, và không được xử lý bằng cấu hình chưa công bố. Sau reset giữa frame, frame dở bị hủy; phần mềm phải cấu hình lại và nguồn phải bắt đầu frame mới với SOF. `config_valid` chỉ công bố cấu hình, không phải lệnh xử lý một frame hay tín hiệu hoàn tất frame.
 
 ## Adaptive Directional BPC
 
