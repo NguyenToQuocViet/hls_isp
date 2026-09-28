@@ -1,12 +1,11 @@
 /*
 Project: Adaptive Directional BPC and BLC
 Module: HLS Black Level Correction
-Description: Implement the synthesizable Black Level Correction block.
+Description: Implement the HLS Black Level Correction pixel algorithm and streaming engine.
 Author: Viet Nguyen To Quoc
 */
 
 #include "isp_blc.hpp"
-#include "../isp_frame.hpp"
 
 ap_ufixed<10, 10> blc_pixel(
     ap_ufixed<10, 10> input,
@@ -53,77 +52,44 @@ ap_ufixed<10, 10> blc_pixel(
     return (input - black_level);
 }
 
-void blc_process_frame(
-    hls::stream<IspStreamPixel>& input,
-    hls::stream<IspStreamPixel>& output,
-    ap_ufixed<10, 10> bl_r,
-    ap_ufixed<10, 10> bl_gr,
-    ap_ufixed<10, 10> bl_gb,
-    ap_ufixed<10, 10> bl_b
+void blc_engine(
+    hls::stream<IspPixelPacket<10>>& input,
+    hls::stream<IspPixelPacket<10>>& output,
+    const BlcConfig& config
 ) {
-#pragma HLS INLINE off
+    static ap_uint<11> in_row = 0;
+    static ap_uint<11> in_col = 0;
+#pragma HLS RESET variable=in_row
+#pragma HLS RESET variable=in_col
 
-    //local BLC config
-    const BlcConfig config {
-        bl_r,
-        bl_gr,
-        bl_gb,
-        bl_b
-    };
+    IspPixelPacket<10> pixel = input.read();
 
-    //Full-HD raster scan
-row_loop:
-    for (ap_uint<11> row = 0; row < FRAME_HEIGHT; row++) {
-    col_loop:
-        for (ap_uint<11> col = 0; col < FRAME_WIDTH; col++) {
-#pragma HLS PIPELINE II=1
+    //get SOF & EOL from internal coordinates
+    ap_uint<1> expected_sof = ((in_row == 0) && (in_col == 0));
+    ap_uint<1> expected_eol = (in_col == (FRAME_WIDTH - 1));
 
-            //unpack and correct RAW10
-            IspStreamPixel input_packet = input.read();
-            ap_ufixed<10, 10> input_pixel = input_packet.data.range(9, 0);
-            ap_ufixed<10, 10> result = blc_pixel(input_pixel, row, col, config);
-
-            //preserve sidebands, replace RAW10 payload
-            IspStreamPixel output_packet = input_packet;
-            output_packet.data = 0;
-            output_packet.data.range(9, 0) = result;
-
-            output.write(output_packet);
-        }
+    //wait for SOF at the start of each frame
+    if (expected_sof && !pixel.user) {
+        return;
     }
-}
 
-void isp_blc_top(
-    hls::stream<ap_axiu<16, 1, 0, 0>>& input,
-    hls::stream<ap_axiu<16, 1, 0, 0>>& output,
-    ap_ufixed<10, 10> bl_r,
-    ap_ufixed<10, 10> bl_gr,
-    ap_ufixed<10, 10> bl_gb,
-    ap_ufixed<10, 10> bl_b
-) {
-#pragma HLS INTERFACE axis port=input
-#pragma HLS INTERFACE axis port=output
-#pragma HLS INTERFACE s_axilite port=bl_r bundle=s_axi_ctrl offset=0x10
-#pragma HLS INTERFACE s_axilite port=bl_gr bundle=s_axi_ctrl offset=0x18
-#pragma HLS INTERFACE s_axilite port=bl_gb bundle=s_axi_ctrl offset=0x20
-#pragma HLS INTERFACE s_axilite port=bl_b bundle=s_axi_ctrl offset=0x28
-#pragma HLS INTERFACE s_axilite port=return bundle=s_axi_ctrl
+    //correct pixel and generate output SOF & EOL
+    pixel.data = blc_pixel(pixel.data, in_row, in_col, config);
+    pixel.user = expected_sof;
+    pixel.last = expected_eol;
+    output.write(pixel);
 
-#pragma HLS DATAFLOW
+    //advance once for every processed pixel
+    if (expected_eol) {
+        in_col = 0;
 
-    hls::stream<IspStreamPixel> raw_pixels;
-    hls::stream<IspStreamPixel> corrected_pixels;
-#pragma HLS STREAM variable=raw_pixels depth=2
-#pragma HLS STREAM variable=corrected_pixels depth=2
+        if (in_row == FRAME_HEIGHT - 1) {
+            in_row = 0;
+        } else {
+            in_row++;
+        }
+    } else {
+        in_col++;
+    }
 
-    axis_to_internal_frame(input, raw_pixels);
-    blc_process_frame(
-        raw_pixels,
-        corrected_pixels,
-        bl_r,
-        bl_gr,
-        bl_gb,
-        bl_b
-    );
-    internal_to_axis_frame(corrected_pixels, output);
 }
