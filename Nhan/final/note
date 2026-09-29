@@ -1,0 +1,2 @@
+Dùng 2 vòng for lồng nhau để cố định số pixel cần xử lý trong 1 lần gọi(xử lý 1 frame/1 lần), khi bring-up fpga cần bật bit auto-restart để chạy liên tục hoặc tự ghi 1 vào bit ap_start thủ công.
+Chấp nhận giữa 2 frame sẽ có 1 khoảng không liên tục, bản này sử dụng ap_ctrl_hs thay vì ap_ctrl_none như bản "backup".
