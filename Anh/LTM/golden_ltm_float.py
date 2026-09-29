@@ -6,7 +6,7 @@ import cv2
 import numpy as np
 
 
-def proposed_ltm(image_path, kernel=7, exposure_gain=3.0, a_max=0.6, detail_boost=1.3):
+def proposed_ltm(image_path, kernel=7, exposure_gain=1.2, a_max=0.6, detail_boost=1.3):
     """
     Proposed Local Tone Mapping Operator.
     Input: 12-bit HDR image (max 4095)
@@ -129,7 +129,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--exposure_gain",
         type=float,
-        default=3.0,
+        default=1.2,
         help="Linear digital gain to boost overall brightness",
     )
     parser.add_argument(

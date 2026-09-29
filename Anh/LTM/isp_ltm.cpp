@@ -1,14 +1,14 @@
 #include "../ltm_gamma.hpp"
 #include "ltm_lut.h"
 
-void read_and_log(hls::stream<IspPixelPacket<36>>& s_axis,
+void read_and_log(hls::stream<ltm_in_t>& s_axis,
                   hls::stream<log_t>& out_log, hls::stream<rgb_pack_t>& out_rgb)
 {
     img_size_t total_pixels = (img_size_t)HEIGHT * (img_size_t)WIDTH;
     for (img_size_t i = 0; i < total_pixels; i++)
     {
 #pragma HLS PIPELINE II = 1
-        IspPixelPacket<36> p = s_axis.read();
+        ltm_in_t p = s_axis.read();
 
         ap_uint<12> r_val = p.data.range(11, 0);
         ap_uint<12> g_val = p.data.range(23, 12);
@@ -21,10 +21,8 @@ void read_and_log(hls::stream<IspPixelPacket<36>>& s_axis,
         ap_uint<12> y_int = y_sum;
         if (y_int > 4095)
             y_int = 4095;
-        // hls::print("luminance: %0d\n", y_int);
 
         log_t log_y = LOG_LUT[y_int];
-        // hls::print("log luminance: %0f\n", log_y);
 
         out_log.write(log_y);
 
@@ -295,12 +293,12 @@ void conv2(hls::stream<weight_a_t>& src_a, hls::stream<weight_b_t>& src_b,
 
 void recombine_and_pack(
     hls::stream<weight_a_t>& src_mean_a, hls::stream<weight_b_t>& src_mean_b,
-    hls::stream<rgb_pack_t>& delay_rgb, hls::stream<IspPixelPacket<36>>& m_axis)
+    hls::stream<rgb_pack_t>& delay_rgb, hls::stream<ltm_out_t>& m_axis)
 {
 
     bool is_first = true;
     dim_t r = 0, c = 0;
-    // Exactly H * W iterations
+    // H * W iterations
     img_size_t total_pixels = (img_size_t)HEIGHT * (img_size_t)WIDTH;
     for (img_size_t i = 0; i < total_pixels; i++)
     {
@@ -349,7 +347,7 @@ void recombine_and_pack(
 
         exp_out_t I_final = EXP_LUT[exp_lut_idx];
 
-        // Trap C solved: Calculate manual division instead of relying on a huge LUT
+        
         ap_ufixed<24, 12> y_divisor = (y_int == 0) ? (ap_ufixed<24, 12>)1.0f : (ap_ufixed<24, 12>)y_int;
         ap_ufixed<24, 12> gain = I_final / y_divisor;
 
@@ -361,7 +359,7 @@ void recombine_and_pack(
         rgb_out_t g_out = g_out_raw;
         rgb_out_t b_out = b_out_raw;
 
-        IspPixelPacket<36> p_out;
+        ltm_out_t p_out;
         p_out.data.range(11, 0) = r_out;
         p_out.data.range(23, 12) = g_out;
         p_out.data.range(35, 24) = b_out;
@@ -384,7 +382,7 @@ void recombine_and_pack(
 }
 
 
-void isp_ltm_top(hls::stream<IspPixelPacket<36>>& s_axis, hls::stream<IspPixelPacket<36>>& m_axis)
+void isp_ltm_top(hls::stream<ltm_in_t>& s_axis, hls::stream<ltm_out_t>& m_axis)
 {
 
 #pragma HLS INTERFACE axis port = s_axis

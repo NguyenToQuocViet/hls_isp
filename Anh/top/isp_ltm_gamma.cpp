@@ -1,9 +1,9 @@
 #include "../ltm_gamma.hpp"
 
-void axis2isp(hls::stream<axis_pixel_36b>& axis_in, hls::stream<IspPixelPacket<36>>& isp_out) {
+void axis2isp(hls::stream<ap_axiu<36, 1, 0, 0>>& axis_in, hls::stream<IspPixelPacket<36>>& isp_out) {
     for (int i = 0; i < HEIGHT * WIDTH; i++) {
 #pragma HLS PIPELINE II=1
-        axis_pixel_36b in = axis_in.read();
+        ap_axiu<36, 1, 0, 0> in = axis_in.read();
         IspPixelPacket<36> out;
         out.data = in.data;
         out.user = in.user;
@@ -12,11 +12,11 @@ void axis2isp(hls::stream<axis_pixel_36b>& axis_in, hls::stream<IspPixelPacket<3
     }
 }
 
-void isp2axis(hls::stream<IspPixelPacket<24>>& isp_in, hls::stream<axis_pixel_24b>& axis_out) {
+void isp2axis(hls::stream<IspPixelPacket<24>>& isp_in, hls::stream<ap_axiu<24, 1, 0, 0>>& axis_out) {
     for (int i = 0; i < HEIGHT * WIDTH; i++) {
 #pragma HLS PIPELINE II=1
         IspPixelPacket<24> in = isp_in.read();
-        axis_pixel_24b out;
+        ap_axiu<24, 1, 0, 0> out;
         out.data = in.data;
         out.user = in.user;
         out.last = in.last;
@@ -26,8 +26,8 @@ void isp2axis(hls::stream<IspPixelPacket<24>>& isp_in, hls::stream<axis_pixel_24
 
 #ifndef USE_AP_AXIU
 void isp_ltm_gamma_top(
-    hls::stream<axis_pixel_36b>& s_axis,
-    hls::stream<axis_pixel_24b>& m_axis
+    hls::stream<ap_axiu<36, 1, 0, 0>>& s_axis,
+    hls::stream<ap_axiu<24, 1, 0, 0>>& m_axis
 )
 {
 #pragma HLS INTERFACE axis port=s_axis

@@ -48,8 +48,8 @@ int main()
     int common_width = 0;
     int common_height = 0;
 
-    hls::stream<IspPixelPacket<36>> s_axis("s_axis");
-    hls::stream<IspPixelPacket<36>> m_axis("m_axis");
+    hls::stream<ltm_in_t> s_axis("s_axis");
+    hls::stream<ltm_out_t> m_axis("m_axis");
 
     std::cout << "\n========================================" << std::endl;
     std::cout << "Pushing all frames to input stream..." << std::endl;
@@ -92,7 +92,7 @@ int main()
         {
             for (int c = 0; c < width; c++)
             {
-                IspPixelPacket<36> p;
+                ltm_in_t p;
 
                 int idx = (r * width + c) * 3;
                 ap_uint<12> r_val = input_image[idx + 0];
@@ -150,7 +150,7 @@ int main()
     int mismatches = 0;
     while (!m_axis.empty())
     {
-        IspPixelPacket<36> p_out = m_axis.read();
+        ltm_out_t p_out = m_axis.read();
         
         int r_val = p_out.data.range(11, 0);
         int g_val = p_out.data.range(23, 12);

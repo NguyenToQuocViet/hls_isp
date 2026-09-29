@@ -33,7 +33,7 @@ def process_frame(img_in):
         log_lut[i] = v
         
     reinhard_lut = np.zeros(1024, dtype=np.int64)
-    exposure_gain = 3.0
+    exposure_gain = 1.2
     target_max = 4095.0
     log_target_max = np.log(target_max + 1.0)
     for i in range(1024):
@@ -236,7 +236,7 @@ if __name__ == "__main__":
         # Generate REINHARD LUT
         f.write("const log_t REINHARD_LUT[1024] = {\n")
         reinhard_lut = []
-        exposure_gain = 3.0
+        exposure_gain = 1.2
         target_max = 4095.0
         log_target_max = np.log(target_max + 1.0)
         for i in range(1024):

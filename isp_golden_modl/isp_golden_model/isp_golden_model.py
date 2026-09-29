@@ -82,7 +82,7 @@ class CcmConfig:
 
 @dataclass
 class LtmConfig:
-    exposure_gain: float = 1.0
+    exposure_gain: float = 1.2
 
 
 @dataclass
