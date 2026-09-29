@@ -16,8 +16,8 @@
 
 #define WIDTH 100
 #define HEIGHT 100
-#define VER2
-#define USE_AP_AXIU
+// #define VER2 // data driven
+// #define USE_AP_AXIU
 
 #ifdef USE_AP_AXIU
 typedef ap_axiu<36, 1, 0, 0> ltm_in_t;
