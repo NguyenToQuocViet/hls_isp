@@ -1,1 +1,2 @@
 Đây là các block không bao gồm thanh ghi cấu hình, các hệ số được nạp từ axi4lite được hardcode bên trong module, mỗi block chỉ có data_input và data_output.
+mode: free-running
