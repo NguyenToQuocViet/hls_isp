@@ -206,6 +206,11 @@ module test_blc_streaming_rtl;
                    last_input_cycle, first_next_input_cycle,
                    last_output_cycle, first_next_output_cycle);
 
+        if ($test$plusargs("two_frames_only")) begin
+            $display("PASS: two 16x16 BLC frames, 512 beats, continuous frame boundary");
+            $finish;
+        end
+
         reset_dut(2);
         black_r = 11; black_gr = 13; black_gb = 17; black_b = 19;
         fork
