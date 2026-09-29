@@ -47,8 +47,10 @@ detect khi abs(X - P) > T
 
 Operating point hiện chọn là `(T0_R, T0_G, T0_B, k_s, k_a) = (4, 8, 4, 3, 0)`. Streaming BPC cần trả về một pixel RAW10 cho mỗi pixel input và tạo sideband theo tọa độ output.
 
+Kiến trúc standalone BPC đã chốt tại [BPC streaming contract](bpc_streaming_contract.md): wrapper/runner/engine boundary, control/configuration, frame lifecycle, storage/drain và acceptance gates. Đây là contract triển khai; chưa phải bằng chứng BPC streaming đã pass.
+
 ## Streaming HLS target
 
-Branch rebuild giữ hàm pixel BLC/BPC trong HLS và đang xây dựng worker cùng `blc_top`; worker streaming, adapter và top cũ đã được lưu ở branch `archive/bpc-agent-hls-2026-09-26` (commit `b55eb38`). Top tích hợp BLC→BPC chưa được xây dựng trên branch này.
+Checkout hiện có standalone streaming `blc_top` và hàm pixel BPC; BPC engine/top streaming theo contract mới chưa được triển khai. Worker streaming, adapter và top cũ đã được lưu ở branch `archive/bpc-agent-hls-2026-09-26` (commit `b55eb38`). Top tích hợp BLC→BPC mới chưa được xây dựng.
 
-Top tích hợp đích cần xử lý luồng frame không biết trước số lượng, giữ định dạng AXI4-Stream ở bảng trên và nối BLC → BPC. Quy tắc nhận frame, drain, backpressure và phát sideband nằm trong [contract streaming](bpc-adaptive-directional.md#11-hls-streaming-architecture). Block control và cấu hình của top tích hợp, cùng register map cụ thể, chưa được chốt.
+Top tích hợp đích cần xử lý luồng frame không biết trước số lượng, giữ định dạng AXI4-Stream ở bảng trên và nối BLC → BPC bằng packet nội bộ. Quy tắc nhận frame, drain, backpressure và phát sideband nằm trong [contract streaming](bpc_streaming_contract.md). Quyết định standalone BPC không tự chốt block control, commit policy hay register map cụ thể của top tích hợp.

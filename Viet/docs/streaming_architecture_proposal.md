@@ -9,6 +9,8 @@ Author: Viet Nguyen To Quoc
 
 **Trạng thái: đề xuất để Việt đọc và duyệt; chưa phải implementation đã kiểm chứng.**
 
+Cập nhật authority 2026-09-28: phần kiến trúc BPC ngoài thuật toán đã được chốt tại [BPC streaming contract](bpc_streaming_contract.md), với rationale ở [ADR 0003](adr/0003-reuse-blc-boundaries-for-bpc.md). BLC hiện hành theo [interface contract](blc_bpc_interface.md). Nội dung khảo sát bên dưới được giữ như proposal lịch sử; các chi tiết như hai descriptor hoặc kiến trúc TOP toàn ISP không tự trở thành quyết định đã duyệt.
+
 Ngày khảo sát: 2026-09-27. Source nhóm: `main` tại `f02cdcaf476555ecb5919bd05bb5f4feeb639c9c`. Baseline BLC rebuild: `work/bpc-streaming-rebuild` tại `401d2902e12342cb365fb0c1619ba2325ff87f2c`. Tool đích: Vitis HLS 2026.1, Vivado IP flow. Hai revision này khác nhau: BLC rebuild chưa nằm trên `main`.
 
 Tài liệu này sở hữu **phương án control/config/boundary đang đề xuất**, không thay thế thuật toán hay tự sửa contract đã chốt. Sau khi được duyệt, phần quyết định được chuyển vào contract hiện hành trên branch rebuild; proposal được giữ làm căn cứ. Trong lượt khảo sát này chỉ đọc source, header, đoạn testbench liên quan và hướng dẫn AMD; không chạy CSim/CoSim, không sửa C++ và không đọc report/waveform nặng.
