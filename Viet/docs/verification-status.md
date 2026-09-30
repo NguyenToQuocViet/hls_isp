@@ -154,3 +154,64 @@ c65b8b68320ef281ddcacd68c4221fa5d68c136fb1e6cffb4cba6892b4144b1f  Viet/hls/blc/i
 - CoSim với harness đã sửa thứ tự **PASS**: `cosim.setup=true` tạo test vectors và sequence SV; `scripts/patch_blc_cosim_order.py` chỉ thêm điều kiện đợi bốn write sequence hoàn tất trước write `config_valid`; `sim.sh` chạy lại cùng generated RTL và C post-check báo **512/512 đúng, 0 failures**. Patch có marker/count guard để dừng nếu định dạng harness sinh ra thay đổi. DUT, test vectors và golden không bị sửa ở bước này.
 
 Giới hạn: test reset sau khi 23 output đã drain, chưa kiểm reset khi còn beat in-flight; backpressure chỉ là mẫu stall xác định, không phải stress ngẫu nhiên dài. Synthesis vẫn cảnh báo `HLS 200-656` về khả năng deadlock của rewind pipeline dưới `ap_ctrl_none`; các traffic đã test chạy đúng nhưng chưa bao phủ mọi lịch stall. Kết quả BLC standalone không xác nhận timing hay hành vi của BPC hoặc TOP ISP.
+
+## Standalone BLC/BPC handshake (2026-09-30)
+
+Việt chạy các lượt dưới đây bằng `scripts/run_handshake_tests.py`; Codex kiểm tra
+log, report, source/input hashes và generated harness, không chạy lại simulation.
+Contract và cách chạy thuộc [handshake_test_contract.md](handshake_test_contract.md).
+Hai DUT là `hls/blc/handshake/blc_top` và `hls/bpc/handshake/bpc_top`.
+
+Tool: Vitis 2026.1, SW Build 6511674; CoSim dùng XSIM, target
+`xczu7ev-ffvc1156-2-e`, clock constraint 150 MHz, uncertainty 10%.
+Các lượt ghi Git HEAD `9355452a4ec22e34dafd2e441d996e1e0c718143` cùng worktree
+chưa commit. `result.json` lưu SHA-256 của source tại từng lượt, không chỉ HEAD.
+DUT, Golden và testbench của bốn lượt CoSim PASS trong bảng khớp source được
+commit cùng bản ghi này. Runner của BLC boundary và BPC single có hash cũ trước
+khi đổi chính sách waveform; BLC single và BPC boundary dùng runner hiện tại.
+Các cấu hình thực tế được giữ trong `synthesis/` và `run_*/test.cfg`.
+
+Các đường dẫn trong bảng nằm dưới `Viet/build/handshake_tests/` (ignored):
+
+| Block | Stage | Mode | Frame / pixel đã kiểm | Kết quả | Run path |
+|---|---|---|---|---|---|
+| BLC | CSim | single | 1 / 2.073.600 | PASS | `blc/single/20260930_224331_766471_csim_4262` |
+| BLC | CSim | boundary | 3 / 768 | PASS | `blc/boundary/20260930_224428_320307_csim_4557` |
+| BLC | CSim | multi | 5 / 10.368.000 | PASS | `blc/multi/20260930_224455_882500_csim_4864` |
+| BLC | CoSim | single | 1 / 2.073.600 | PASS | `blc/single/20260930_230144_326122_cosim_11889` |
+| BLC | CoSim | boundary | 3 / 768 | PASS | `blc/boundary/20260930_224658_481867_cosim_6470` |
+| BPC | CSim | single | 1 / 2.073.600 | PASS | `bpc/single/20260930_215954_188301_csim_33735` |
+| BPC | CSim | multi | 5 / 10.368.000 | PASS | `bpc/multi/20260930_220140_965868_csim_34171` |
+| BPC | CoSim | single | 1 / 2.073.600 | PASS | `bpc/single/20260930_220451_930896_cosim_35469` |
+| BPC | CoSim | boundary | 3 / 768 | PASS | `bpc/boundary/20260930_231130_853043_cosim_14843` |
+
+Seed đầu là `20260930`, tăng một mỗi frame; các config dùng profile trong contract.
+`single`/`multi` dùng 1920×1080, `boundary` dùng 16×16. Multi chạy một frame/process;
+boundary chạy ba transaction cùng process, không reset DUT giữa frame.
+Không tìm thấy artifact CSim boundary độc lập của BPC hoặc CoSim multi của hai
+block; BPC boundary đã có C pre-check và RTL post-check trong lượt CoSim.
+
+Mọi frame trong bảng có đủ output, `missing=mismatches=extras=remaining_input=0`.
+Checker so Golden độc lập, toàn bộ 16-bit TDATA và `user`, `last`, `keep`, `strb`.
+Bốn lượt CoSim có checker sau `Starting C post checking`, verdict
+`C/RTL co-simulation finished: PASS` và report Verilog `Pass`.
+Logs nằm ở `run_*/tool_results/logs/hls_run_<stage>.log`; reports ở
+`run_*/tool_results/hls/sim/report/<block>_top_cosim.rpt`.
+Lệnh, exit status và timeout nằm trong `command.json`; input/config/SHA-256 nằm
+trong `vectors.json`. Tái lập bằng các lệnh trong contract với block/stage/mode
+tương ứng, hoặc `--replay` để giữ đúng vector và config đã lưu.
+
+Kiểm tra thêm artifact của bốn lượt CoSim: generated post-check đọc output RTL;
+raw RTL data/sideband khớp file expected cho đủ transaction và không chứa X/Z.
+Generated boundary harness ghi xong config trước start và chỉ reset lúc đầu.
+Stimulus kích hoạt cả nhánh BLC clamp/positive và BPC sửa/giữ; riêng full-frame
+BPC có 1.799.800 pixel sửa, 261.816 pixel interior giữ và 11.984 pixel border.
+Các số này mô tả stimulus random, không phải chất lượng xử lý ảnh thực tế.
+
+Giới hạn: runner hiện chưa tự FAIL khi có cảnh báo `SIM 212-201`; generated
+wrapper có thể chuyển X thành 0 trước checker. Không thấy X/Z trong các output
+đã audit nên giới hạn này không phủ định những PASS trên, nhưng các lượt sau cần
+kiểm tra cảnh báo đó. Bộ test chưa chứng minh full-size nhiều transaction không
+reset, malformed markers, reset giữa frame, random backpressure, TOP ISP hoặc
+timing sau place-and-route. Waveform hiện chỉ bật đầy đủ cho boundary; không có
+cam kết CoSim full-size luôn vừa 32 GB RAM.
