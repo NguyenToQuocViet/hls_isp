@@ -33,7 +33,7 @@ Phạm vi triển khai kế tiếp là BPC engine, standalone wrapper và verifi
 | BPC-07 | Mỗi lần gọi BPC engine thực hiện tối đa một committed storage advance hoặc không advance | Không lấy nguyên bước read/process/write của BLC |
 | BPC-08 | Tách input thật, storage advance, center generation và AXI retirement | BPC cần state riêng |
 | BPC-09 | Bốn line-buffer bank, horizontal window, center delay, overlap và synthetic drain | BPC cần cơ chế riêng |
-| BPC-10 | Bảo toàn center/data/valid/metadata dưới backpressure; chỉ advance khi có khả năng giữ kết quả | Nguyên tắc chung; BPC cần triển khai riêng |
+| BPC-10 | Bảo toàn center/data/metadata và output pending dưới backpressure; chỉ advance khi có khả năng giữ kết quả | Nguyên tắc chung; BPC cần triển khai riêng |
 | BPC-11 | Pipeline hướng tới II=1 và có khả năng flush operation đã nhận | Tham khảo FLP của BLC; không thay thế window drain |
 | BPC-12 | Nghiệm thu bằng independent reference và generated-RTL handshakes | Tham khảo phương pháp BLC, mở rộng traffic cho BPC |
 
@@ -43,7 +43,7 @@ Phạm vi triển khai kế tiếp là BPC engine, standalone wrapper và verifi
 |---|---|
 | Wrapper `bpc_top` | AXI4-Stream adapters, AXI-Lite/DirectIO, config publication, ingress admission, task/channel instantiation và reset integration |
 | Runner trong wrapper | Nhận config một lần, giữ snapshot local, gọi engine liên tục với snapshot đó; sở hữu scheduling scope của task |
-| `bpc_engine` | Nhận packet, frame admission, counters, line buffers/window, real/synthetic arbitration, center validity, border bypass, gọi `bpc_pixel`, phát packet output |
+| `bpc_engine` | Nhận packet, frame admission, counters, line buffers/window, real/synthetic arbitration, center ownership, border bypass, gọi `bpc_pixel`, phát packet output |
 | `bpc_pixel` | Tính kết quả cho window và tọa độ center theo thuật toán đã có; không stream I/O hoặc protocol cấu hình |
 
 Interface engine đích:
@@ -89,7 +89,7 @@ Giá trị được cung cấp bởi caller, không hardcode operating point và
 
 Giao thức khởi động:
 
-1. Reset xóa trạng thái published/started/configured và validity của engine.
+1. Reset xóa trạng thái published/started/configured và control của engine.
 2. Phần mềm ghi đủ năm tham số, đợi giao dịch ghi hoàn tất và bảo đảm thứ tự MMIO.
 3. Phần mềm ghi `config_valid=1` sau cùng, giữ tất cả giá trị ổn định đến reset.
 4. Publisher đọc và gửi đúng một `BpcConfig` snapshot cho runner, cùng một token mở ingress. Config channel và ingress token channel dùng depth 2 như BLC.
@@ -122,17 +122,17 @@ Giữ bốn bank độc lập có chiều dài W, `horizontal[3][5]` và computi
 
 1. Chọn đúng một token real hoặc synthetic và bảo đảm có chỗ giữ mọi kết quả phát sinh.
 2. Đọc giá trị cũ ở bank address hiện tại, ghi token mới cùng history dịch xuống các bank.
-3. Shift/load horizontal window; xác định center sau update và tính validity/ownership tương ứng.
+3. Shift/load horizontal window; xác định center sau update và frame ownership tương ứng.
 4. Với center thật, tạo đúng một output: border bypass hoặc gọi `bpc_pixel()` theo tọa độ center, rồi gắn SOF/EOL.
 5. Commit các state liên quan đúng một lần. Input coordinates chỉ tiến cho real; `lb_addr` wrap modulo W cho cả real và synthetic; output coordinates chỉ tiến cho center thật đã có chỗ giữ.
 
-Đây là thứ tự logic; HLS có thể pipeline qua nhiều clock. Phải giữ dependency, căn chỉnh data/valid/metadata và bảo toàn operation khi stall. Không cập nhật storage rồi đánh mất center vì output chưa sẵn sàng. Nếu prefetch packet, phải có pending storage và không đọc đè packet chưa commit.
+Đây là thứ tự logic; HLS có thể pipeline qua nhiều clock. Phải giữ dependency, căn chỉnh data/ownership/metadata và bảo toàn operation khi stall. Không cập nhật storage rồi đánh mất center vì output chưa sẵn sàng. Nếu prefetch packet, phải có pending storage và không đọc đè packet chưa commit.
 
 Delay của center là `D = 2*W + 2` committed advances, không phải latency clock cố định. Physical address không bị ép bằng logical column; synthetic giữa frame có thể làm chúng lệch nhau. Không có synthetic trong frame, nên hai pixel cùng cột ở các hàng liên tiếp của một frame vẫn cách nhau W advance.
 
 Memory implementation phải cung cấp read-old/write-new cần thiết mỗi advance. Kiểm memory-port schedule và read/write ordering trong synthesis/RTL; không dùng `DEPENDENCE false` nếu chưa chứng minh dependency được bỏ là không có thật.
 
-## 7. Arbitration, drain và validity
+## 7. Arbitration, drain và center ownership
 
 | Trạng thái input | Real input hợp lệ sẵn sàng ở engine | Không có real input hợp lệ |
 |---|---|---|
@@ -144,13 +144,17 @@ Engine phải quyết định được khi không có input; không blocking-rea
 
 Sau pixel thật cuối, tối đa D advance nữa expose các center còn lại. Những center tail này thuộc border và giữ nguyên giá trị center theo contract thuật toán. Frame kế tiếp có thể cung cấp các advance đó; nếu chưa có frame kế tiếp, engine tự dùng synthetic zero. Không yêu cầu nguồn gửi thêm pixel hoặc dummy frame.
 
-Synthetic không tính là input ảnh và không tạo output. Cần validity/ownership hoặc bounded control tương đương để mỗi center thật xuất đúng một lần. Output coordinate chỉ mô tả pixel thật tiếp theo, không thể tự nhận diện center synthetic. Dừng synthetic ngay khi không còn center thật cần expose, kể cả output cuối còn nằm trong FIFO do backpressure.
+**Quyết định center ownership:** Với `N = W*H > D`, frame input đủ `N` pixel và synthetic chỉ xuất hiện giữa các frame, không dùng bit valid cho từng pixel/token trong line buffer hoặc horizontal window, cũng không dùng valid-bit shift register. Engine xác định center thật bằng tiến độ input/output và `D`; đây là control của committed advance, không phải metadata lưu cùng pixel. Output coordinate *một mình* không đủ để phân biệt center synthetic.
+
+Gọi `in_index = in_row*W + in_col` và `out_index = out_row*W + out_col` ở **trạng thái trước advance**; `real_advance` chỉ đúng khi pixel thật được commit (không phải chỉ được prefetch). Sau khi cập nhật window, center tại advance này là pixel thật khi `out_index != 0` **hoặc** `(real_advance && in_index >= D)`. Khi `out_index != 0`, output frame đang dở và mỗi advance kế tiếp expose center thật tiếp theo của frame đó. Khi `out_index == 0`, các advance warmup/synthetic bị bỏ qua; center đầu frame mới chỉ được expose lúc pixel thật có `in_index == D` được commit. Nếu không có committed advance, các chỉ số và window đứng yên; riêng AXI output stall vẫn có thể cho phép advance khi còn output capacity. `center_is_real` có thể là kết quả tổ hợp của điều kiện này, không phải state bit dịch theo dữ liệu.
+
+Synthetic không tính là input ảnh và không tạo output. Dừng synthetic ngay khi không còn center thật cần expose, kể cả output cuối còn nằm trong FIFO do backpressure. Nếu đổi một trong các tiền đề `N > D`, frame đủ `N` pixel hoặc không có synthetic trong frame, phải xem lại cách xác định center trước khi thay contract; không tự thêm per-pixel valid bit vào thiết kế đã chốt.
 
 Ví dụ chỉ số advance zero-based, W=16, H=16, N=256, D=34:
 
 - F0 vào ở advance 0..255; center thật F0 được expose ở 34..289.
 - Zero gap: F1 SOF ở 256, center đầu F1 ở 290, nối ngay sau center cuối F0.
-- Chèn 5 synthetic ở 256..260 rồi nhận F1 tại 261: center đầu F1 ở 295; center ở 290..294 là synthetic và không phát output.
+- Chèn 5 synthetic ở 256..260 rồi nhận F1 tại 261: center cuối F0 ở 289 làm `out_index` về 0; ở 290..294, `in_index` của F1 mới là 29..33 nên center synthetic không phát; tại 295, `in_index=34=D` và center đầu F1 được expose.
 - Không có F1: drain đến 289 rồi dừng. Stall clock không tăng chỉ số advance; latency BRAM/arithmetic pipeline được xét riêng.
 
 ## 8. Scheduling, backpressure và reset
@@ -161,7 +165,7 @@ Tham khảo `PIPELINE II=1 style=flp` của BLC ở ingress/runner/egress, kiể
 
 Khi downstream stall, pending output phải giữ nguyên. Operation đã nhận vẫn được phép tiến trong pipeline nếu còn capacity; không yêu cầu mọi register đứng yên ngay khi AXI `TREADY=0`. FIFO pixel có độ sâu hữu hạn được khai báo/ghi nhận rõ khi triển khai; không coi depth của BLC là bằng chứng đủ cho BPC.
 
-Reset xóa config flags, frame/counter state, pending-valid và center-valid/control. Không bắt buộc clear toàn bộ line-buffer RAM; validity phải ngăn history cũ/chưa khởi tạo trở thành output thật. Reset giữa frame hủy frame đang dở và mọi beat in-flight cũ. Sau reset phải cấu hình lại và bắt đầu frame mới tại SOF. Wrapper standalone dùng cùng clock/reset domain cho control và datapath; CDC mới nằm ngoài phạm vi.
+Reset xóa config flags, frame/counter state và output pending state. Không bắt buộc clear toàn bộ line-buffer RAM; center ownership control phải ngăn history cũ/chưa khởi tạo trở thành output thật. Reset giữa frame hủy frame đang dở và mọi beat in-flight cũ. Sau reset phải cấu hình lại và bắt đầu frame mới tại SOF. Wrapper standalone dùng cùng clock/reset domain cho control và datapath; CDC mới nằm ngoài phạm vi.
 
 ## 9. Tiêu chí nghiệm thu
 
@@ -170,7 +174,7 @@ Reset xóa config flags, frame/counter state, pending-valid và center-valid/con
 | Gate | Bằng chứng cần có |
 |---|---|
 | G1 — Config/interface | Synthesis nhận standalone `ap_ctrl_none`, AXI ports và config fields đúng; reset `config_valid=0`; snapshot và ingress dependency đúng; không xử lý pixel bằng config chưa publish |
-| G2 — Storage/control trace | Trace đánh số token chứng minh read-old/write-new, D, center validity, tọa độ, synthetic suppression và overlap; khớp các ví dụ mục 7 |
+| G2 — Storage/control trace | Trace đánh số token chứng minh read-old/write-new, D, center ownership theo input/output counters, tọa độ, synthetic suppression và overlap; khớp các ví dụ mục 7 |
 | G3 — Functional CSim | So mọi output data/sideband với reference độc lập theo từng frame; 16×16 và 16×12; nguồn dừng đúng sau N pixel thật, không dummy/preamble cần cho đồng bộ |
 | G4 — Generated RTL | Lặp các traffic dưới đây trên RTL sinh ra, scoreboard theo accepted beats, kiểm exact count và output stability khi stall; nguồn đúng protocol AXI-Lite |
 | G5 — Synthesis và production geometry | Kiểm achieved II, memory ports/dependencies, finite buffer depths và warnings; chạy kiểm tra functional/RTL phù hợp ở 1920×1080 trước khi tuyên bố hỗ trợ production geometry đã được xác minh |
@@ -189,6 +193,6 @@ Ghi revision/hash, tool/version, config, command và kết quả vào `verificat
 
 Đọc file này, thuật toán hiện hành và `hls/blc/isp_blc.*`, `hls/blc/blc_top.*` trước khi sửa. Thực hiện theo G1→G5, giữ source changes theo từng milestone có thể kiểm riêng. Không khám phá lại control/config boundary đã chốt chỉ vì BPC có state nhiều hơn BLC.
 
-Chi tiết được phép chọn trong implementation: encoding FSM, tên helper, width counter đủ bounds, cơ chế validity/descriptor tương đương và output capacity phù hợp. Contract chưa buộc dùng hai descriptor, valid-bit shift register, một kiểu FSM hay tách window thành task riêng. Mọi lựa chọn phải thỏa committed-advance và acceptance criteria; lưu rationale khi có hệ quả kiến trúc đáng kể.
+Chi tiết được phép chọn trong implementation: encoding FSM, tên helper, width counter đủ bounds, cách biểu diễn center ownership control ở mục 7 và output capacity phù hợp. Contract không buộc một kiểu FSM hay tách window thành task riêng; quyết định không dùng per-pixel valid bit đã chốt ở mục 7. Mọi lựa chọn phải thỏa committed-advance và acceptance criteria; lưu rationale khi có hệ quả kiến trúc đáng kể.
 
 Nếu cần đổi thuật toán, lifetime config, số frame, chính sách SOF/reset, storage geometry, drain/overlap hoặc thêm external interface, phải đưa thay đổi contract cho Việt quyết định trước. Session triển khai cần yêu cầu thực hiện cụ thể từ Việt; tài liệu này là baseline đã chốt để bắt đầu từ đó.
