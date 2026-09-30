@@ -32,3 +32,6 @@ independent workspaces for source, experiments, documentation, and results that
 belong to their respective contributions.
 
 **Authors:** Tuan Anh, Chi Nhan, Viet Hoang, Quoc Viet.
+
+© 2026 Viettel Semiconductor Center. All rights reserved.
+The original project code is provided for review only. Reuse, modification, or redistribution requires prior written permission from Viettel Semiconductor Center.
