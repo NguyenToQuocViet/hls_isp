@@ -40,7 +40,9 @@ BpcPixelResult bpc_pixel(
     const std::vector<std::uint16_t>& input,
     int row,
     int col,
-    const BpcConfig& config
+    const BpcConfig& config,
+    int width = 1920,
+    int height = 1080
 );
 
 //full-frame interface
@@ -48,7 +50,9 @@ void bpc_frame(
     const std::vector<std::uint16_t>& input,
     std::vector<std::uint16_t>& output,
     std::vector<Detection>& detections,
-    const BpcConfig& config
+    const BpcConfig& config,
+    int width = 1920,
+    int height = 1080
 );
 
 } //namespace adaptive_bpc

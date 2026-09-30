@@ -13,10 +13,6 @@ Author: Viet Nguyen To Quoc
 
 namespace adaptive_bpc {
 
-//frame configuration
-constexpr int WIDTH = 1920;
-constexpr int HEIGHT = 1080;
-
 //absolute difference
 std::uint16_t abs_diff(std::uint16_t a, std::uint16_t b) {
     if (a > b) {
@@ -27,22 +23,22 @@ std::uint16_t abs_diff(std::uint16_t a, std::uint16_t b) {
 }
 
 //single-pixel correction
-BpcPixelResult bpc_pixel(const std::vector<std::uint16_t>& input, int row, int col, const BpcConfig& config) {
+BpcPixelResult bpc_pixel(const std::vector<std::uint16_t>& input, int row, int col, const BpcConfig& config, int width, int height) {
     //center sample
-    const int index = row * WIDTH + col;
+    const int index = row * width + col;
     const std::uint16_t center = input[index];
 
     //two-pixel border bypass
-    if ((row < 2) || (row >= (HEIGHT - 2)) || (col < 2) || (col >= (WIDTH - 2))) {
+    if ((row < 2) || (row >= (height - 2)) || (col < 2) || (col >= (width - 2))) {
         return {center, false};
     }
 
     //directional same-phase pairs: H, V, D1, D2
     const std::array<std::array<std::uint16_t, 2>, 4> directional_pairs = {{
-        {input[(row * WIDTH) + (col - 2)], input[(row * WIDTH) + (col + 2)]},
-        {input[((row - 2) * WIDTH) + col], input[((row + 2) * WIDTH) + col]},
-        {input[((row - 2) * WIDTH) + (col - 2)], input[((row + 2) * WIDTH) + (col + 2)]},
-        {input[((row - 2) * WIDTH) + (col + 2)], input[((row + 2) * WIDTH) + (col - 2)]}
+        {input[(row * width) + (col - 2)], input[(row * width) + (col + 2)]},
+        {input[((row - 2) * width) + col], input[((row + 2) * width) + col]},
+        {input[((row - 2) * width) + (col - 2)], input[((row + 2) * width) + (col + 2)]},
+        {input[((row - 2) * width) + (col + 2)], input[((row + 2) * width) + (col - 2)]}
     }};
 
     //smoothest direction with H, V, D1, D2 tie priority
@@ -90,10 +86,14 @@ BpcPixelResult bpc_pixel(const std::vector<std::uint16_t>& input, int row, int c
 }
 
 //full-frame correction
-void bpc_frame(const std::vector<std::uint16_t>& input, std::vector<std::uint16_t>& output, std::vector<Detection>& detections, const BpcConfig& config) {
+void bpc_frame(const std::vector<std::uint16_t>& input, std::vector<std::uint16_t>& output, std::vector<Detection>& detections, const BpcConfig& config, int width, int height) {
     //separate input and output buffers
     if (&input == &output) {
         throw std::invalid_argument("input and output must be distinct");
+    }
+    if (width < 5 || height < 5 ||
+        input.size() != static_cast<std::size_t>(width) * height) {
+        throw std::invalid_argument("input size must match frame geometry (at least 5x5)");
     }
 
     //initialize outputs
@@ -101,12 +101,12 @@ void bpc_frame(const std::vector<std::uint16_t>& input, std::vector<std::uint16_
     detections.clear();
 
     //process centers with a complete 5 x 5 neighborhood
-    for (int row = 2; row < HEIGHT - 2; row++) {
-        for (int col = 2; col < WIDTH - 2; col++) {
-            const int index = (row * WIDTH) + col;
+    for (int row = 2; row < height - 2; row++) {
+        for (int col = 2; col < width - 2; col++) {
+            const int index = (row * width) + col;
 
             BpcPixelResult result;
-            result = bpc_pixel(input, row, col, config);
+            result = bpc_pixel(input, row, col, config, width, height);
             output[index] = result.value;
 
             //record corrected pixels
