@@ -11,9 +11,11 @@ Trạng thái: **đã chốt làm contract triển khai**, ngày 2026-09-28. Đ�
 
 ## 1. Phạm vi và authority
 
+Contract này áp dụng riêng cho variant free-running `ap_ctrl_none`. Variant finite-frame `ap_ctrl_hs` đã chốt riêng tại [BPC handshake contract](bpc_handshake_contract.md); không thay đổi lifecycle/overlap/config policy của bản none. Đợt implement theo contract handshake đã chuyển hai file hiện tại nguyên nội dung vào `hls/bpc/none/`, chưa làm TOP none.
+
 Tài liệu này sở hữu kiến trúc HLS ngoài thuật toán của BPC: wrapper/engine boundary, control, configuration, stream/frame lifecycle, storage advance, reset, backpressure và điều kiện nghiệm thu. Mục tiêu là tận dụng mô hình BLC hiện tại để triển khai BPC ở session tiếp theo.
 
-- [bpc-adaptive-directional.md](bpc-adaptive-directional.md), mục 1–10, tiếp tục sở hữu thuật toán, arithmetic, CFA, tie-break và border behavior. Giữ `bpc_pixel()`, `BpcConfig`, `BpcWindow` hiện có trong `hls/bpc/isp_bpc.hpp/.cpp`.
+- [bpc-adaptive-directional.md](bpc-adaptive-directional.md), mục 1–10, tiếp tục sở hữu thuật toán, arithmetic, CFA, tie-break và border behavior. Giữ `bpc_pixel()`, `BpcConfig`, `BpcWindow` hiện có trong `hls/bpc/none/isp_bpc.hpp/.cpp`.
 - [blc_bpc_interface.md](blc_bpc_interface.md) sở hữu format dữ liệu chung và BLC boundary. Contract này cụ thể hóa standalone BPC.
 - [ADR 0003](adr/0003-reuse-blc-boundaries-for-bpc.md) ghi lý do chọn mô hình này. [Proposal cũ](streaming_architecture_proposal.md) là căn cứ thiết kế, không tự động phê duyệt mọi chi tiết implementation trong đó.
 - [verification-status.md](verification-status.md) sở hữu kết quả chạy thực tế. Kết quả BLC không được dùng làm bằng chứng BPC đã pass.

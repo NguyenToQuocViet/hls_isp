@@ -49,10 +49,10 @@ detect khi abs(X - P) > T
 
 Operating point hiện chọn là `(T0_R, T0_G, T0_B, k_s, k_a) = (4, 8, 4, 3, 0)`. Streaming BPC cần trả về một pixel RAW10 cho mỗi pixel input và tạo sideband theo tọa độ output.
 
-Kiến trúc standalone BPC đã chốt tại [BPC streaming contract](bpc_streaming_contract.md): wrapper/runner/engine boundary, control/configuration, frame lifecycle, storage/drain và acceptance gates. Đây là contract triển khai; chưa phải bằng chứng BPC streaming đã pass.
+Variant BPC free-running theo [BPC streaming contract](bpc_streaming_contract.md). Variant finite-frame `ap_ctrl_hs` đã chốt tại [BPC handshake contract](bpc_handshake_contract.md), kế thừa boundary BLC hs và tự drain mỗi frame. Hai contract sở hữu lifecycle/config/storage policy riêng; giữ chung format và pixel algorithm. Đây là contract triển khai, chưa phải bằng chứng BPC đã pass verification.
 
 ## Streaming HLS target
 
-Checkout hiện có standalone streaming `blc_top` và hàm pixel BPC; BPC engine/top streaming theo contract mới chưa được triển khai. Worker streaming, adapter và top cũ đã được lưu ở branch `archive/bpc-agent-hls-2026-09-26` (commit `b55eb38`). Top tích hợp BLC→BPC mới chưa được xây dựng.
+Checkout hiện có BLC none/handshake và BPC none/handshake. Hai source BPC hiện tại được chuyển nguyên nội dung vào `hls/bpc/none/isp_bpc.*`; `hls/bpc/handshake/isp_bpc.*` là bản clone sửa lifecycle hữu hạn, cùng standalone `bpc_top.hpp/.cpp` theo mẫu BLC hs. BPC none chưa có TOP; bản handshake chưa được CSim/synthesis/CoSim. Worker streaming, adapter và top cũ đã được lưu ở branch `archive/bpc-agent-hls-2026-09-26` (commit `b55eb38`). Top tích hợp BLC→BPC mới chưa được xây dựng.
 
 Top tích hợp đích cần xử lý luồng frame không biết trước số lượng, giữ định dạng AXI4-Stream ở bảng trên và nối BLC → BPC bằng packet nội bộ. Quy tắc nhận frame, drain, backpressure và phát sideband nằm trong [contract streaming](bpc_streaming_contract.md). Quyết định standalone BPC không tự chốt block control, commit policy hay register map cụ thể của top tích hợp.

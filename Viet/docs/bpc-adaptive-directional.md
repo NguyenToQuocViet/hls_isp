@@ -170,6 +170,6 @@ Synthetic stuck corruption shall not be used for training, validation, testing, 
 
 ## 11. HLS Streaming Architecture
 
-The authoritative non-algorithmic HLS architecture is now the [BPC streaming contract](bpc_streaming_contract.md), accepted on 2026-09-28. It carries forward the indefinite-frame, four-bank/window, real/synthetic advance, overlap, drain and backpressure requirements previously recorded here, and defines the BLC-derived wrapper/configuration boundary and verification gates. Sections 1–10 of this document continue to own the algorithm.
+The [BPC streaming contract](bpc_streaming_contract.md), accepted on 2026-09-28, owns the free-running variant. It carries forward the indefinite-frame, four-bank/window, real/synthetic advance, overlap, drain and backpressure requirements previously recorded here, and defines the BLC-derived wrapper/configuration boundary and verification gates. The finite-frame variant is governed separately by the [BPC handshake contract](bpc_handshake_contract.md), accepted on 2026-09-30. Sections 1–10 of this document continue to own the shared algorithm.
 
 See [ADR 0003](adr/0003-reuse-blc-boundaries-for-bpc.md) for the boundary decision and [verification-status.md](verification-status.md) for observed results. The archived finite-frame implementation at `b55eb38` remains historical evidence; [ADR 0002](adr/0002-overlap-bpc-frame-tail.md) records its rationale and limits. BPC streaming implementation and acceptance evidence remain pending.
