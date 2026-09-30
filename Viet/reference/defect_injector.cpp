@@ -250,6 +250,9 @@ bool black_levels_for_crop(const libraw_dng_levels_t& levels, std::size_t row_of
 int main(int argc, char* argv[]) {
     //CHECK INPUT ARGUMENTS
     bool check_only = false;
+    bool export_clean = false;
+    bool require_black_level = false;
+    unsigned int required_black_level = 0;
     const char* input_path = nullptr;
     unsigned int seed = RNG_SEED;
 
@@ -258,6 +261,20 @@ int main(int argc, char* argv[]) {
     } else if (argc == 3 && std::string(argv[1]) == "--check-only") {
         check_only = true;
         input_path = argv[2];
+    } else if (argc == 3 && std::string(argv[1]) == "--export-clean-raw10-bl64") {
+        export_clean = true;
+        input_path = argv[2];
+    } else if (argc == 5 && std::string(argv[1]) == "--check-only" &&
+               std::string(argv[2]) == "--require-black-level-raw10") {
+        const std::string value = argv[3];
+        const auto parsed = std::from_chars(value.data(), value.data() + value.size(), required_black_level);
+        if (parsed.ec != std::errc{} || parsed.ptr != value.data() + value.size() || required_black_level > RAW10_MAX) {
+            std::cerr << "Required RAW10 BlackLevel must be in [0,1023]\n";
+            return EXIT_FAILURE;
+        }
+        check_only = true;
+        require_black_level = true;
+        input_path = argv[4];
     } else if (argc == 4 && std::string(argv[1]) == "--seed") {
         const std::string value = argv[2];
         const auto parsed = std::from_chars(value.data(), value.data() + value.size(), seed);
@@ -267,7 +284,8 @@ int main(int argc, char* argv[]) {
         }
         input_path = argv[3];
     } else {
-        std::cerr << "Usage: " << argv[0] << " [--check-only | --seed N] <image.dng>\n";
+        std::cerr << "Usage: " << argv[0]
+                  << " [--check-only [--require-black-level-raw10 N] | --export-clean-raw10-bl64 | --seed N] <image.dng>\n";
 
         return EXIT_FAILURE;
     }
@@ -469,6 +487,19 @@ int main(int argc, char* argv[]) {
     if (!black_levels_for_crop(dng_levels, crop_top - sizes.top_margin, crop_left - sizes.left_margin, white_level, native_black, blc_config)) {
         return EXIT_FAILURE;
     }
+    if (require_black_level &&
+        (blc_config.black_level_r != required_black_level ||
+         blc_config.black_level_gr != required_black_level ||
+         blc_config.black_level_gb != required_black_level ||
+         blc_config.black_level_b != required_black_level)) {
+        std::cerr << "RAW10 BlackLevel is not " << required_black_level << " in every RGGB phase\n";
+        return EXIT_FAILURE;
+    }
+    if (export_clean && (white_level != RAW10_MAX ||
+        std::any_of(native_black.begin(), native_black.end(), [](double level) { return level != 64.0; }))) {
+        std::cerr << "Clean export requires native WhiteLevel=1023 and BlackLevel=64 in every RGGB phase\n";
+        return EXIT_FAILURE;
+    }
 
     //copy and normalize crop
     std::vector<unsigned short> clean_rggb(OUTPUT_WIDTH * OUTPUT_HEIGHT);
@@ -478,6 +509,10 @@ int main(int argc, char* argv[]) {
             const std::size_t source_index = (crop_top + row) * row_stride + crop_left + col;
             const std::size_t output_index = row * OUTPUT_WIDTH + col;
             const unsigned int sample = raw_image[source_index];
+            if (export_clean && sample > RAW10_MAX) {
+                std::cerr << "Clean export found a decoded sample above RAW10 maximum\n";
+                return EXIT_FAILURE;
+            }
             const unsigned int clipped_sample = sample > white_level ? white_level : sample;
             const std::uint64_t numerator = 2ULL * clipped_sample * RAW10_MAX + white_level;
 
@@ -487,6 +522,27 @@ int main(int argc, char* argv[]) {
 
     if (check_only) {
         std::cout << "RAW compatibility check passed\n";
+        return EXIT_SUCCESS;
+    }
+    if (export_clean) {
+        if (!write_pgm(CLEAN_OUTPUT_PATH, clean_rggb)) {
+            std::cerr << "Cannot write clean RAW10 PGM\n";
+            return EXIT_FAILURE;
+        }
+        std::ofstream metadata("input_metadata.json");
+        metadata << "{\n  \"source\": " << std::quoted(input_path)
+                 << ",\n  \"libraw\": " << std::quoted(LibRaw::version())
+                 << ",\n  \"width\": " << OUTPUT_WIDTH << ", \"height\": " << OUTPUT_HEIGHT
+                 << ",\n  \"cfa\": \"RGGB\", \"bit_depth\": 10, \"pixel_max\": " << RAW10_MAX
+                 << ",\n  \"white_level\": " << white_level
+                 << ",\n  \"crop_top\": " << crop_top << ", \"crop_left\": " << crop_left
+                 << ",\n  \"native_black_r_gr_gb_b\": [64,64,64,64], \"black_r_gr_gb_b\": [64,64,64,64]\n}\n";
+        metadata.close();
+        if (!metadata) {
+            std::cerr << "Cannot write input_metadata.json\n";
+            return EXIT_FAILURE;
+        }
+        std::cout << "Created clean RGGB RAW10 image with BlackLevel 64\n";
         return EXIT_SUCCESS;
     }
 

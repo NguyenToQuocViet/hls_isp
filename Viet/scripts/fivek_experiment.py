@@ -124,7 +124,8 @@ def scan(args):
         raise ValueError("No DNG files found")
     entries = [{"id": hashlib.sha256(str(p).encode()).hexdigest()[:20],
                 "path": str(p), "source": identity(p)} for p in sources]
-    out = workspace(args.output, specification(args, sources=entries))
+    out = workspace(args.output, specification(args, sources=entries,
+                                               black_level_raw10=args.black_level_raw10))
     records = []
     for row in entries:
         target = out / (row["id"] + ".json")
@@ -132,7 +133,10 @@ def scan(args):
             records.append(read(target))
             continue
         # A compatibility failure is a recorded rejection, not a batch failure.
-        result = subprocess.run([str(args.injector), "--check-only", row["path"]],
+        command = [str(args.injector), "--check-only"]
+        if args.black_level_raw10 is not None:
+            command += ["--require-black-level-raw10", str(args.black_level_raw10)]
+        result = subprocess.run(command + [row["path"]],
                                 capture_output=True, text=True)
         record = {**row, "compatible": result.returncode == 0,
                   "returncode": result.returncode,
@@ -561,6 +565,8 @@ def main():
     commands = parser.add_subparsers(dest="command", required=True)
     p = commands.add_parser("scan")
     p.add_argument("root", type=Path)
+    p.add_argument("--black-level-raw10", type=int,
+                   help="require this BlackLevel in all four RGGB phases after RAW10 scaling")
     p = commands.add_parser("split")
     p.add_argument("manifest", type=Path)
     p.add_argument("--groups", type=Path, help="CSV path,group; absolute source paths, all compatible images")
@@ -596,6 +602,8 @@ def main():
     args = parser.parse_args()
     args.injector = args.injector.resolve()
     args.evaluator = args.evaluator.resolve()
+    if hasattr(args, "black_level_raw10") and args.black_level_raw10 is not None and not 0 <= args.black_level_raw10 <= RAW_MAX:
+        parser.error(f"RAW10 BlackLevel must be in [0,{RAW_MAX}]")
     if hasattr(args, "baseline_threshold") and not 0 <= args.baseline_threshold <= RAW_MAX:
         parser.error(f"baseline threshold must be in [0,{RAW_MAX}]")
     if hasattr(args, "jobs") and args.jobs < 1:

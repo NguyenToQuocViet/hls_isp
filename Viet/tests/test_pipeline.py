@@ -131,6 +131,18 @@ def main():
         write_dng(rejected, [100], delta=True)
         result = subprocess.run([str(ROOT / 'build/defect_injector'), '--check-only', str(rejected)], cwd=directory, text=True, capture_output=True)
         assert result.returncode != 0 and 'BlackLevelDelta' in result.stderr
+        black64 = directory / 'black64.dng'
+        write_dng(black64, [1024])
+        filter_command = [str(ROOT / 'build/defect_injector'), '--check-only', '--require-black-level-raw10', '64']
+        result = subprocess.run(filter_command + [str(black64)], cwd=directory, text=True, capture_output=True)
+        assert result.returncode == 0, result.stderr
+        mixed_black = directory / 'mixed_black.dng'
+        write_dng(mixed_black, [1024, 1024, 1024, 1000])
+        result = subprocess.run(filter_command + [str(mixed_black)], cwd=directory, text=True, capture_output=True)
+        assert result.returncode != 0 and 'every RGGB phase' in result.stderr
+        result = subprocess.run([str(ROOT / 'build/defect_injector'), '--check-only', str(mixed_black)],
+                                cwd=directory, text=True, capture_output=True)
+        assert result.returncode == 0, result.stderr
     print('Synthetic DNG scalar/four-phase, crop/scale, BLC, injection, repeatability and delta rejection: PASS')
 
 

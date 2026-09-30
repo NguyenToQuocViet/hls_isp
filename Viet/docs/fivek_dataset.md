@@ -28,4 +28,18 @@ Split dùng seed `20260907`, xấp xỉ 80% tuning và 20% test. Mỗi ảnh com
 FiveK DNG → RGGB RAW10 → inject hot/dead → BLC → BPC → evaluate
 ```
 
+Khi tạo tập chung cho các khối ISP yêu cầu Black Level 64, bước scan có thể
+lọc thêm bằng `--black-level-raw10 64`. Ảnh chỉ đạt nếu cả bốn pha
+`R/Gr/Gb/B` sau khi căn crop RGGB và quy đổi theo
+`round_half_up(BlackLevel_native × 1023 / WhiteLevel)` đều bằng 64.
+Điều kiện này chỉ áp dụng cho lần scan được yêu cầu; manifest tương thích cũ
+không bị thay đổi. Ghi kết quả scan mới vào một thư mục output mới.
+
+Từ thư mục `Viet/`, sau khi build reference tools, chạy:
+
+```sh
+python3 scripts/fivek_experiment.py scan fivek_dataset/raw_photos \
+  --black-level-raw10 64 --output artifacts/fivek_scan_bl64
+```
+
 Mỗi ảnh inject 150 hot pixel và 150 dead pixel; không dùng stuck pixel. Manifest scan nằm tại `artifacts/fivek_scan/manifest.json`, còn split RAW10 nằm tại `artifacts/adaptive_v2_raw10/split/split.json`.
