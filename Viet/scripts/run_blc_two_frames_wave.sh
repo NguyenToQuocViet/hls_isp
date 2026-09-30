@@ -19,9 +19,9 @@ part=xczu7ev-ffvc1156-2-e
 syn.top=blc_top
 clock=150MHz
 clock_uncertainty=10%
-syn.cflags=-I$repo_root -I$repo_root/Viet/hls -I$repo_root/Viet/hls/blc -DISP_FRAME_WIDTH=16 -DISP_FRAME_HEIGHT=16
-syn.file=$repo_root/Viet/hls/blc/blc_top.cpp
-syn.file=$repo_root/Viet/hls/blc/isp_blc.cpp
+syn.cflags=-I$repo_root -I$repo_root/Viet/hls -I$repo_root/Viet/hls/blc/none -DISP_FRAME_WIDTH=16 -DISP_FRAME_HEIGHT=16
+syn.file=$repo_root/Viet/hls/blc/none/blc_top.cpp
+syn.file=$repo_root/Viet/hls/blc/none/isp_blc.cpp
 EOF
 
 timeout 180s v++ -c --mode hls --config "$cfg" --work_dir "$work_dir"

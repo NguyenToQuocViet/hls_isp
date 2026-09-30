@@ -19,10 +19,10 @@ part=xczu7ev-ffvc1156-2-e
 syn.top=blc_top
 clock=150MHz
 clock_uncertainty=10%
-syn.cflags=-I$repo_root -I$repo_root/Viet/hls -I$repo_root/Viet/hls/blc -DISP_FRAME_WIDTH=16 -DISP_FRAME_HEIGHT=16
-syn.file=$repo_root/Viet/hls/blc/blc_top.cpp
-syn.file=$repo_root/Viet/hls/blc/isp_blc.cpp
-tb.cflags=-I$repo_root -I$repo_root/Viet/hls -I$repo_root/Viet/hls/blc -I$repo_root/Viet/reference -DISP_FRAME_WIDTH=16 -DISP_FRAME_HEIGHT=16
+syn.cflags=-I$repo_root -I$repo_root/Viet/hls -I$repo_root/Viet/hls/blc/none -DISP_FRAME_WIDTH=16 -DISP_FRAME_HEIGHT=16
+syn.file=$repo_root/Viet/hls/blc/none/blc_top.cpp
+syn.file=$repo_root/Viet/hls/blc/none/isp_blc.cpp
+tb.cflags=-I$repo_root -I$repo_root/Viet/hls -I$repo_root/Viet/hls/blc/none -I$repo_root/Viet/reference -DISP_FRAME_WIDTH=16 -DISP_FRAME_HEIGHT=16
 tb.file=$repo_root/Viet/tests/test_blc_two_frames_hls.cpp
 tb.file=$repo_root/Viet/reference/blc.cpp
 cosim.setup=true

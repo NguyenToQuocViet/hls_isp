@@ -191,7 +191,7 @@ Ghi revision/hash, tool/version, config, command và kết quả vào `verificat
 
 ## 10. Handoff cho session triển khai
 
-Đọc file này, thuật toán hiện hành và `hls/blc/isp_blc.*`, `hls/blc/blc_top.*` trước khi sửa. Thực hiện theo G1→G5, giữ source changes theo từng milestone có thể kiểm riêng. Không khám phá lại control/config boundary đã chốt chỉ vì BPC có state nhiều hơn BLC.
+Đọc file này, thuật toán hiện hành và `hls/blc/none/isp_blc.*`, `hls/blc/none/blc_top.*` trước khi sửa. Thực hiện theo G1→G5, giữ source changes theo từng milestone có thể kiểm riêng. Không khám phá lại control/config boundary đã chốt chỉ vì BPC có state nhiều hơn BLC.
 
 Chi tiết được phép chọn trong implementation: encoding FSM, tên helper, width counter đủ bounds, cách biểu diễn center ownership control ở mục 7 và output capacity phù hợp. Contract không buộc một kiểu FSM hay tách window thành task riêng; quyết định không dùng per-pixel valid bit đã chốt ở mục 7. Mọi lựa chọn phải thỏa committed-advance và acceptance criteria; lưu rationale khi có hệ quả kiến trúc đáng kể.
 
