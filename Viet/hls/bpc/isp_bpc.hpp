@@ -9,6 +9,9 @@ Author: Viet Nguyen To Quoc
 
 #include <ap_fixed.h>
 #include <ap_int.h>
+#include <hls_stream.h>
+#include "isp_frame.hpp"
+#include "isp_pixel_packet.hpp"
 
 struct BpcConfig {
     ap_ufixed<10, 10> thresh_r;
@@ -36,4 +39,10 @@ ap_ufixed<10, 10> bpc_pixel(
     ap_uint<11> row,
     ap_uint<11> col,
     const BpcConfig& config
+);
+
+void bpc_engine(
+    hls::stream<IspPixelPacket<10>> &input,
+    hls::stream<IspPixelPacket<10>> &output,
+    const BpcConfig &config
 );

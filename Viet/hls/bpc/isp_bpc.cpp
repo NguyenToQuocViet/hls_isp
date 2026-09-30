@@ -1,7 +1,7 @@
 /*
 Project: Adaptive Directional BPC and BLC
 Module: HLS Bad Pixel Correction
-Description: Implement the HLS Bad Pixel Correction pixel algorithm.
+Description: Implement the HLS Bad Pixel Correction pixel algorithm and streaming engine.
 Author: Viet Nguyen To Quoc
 */
 
@@ -59,7 +59,7 @@ ap_ufixed<10, 10> bpc_pixel(
         predictions[i] = pair_sum >> 1;
     }
 
-    // Balanced selection preserves H, V, D1, D2 tie priority.
+    //keep H, V, D1, D2 tie priority
     ap_ufixed<10, 10> axis_gradient = gradients[0];
     ap_ufixed<10, 10> axis_prediction = predictions[0];
 
@@ -122,4 +122,156 @@ ap_ufixed<10, 10> bpc_pixel(
     }
 
     return input.center;
+}
+
+void bpc_engine(
+    hls::stream<IspPixelPacket<10>>& input,
+    hls::stream<IspPixelPacket<10>>& output,
+    const BpcConfig& config
+) {
+    static ap_uint<11> in_row = 0;
+    static ap_uint<11> in_col = 0;
+    static ap_uint<11> out_row = 0;
+    static ap_uint<11> out_col = 0;
+#pragma HLS RESET variable=in_row
+#pragma HLS RESET variable=in_col
+#pragma HLS RESET variable=out_row
+#pragma HLS RESET variable=out_col
+
+    static ap_uint<11> lb_addr = 0;
+#pragma HLS RESET variable=lb_addr
+
+    static ap_uint<10> lb_0[FRAME_WIDTH];
+    static ap_uint<10> lb_1[FRAME_WIDTH];
+    static ap_uint<10> lb_2[FRAME_WIDTH];
+    static ap_uint<10> lb_3[FRAME_WIDTH];
+
+    static ap_uint<10> horizontal_window[3][5];
+#pragma HLS ARRAY_PARTITION variable=horizontal_window complete dim=0
+
+    BpcWindow computing_window;
+
+    IspPixelPacket<10> in_pixel;
+    IspPixelPacket<10> out_pixel;
+    bool read_ok = input.read_nb(in_pixel);
+
+    //get SOF & EOL from input coordinates
+    bool expected_sof = ((in_row == 0) && (in_col == 0));
+    bool expected_eol = (in_col == (FRAME_WIDTH - 1));
+    ap_uint<10> new_pixel = 0;
+
+    //select real input or drain between frames
+    if (read_ok) {
+        if (expected_sof && !in_pixel.user) {
+            return;
+        }
+
+        new_pixel = in_pixel.data;
+    } else if (!expected_sof) {
+        return;
+    } else {
+        //for N > D, output coordinates return to (0,0) after the tail
+        if ((out_row == 0) && (out_col == 0)) {
+            return;
+        }
+    }
+
+    //read old values before shifting line buffers
+    ap_uint<10> old_lb0;
+    ap_uint<10> old_lb1;
+    ap_uint<10> old_lb2;
+    ap_uint<10> old_lb3;
+
+    old_lb0 = lb_0[lb_addr];
+    old_lb1 = lb_1[lb_addr];
+    old_lb2 = lb_2[lb_addr];
+    old_lb3 = lb_3[lb_addr];
+
+    //shift new pixel through four line buffers
+    lb_0[lb_addr] = new_pixel;
+    lb_1[lb_addr] = old_lb0;
+    lb_2[lb_addr] = old_lb1;
+    lb_3[lb_addr] = old_lb2;
+
+    for (int row = 0; row < 3; row++) {
+        for (int col = 0; col < 4; col++) {
+            horizontal_window[row][col] = horizontal_window[row][col + 1];
+        }
+    }
+
+    horizontal_window[0][4] = old_lb3;
+    horizontal_window[1][4] = old_lb1;
+    horizontal_window[2][4] = new_pixel;
+
+    computing_window.center = horizontal_window[1][2];
+    computing_window.left = horizontal_window[1][0];
+    computing_window.right = horizontal_window[1][4];
+    computing_window.up = horizontal_window[0][2];
+    computing_window.down = horizontal_window[2][2];
+    computing_window.up_left = horizontal_window[0][0];
+    computing_window.up_right = horizontal_window[0][4];
+    computing_window.down_left = horizontal_window[2][0];
+    computing_window.down_right = horizontal_window[2][4];
+
+    bool out_pixel_written = false;
+
+    //emit real centers
+    const int center_delay = (2 * FRAME_WIDTH) + 2;
+    const int in_index = int(in_row) * FRAME_WIDTH + int(in_col);
+    const bool center_is_real =
+        (out_row != 0) || (out_col != 0) ||
+        (read_ok && (in_index >= center_delay));
+
+    if (center_is_real) {
+        const bool is_border =
+            (out_row < 2) || (out_row >= FRAME_HEIGHT - 2) ||
+            (out_col < 2) || (out_col >= FRAME_WIDTH - 2);
+
+        if (is_border) {
+            out_pixel.data = computing_window.center;
+        } else {
+            out_pixel.data = bpc_pixel(computing_window, out_row, out_col, config);
+        }
+
+        out_pixel.user = (out_row == 0) && (out_col == 0);
+        out_pixel.last = (out_col == FRAME_WIDTH - 1);
+        output.write(out_pixel);
+        out_pixel_written = true;
+    }
+
+    if (out_pixel_written) {
+        if (out_col == FRAME_WIDTH - 1) {
+            out_col = 0;
+            if (out_row == FRAME_HEIGHT - 1) {
+                out_row = 0;
+            } else {
+                out_row++;
+            }
+        } else {
+            out_col++;
+        }
+    }
+
+    //advance input coordinates for real pixels
+    if (read_ok) {
+        if (expected_eol) {
+            in_col = 0;
+
+            if (in_row == FRAME_HEIGHT - 1) {
+                in_row = 0;
+            } else {
+                in_row++;
+            }
+        } else {
+            in_col++;
+        }
+    }
+
+    //advance line buffer address for real or synthetic pixels
+    if (lb_addr == FRAME_WIDTH - 1) {
+        lb_addr = 0;
+    } else {
+        lb_addr++;
+    }
+
 }
