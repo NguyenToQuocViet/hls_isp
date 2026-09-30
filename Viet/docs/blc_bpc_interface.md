@@ -20,7 +20,7 @@ Author: Viet Nguyen To Quoc
 
 ## BLC
 
-Phần này mô tả bản BLC free-running `ap_ctrl_none` hiện tại. Bản finite-frame `ap_ctrl_hs` đã chốt riêng tại [BLC handshake contract](blc_handshake_contract.md), dùng cùng format/thuật toán nhưng khác transaction, config lifecycle và vị trí guard SOF; chưa được implement theo contract đó.
+Phần này mô tả bản BLC free-running `ap_ctrl_none` tại `hls/blc/none/`. Bản finite-frame `ap_ctrl_hs` nằm tại `hls/blc/handshake/`, theo [BLC handshake contract](blc_handshake_contract.md), dùng cùng format/thuật toán nhưng khác transaction, config lifecycle và vị trí guard SOF. Source handshake đã được clone và sửa theo contract; CSim/CoSim và generated-RTL verification của bản này còn pending.
 
 Input BLC là RAW10 trước Black Level Correction. Bốn hệ số `bl_r`, `bl_gr`, `bl_gb`, `bl_b` cùng miền RAW10.
 

@@ -7,7 +7,7 @@ Author: Viet Nguyen To Quoc
 
 # BLC finite-frame với TOP/ENGINE boundary
 
-Status: accepted for implementation; implementation and verification pending.
+Status: accepted; source implementation prepared, synthesis and behavioral verification pending.
 Date: 2026-09-30
 
 ## Context
@@ -29,9 +29,11 @@ Một vòng lặp đủ frame trong engine giúp caller ISP không cần standal
 
 ## Evidence and consequences
 
-Việt đã chốt contract sau khi xem hierarchy và làm rõ rằng ba function chạy overlap trong DATAFLOW. Quyết định này là architecture acceptance, không phải kết quả chạy HLS. Source BLC hiện tại vẫn là bản free-running một pixel mỗi invocation.
+Việt đã chốt contract sau khi xem hierarchy và làm rõ rằng ba function chạy overlap trong DATAFLOW. Quyết định này là architecture acceptance, không phải kết quả chạy HLS. Bản free-running một pixel mỗi invocation được giữ nguyên nội dung trong `none`; source finite-frame trong `handshake` được clone và chỉ sửa các phần control/lifecycle/boundary cần thiết.
 
-Bản mới chấp nhận khoảng nghỉ transaction và không yêu cầu zero-gap. Config có thể đổi giữa transaction. Input thiếu SOF/pixel làm transaction chờ; không có recovery cho mất/chèn pixel giữa frame. Cách bố trí source/build cho hai variant cần chốt khi triển khai, tránh link hai semantics khác nhau dưới cùng tên engine.
+Bản mới chấp nhận khoảng nghỉ transaction và không yêu cầu zero-gap. Config có thể đổi giữa transaction. Input thiếu SOF/pixel làm transaction chờ; không có recovery cho mất/chèn pixel giữa frame.
+
+Việt chốt bố trí source tại `hls/blc/none/` và `hls/blc/handshake/`: chuyển bản hiện tại vào `none` nguyên nội dung, clone sang `handshake` và chỉ sửa phần cần thiết cho contract. Mỗi build chọn một variant để tránh link hai semantics khác nhau dưới cùng tên engine. Implementation source được giao riêng; CSim và CoSim chưa thuộc turn triển khai này.
 
 ## Revisit condition
 

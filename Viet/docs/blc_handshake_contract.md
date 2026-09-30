@@ -7,7 +7,7 @@ Author: Viet Nguyen To Quoc
 
 # Contract BLC dùng ap_ctrl_hs
 
-Trạng thái: **đã chốt làm căn cứ implement**, ngày 2026-09-30. Đây là hành vi yêu cầu của bản BLC `ap_ctrl_hs`; chưa phải hành vi đã triển khai hoặc kết quả verification.
+Trạng thái: **đã chốt làm căn cứ implement**, ngày 2026-09-30. Source handshake đã được clone/sửa từ bản none theo contract; CSim, CoSim và synthesis chưa chạy cho bản này. Tài liệu mô tả hành vi yêu cầu, không phải bằng chứng correctness hoặc throughput.
 
 ## 1. Phạm vi và authority
 
@@ -16,8 +16,11 @@ Tài liệu này sở hữu TOP/ENGINE boundary, transaction, configuration, fra
 - Giữ tên `blc_engine`; giữ thuật toán `blc_pixel()` và `BlcConfig` hiện có.
 - [Interface chung](blc_bpc_interface.md) sở hữu format RAW10/AXIS/CFA. Phần BLC free-running trong đó tiếp tục áp dụng cho bản `ap_ctrl_none`, không bị contract này thay thế.
 - [BPC streaming contract](bpc_streaming_contract.md) giữ nguyên authority và phạm vi; không chuyển BPC sang finite-frame trong quyết định này.
-- Chưa chốt cách bố trí source/build để giữ hai bản BLC. Không đặt hai implementation khác semantics của `blc_engine` vào cùng một build.
-- Việc ghi contract chỉ thay đổi tài liệu. Implementation, testbench và build cần một yêu cầu triển khai riêng.
+- Source BLC chia thành `hls/blc/none/` và `hls/blc/handshake/`, mỗi thư mục giữ bộ `blc_top.{hpp,cpp}` và `isp_blc.{hpp,cpp}`. Chỉ chọn một variant trong mỗi build; không link hai implementation của `blc_top`/`blc_engine` cùng nhau.
+- Bản `none` giữ nguyên nội dung source trước khi chia thư mục. Bản `handshake` clone từ `none`, giữ code/logic/comment và chỉ sửa những phần cần cho contract này; không viết lại pixel algorithm hoặc refactor không cần thiết.
+- Việt đã giao implement source handshake và chuyển đường dẫn của bản none. CSim và CoSim không thuộc turn triển khai này; các điều kiện nghiệm thu bên dưới vẫn chưa được xác minh.
+
+Implementation khởi đầu dùng hai FIFO pixel depth 2, ba process giữ boundary bằng `INLINE off`, các vòng lặp yêu cầu `PIPELINE II=1 style=flp`. Đây là lựa chọn triển khai cần kiểm bằng synthesis/RTL, không phải bằng chứng depth đủ hoặc achieved II=1.
 
 ## 2. Quyết định đã chốt
 
