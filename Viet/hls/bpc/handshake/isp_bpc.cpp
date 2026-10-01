@@ -155,14 +155,14 @@ void bpc_engine(
 
         IspPixelPacket<10> in_pixel;
         IspPixelPacket<10> out_pixel;
-        const bool read_ok = (step < frame_pixels);
+        const bool is_real_input = (step < frame_pixels);
 
         //get EOL from input coordinates
         bool expected_eol = (in_col == (FRAME_WIDTH - 1));
         ap_uint<10> new_pixel = 0;
 
         //select real input or drain at the end of the frame
-        if (read_ok) {
+        if (is_real_input) {
             in_pixel = input.read();
             new_pixel = in_pixel.data;
         }
@@ -240,7 +240,7 @@ void bpc_engine(
         }
 
         //advance input coordinates for real pixels
-        if (read_ok) {
+        if (is_real_input) {
             if (expected_eol) {
                 in_col = 0;
 
