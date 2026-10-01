@@ -1,0 +1,228 @@
+{
+  "status": "complete",
+  "cnn_precision": "w8a8_mixed_p999_resfp",
+  "cnn_blocks": 2,
+  "quantized_output_contract": "U8/S8 boundaries from exported Q31; local skip shared with Conv1 input; Conv2 main aligned to skip scale; local residual ADD kept INT32 without clamp; global RAW skip unchanged; tail accumulator -> signed RAW residual DN; final RAW = clip(original RAW + residual_DN, 0, 959).",
+  "inputs": [
+    "D:\\Viettel_VDT\\GD2\\ISP_PRJ\\Research\\Code\\ISP_Project\\hls_isp\\isp_golden_modl\\isp_golden_model\\clean-20260930T094324Z-1-001\\clean\\0039_20141005_130438_317\\clean_rggb.pgm",
+    "D:\\Viettel_VDT\\GD2\\ISP_PRJ\\Research\\Code\\ISP_Project\\hls_isp\\isp_golden_modl\\isp_golden_model\\clean-20260930T094324Z-1-001\\clean\\0047_20160609_133132_746\\clean_rggb.pgm",
+    "D:\\Viettel_VDT\\GD2\\ISP_PRJ\\Research\\Code\\ISP_Project\\hls_isp\\isp_golden_modl\\isp_golden_model\\clean-20260930T094324Z-1-001\\clean\\5a9e_20141007_173502_483\\clean_rggb.pgm",
+    "D:\\Viettel_VDT\\GD2\\ISP_PRJ\\Research\\Code\\ISP_Project\\hls_isp\\isp_golden_modl\\isp_golden_model\\clean-20260930T094324Z-1-001\\clean\\5a9e_20150328_173812_141__payload_N001\\clean_rggb.pgm",
+    "D:\\Viettel_VDT\\GD2\\ISP_PRJ\\Research\\Code\\ISP_Project\\hls_isp\\isp_golden_modl\\isp_golden_model\\clean-20260930T094324Z-1-001\\clean\\6FHF_20150303_115050_790__payload_N004\\clean_rggb.pgm",
+    "D:\\Viettel_VDT\\GD2\\ISP_PRJ\\Research\\Code\\ISP_Project\\hls_isp\\isp_golden_modl\\isp_golden_model\\clean-20260930T094324Z-1-001\\clean\\6G7M_20150307_163718_374__payload_N007\\clean_rggb.pgm",
+    "D:\\Viettel_VDT\\GD2\\ISP_PRJ\\Research\\Code\\ISP_Project\\hls_isp\\isp_golden_modl\\isp_golden_model\\clean-20260930T094324Z-1-001\\clean\\6G7M_20150321_151956_104\\clean_rggb.pgm",
+    "D:\\Viettel_VDT\\GD2\\ISP_PRJ\\Research\\Code\\ISP_Project\\hls_isp\\isp_golden_modl\\isp_golden_model\\clean-20260930T094324Z-1-001\\clean\\6G7M_20150403_174605_886__payload_N003\\clean_rggb.pgm",
+    "D:\\Viettel_VDT\\GD2\\ISP_PRJ\\Research\\Code\\ISP_Project\\hls_isp\\isp_golden_modl\\isp_golden_model\\clean-20260930T094324Z-1-001\\clean\\c1b1_20141007_235657_307__payload_N006\\clean_rggb.pgm",
+    "D:\\Viettel_VDT\\GD2\\ISP_PRJ\\Research\\Code\\ISP_Project\\hls_isp\\isp_golden_modl\\isp_golden_model\\clean-20260930T094324Z-1-001\\clean\\c1b1_20150408_154240_395__payload_N009\\clean_rggb.pgm"
+  ],
+  "config": {
+    "blc": {
+      "black_level_r": 64,
+      "black_level_gr": 64,
+      "black_level_gb": 64,
+      "black_level_b": 64
+    },
+    "bpc": {
+      "base_threshold_r": 32,
+      "base_threshold_g": 32,
+      "base_threshold_b": 32,
+      "signal_shift": 3,
+      "activity_shift": 1
+    },
+    "cnn": {
+      "blocks": 2,
+      "param_dir": "D:\\Viettel_VDT\\GD2\\ISP_PRJ\\Research\\Code\\ISP_Project\\hls_isp\\isp_golden_modl\\isp_golden_model\\params",
+      "precision": "w8a8_mixed_p999_resfp",
+      "int8_output": "raw_residual"
+    },
+    "wb": {
+      "gain_r": 1.512804,
+      "gain_gr": 1.0,
+      "gain_gb": 1.0,
+      "gain_b": 1.916974
+    },
+    "demosaic": {
+      "edge_threshold": 270,
+      "edge_mag": 23
+    },
+    "ccm": {
+      "matrix": [
+        [
+          1.6,
+          -0.3,
+          -0.3
+        ],
+        [
+          -0.2,
+          1.4,
+          -0.2
+        ],
+        [
+          -0.1,
+          -0.6,
+          1.7
+        ]
+      ]
+    },
+    "ltm": {
+      "exposure_gain": 1.2
+    },
+    "gamma": {
+      "gamma": 0.45
+    },
+    "bypass": []
+  },
+  "checkpoints": [
+    {
+      "path": "D:\\Viettel_VDT\\GD2\\ISP_PRJ\\Research\\Code\\ISP_Project\\hls_isp\\isp_golden_modl\\isp_golden_model\\params\\local_resnet_micro_b2__w8a8_mixed_p999_resfp__Q31_checkpoint.npz",
+      "sha256": "a5a370bec961803ff121c53047034d059ad762254bbd7a42667dc216f289d261"
+    },
+    {
+      "path": "D:\\Viettel_VDT\\GD2\\ISP_PRJ\\Research\\Code\\ISP_Project\\hls_isp\\isp_golden_modl\\isp_golden_model\\params\\local_resnet_micro_b2__w8a8_mixed_p999_resfp__Q31_manifest.json",
+      "sha256": "3486b77fc6ba41fb45d04645b2a6345352c4f5093ceb7f241db334bbe3007be6"
+    }
+  ],
+  "checkpoint_manifest_version": "v9.0.0",
+  "images": [
+    {
+      "image": "01__0039_20141005_130438_317",
+      "input": "D:\\Viettel_VDT\\GD2\\ISP_PRJ\\Research\\Code\\ISP_Project\\hls_isp\\isp_golden_modl\\isp_golden_model\\clean-20260930T094324Z-1-001\\clean\\0039_20141005_130438_317\\clean_rggb.pgm",
+      "width": 1920,
+      "height": 1080,
+      "cnn_precision": "w8a8_mixed_p999_resfp",
+      "cnn_blocks": 2,
+      "png": "01__0039_20141005_130438_317__cnn_w8a8_mixed_p999_b2.png",
+      "seconds": 6.297,
+      "cnn_raw10_min": 0,
+      "cnn_raw10_max": 955,
+      "rgb8_min": 0,
+      "rgb8_max": 255
+    },
+    {
+      "image": "02__0047_20160609_133132_746",
+      "input": "D:\\Viettel_VDT\\GD2\\ISP_PRJ\\Research\\Code\\ISP_Project\\hls_isp\\isp_golden_modl\\isp_golden_model\\clean-20260930T094324Z-1-001\\clean\\0047_20160609_133132_746\\clean_rggb.pgm",
+      "width": 1920,
+      "height": 1080,
+      "cnn_precision": "w8a8_mixed_p999_resfp",
+      "cnn_blocks": 2,
+      "png": "02__0047_20160609_133132_746__cnn_w8a8_mixed_p999_b2.png",
+      "seconds": 5.87,
+      "cnn_raw10_min": 0,
+      "cnn_raw10_max": 959,
+      "rgb8_min": 0,
+      "rgb8_max": 255
+    },
+    {
+      "image": "03__5a9e_20141007_173502_483",
+      "input": "D:\\Viettel_VDT\\GD2\\ISP_PRJ\\Research\\Code\\ISP_Project\\hls_isp\\isp_golden_modl\\isp_golden_model\\clean-20260930T094324Z-1-001\\clean\\5a9e_20141007_173502_483\\clean_rggb.pgm",
+      "width": 1920,
+      "height": 1080,
+      "cnn_precision": "w8a8_mixed_p999_resfp",
+      "cnn_blocks": 2,
+      "png": "03__5a9e_20141007_173502_483__cnn_w8a8_mixed_p999_b2.png",
+      "seconds": 5.868,
+      "cnn_raw10_min": 0,
+      "cnn_raw10_max": 959,
+      "rgb8_min": 0,
+      "rgb8_max": 255
+    },
+    {
+      "image": "04__5a9e_20150328_173812_141__payload_N001",
+      "input": "D:\\Viettel_VDT\\GD2\\ISP_PRJ\\Research\\Code\\ISP_Project\\hls_isp\\isp_golden_modl\\isp_golden_model\\clean-20260930T094324Z-1-001\\clean\\5a9e_20150328_173812_141__payload_N001\\clean_rggb.pgm",
+      "width": 1920,
+      "height": 1080,
+      "cnn_precision": "w8a8_mixed_p999_resfp",
+      "cnn_blocks": 2,
+      "png": "04__5a9e_20150328_173812_141__payload_N001__cnn_w8a8_mixed_p999_b2.png",
+      "seconds": 5.649,
+      "cnn_raw10_min": 0,
+      "cnn_raw10_max": 959,
+      "rgb8_min": 0,
+      "rgb8_max": 255
+    },
+    {
+      "image": "05__6FHF_20150303_115050_790__payload_N004",
+      "input": "D:\\Viettel_VDT\\GD2\\ISP_PRJ\\Research\\Code\\ISP_Project\\hls_isp\\isp_golden_modl\\isp_golden_model\\clean-20260930T094324Z-1-001\\clean\\6FHF_20150303_115050_790__payload_N004\\clean_rggb.pgm",
+      "width": 1920,
+      "height": 1080,
+      "cnn_precision": "w8a8_mixed_p999_resfp",
+      "cnn_blocks": 2,
+      "png": "05__6FHF_20150303_115050_790__payload_N004__cnn_w8a8_mixed_p999_b2.png",
+      "seconds": 5.742,
+      "cnn_raw10_min": 0,
+      "cnn_raw10_max": 959,
+      "rgb8_min": 0,
+      "rgb8_max": 255
+    },
+    {
+      "image": "06__6G7M_20150307_163718_374__payload_N007",
+      "input": "D:\\Viettel_VDT\\GD2\\ISP_PRJ\\Research\\Code\\ISP_Project\\hls_isp\\isp_golden_modl\\isp_golden_model\\clean-20260930T094324Z-1-001\\clean\\6G7M_20150307_163718_374__payload_N007\\clean_rggb.pgm",
+      "width": 1920,
+      "height": 1080,
+      "cnn_precision": "w8a8_mixed_p999_resfp",
+      "cnn_blocks": 2,
+      "png": "06__6G7M_20150307_163718_374__payload_N007__cnn_w8a8_mixed_p999_b2.png",
+      "seconds": 5.613,
+      "cnn_raw10_min": 0,
+      "cnn_raw10_max": 959,
+      "rgb8_min": 0,
+      "rgb8_max": 255
+    },
+    {
+      "image": "07__6G7M_20150321_151956_104",
+      "input": "D:\\Viettel_VDT\\GD2\\ISP_PRJ\\Research\\Code\\ISP_Project\\hls_isp\\isp_golden_modl\\isp_golden_model\\clean-20260930T094324Z-1-001\\clean\\6G7M_20150321_151956_104\\clean_rggb.pgm",
+      "width": 1920,
+      "height": 1080,
+      "cnn_precision": "w8a8_mixed_p999_resfp",
+      "cnn_blocks": 2,
+      "png": "07__6G7M_20150321_151956_104__cnn_w8a8_mixed_p999_b2.png",
+      "seconds": 6.079,
+      "cnn_raw10_min": 0,
+      "cnn_raw10_max": 348,
+      "rgb8_min": 0,
+      "rgb8_max": 218
+    },
+    {
+      "image": "08__6G7M_20150403_174605_886__payload_N003",
+      "input": "D:\\Viettel_VDT\\GD2\\ISP_PRJ\\Research\\Code\\ISP_Project\\hls_isp\\isp_golden_modl\\isp_golden_model\\clean-20260930T094324Z-1-001\\clean\\6G7M_20150403_174605_886__payload_N003\\clean_rggb.pgm",
+      "width": 1920,
+      "height": 1080,
+      "cnn_precision": "w8a8_mixed_p999_resfp",
+      "cnn_blocks": 2,
+      "png": "08__6G7M_20150403_174605_886__payload_N003__cnn_w8a8_mixed_p999_b2.png",
+      "seconds": 5.933,
+      "cnn_raw10_min": 0,
+      "cnn_raw10_max": 899,
+      "rgb8_min": 0,
+      "rgb8_max": 255
+    },
+    {
+      "image": "09__c1b1_20141007_235657_307__payload_N006",
+      "input": "D:\\Viettel_VDT\\GD2\\ISP_PRJ\\Research\\Code\\ISP_Project\\hls_isp\\isp_golden_modl\\isp_golden_model\\clean-20260930T094324Z-1-001\\clean\\c1b1_20141007_235657_307__payload_N006\\clean_rggb.pgm",
+      "width": 1920,
+      "height": 1080,
+      "cnn_precision": "w8a8_mixed_p999_resfp",
+      "cnn_blocks": 2,
+      "png": "09__c1b1_20141007_235657_307__payload_N006__cnn_w8a8_mixed_p999_b2.png",
+      "seconds": 5.69,
+      "cnn_raw10_min": 0,
+      "cnn_raw10_max": 959,
+      "rgb8_min": 0,
+      "rgb8_max": 255
+    },
+    {
+      "image": "10__c1b1_20150408_154240_395__payload_N009",
+      "input": "D:\\Viettel_VDT\\GD2\\ISP_PRJ\\Research\\Code\\ISP_Project\\hls_isp\\isp_golden_modl\\isp_golden_model\\clean-20260930T094324Z-1-001\\clean\\c1b1_20150408_154240_395__payload_N009\\clean_rggb.pgm",
+      "width": 1920,
+      "height": 1080,
+      "cnn_precision": "w8a8_mixed_p999_resfp",
+      "cnn_blocks": 2,
+      "png": "10__c1b1_20150408_154240_395__payload_N009__cnn_w8a8_mixed_p999_b2.png",
+      "seconds": 5.881,
+      "cnn_raw10_min": 0,
+      "cnn_raw10_max": 959,
+      "rgb8_min": 0,
+      "rgb8_max": 255
+    }
+  ]
+}

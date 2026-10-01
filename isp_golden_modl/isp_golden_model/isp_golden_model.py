@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
-# Integrated bit-accurate ISP golden model (RGGB, RAW10 in -> RGB8 out):
+# Integrated ISP golden model (RGGB, RAW10 in -> RGB8 out):
 #   BLC -> BPC -> CNN denoise -> WB -> Demosaic -> CCM -> LTM -> Gamma
-# Each stage reproduces one team member's fixed-point golden model:
+# ISP stages use fixed-point; CNN uses only LocalResNet-Micro B2 W8A8 mixed P99.9 Q31.
+# With no arguments, process the selected dataset images with this CNN only.
 #   BLC, BPC     : Viet     golden/Viet/BLC/blc.cpp, golden/Viet/BPC/bpc_adaptive.cpp
-#   CNN denoise  : Hoang    golden/Hoang/CNN_golden_model/CNN_Golden_Model_Int8.py
+#   CNN denoise  : Hoang    LocalResNet-Micro B2 w8a8_mixed_p999_resfp Q31
 #   WB, Demosaic : Nhan     golden/Nhan/WB/golden_wb_model.cpp, golden/Nhan/Demosaic/golden_demosaic_fixed.cpp
 #   CCM          : Nhan     golden/Nhan/CCM/golden_ccm_model.cpp
 #   LTM, Gamma   : Tuan Anh golden/Tuan Anh/LTM/golden_ltm_fixed.py, golden/Tuan Anh/Gamma/golden_gamma_fixed.py
 from __future__ import annotations
 
 import argparse
+import csv
+import hashlib
 import json
 import math
 import struct
@@ -22,6 +25,9 @@ from pathlib import Path
 import numpy as np
 
 SCRIPT_DIR = Path(__file__).resolve().parent
+DEFAULT_INPUT_DIR = SCRIPT_DIR / "clean-20260930T094324Z-1-001"
+CNN_PRECISION = "w8a8_mixed_p999_resfp"
+CNN_CHECKPOINT_STEM = "local_resnet_micro_b2__w8a8_mixed_p999_resfp__Q31"
 
 RAW10_MAX = 1023
 RAW12_MAX = 4095
@@ -57,6 +63,8 @@ class BpcConfig:
 class CnnConfig:
     blocks: int = 2
     param_dir: str = str(SCRIPT_DIR / "params")
+    precision: str = "w8a8_mixed_p999_resfp"
+    int8_output: str = "raw_residual"
 
 
 @dataclass
@@ -120,9 +128,34 @@ class IspConfig:
         return cfg
 
     def validate(self) -> None:
+        if self.cnn.blocks != 2:
+            raise ValueError("This golden model supports LocalResNet-Micro B2 only")
+
+        aliases = {
+            "w8a8_mixed_p999": CNN_PRECISION,
+            "w8a8_mixed_p999_resfp": CNN_PRECISION,
+        }
+
+        self.cnn.precision = aliases.get(
+            self.cnn.precision,
+            self.cnn.precision,
+        )
+
+        if self.cnn.precision != CNN_PRECISION:
+            raise ValueError(
+                f"This golden model supports only "
+                f"cnn.precision={CNN_PRECISION!r}, "
+                f"got {self.cnn.precision!r}"
+            )
+
         bad = set(self.bypass) - BYPASSABLE
+
         if bad:
-            raise ValueError(f"Stages {sorted(bad)} cannot be bypassed; bypassable: {sorted(BYPASSABLE)}")
+            raise ValueError(
+                f"Stages {sorted(bad)} cannot be bypassed; "
+                f"bypassable: {sorted(BYPASSABLE)}"
+            )
+
 
 
 def cfa_plane(height: int, width: int, r, gr, gb, b, dtype) -> np.ndarray:
@@ -178,7 +211,7 @@ def bpc(raw: np.ndarray, cfg: BpcConfig) -> tuple[np.ndarray, np.ndarray]:
 
 
 # ============================================================================
-# CNN denoise (Hoang) - LocalResNet-Micro true-integer W8A8 inference
+# CNN denoise (Hoang) — ONLY w8a8_mixed_p999_resfp
 # ============================================================================
 
 def q31_requant(x: np.ndarray, q31: int, exponent: int) -> np.ndarray:
@@ -207,56 +240,9 @@ def sat8(x: np.ndarray) -> np.ndarray:
     return np.clip(x, ACT_QMIN, ACT_QMAX)
 
 
-class CnnDenoiseW8A8:
+class CnnDenoiseW8A8MixedP999Q31:
+
     ROW_BAND = 64
-
-    def __init__(self, cfg: CnnConfig):
-        if cfg.blocks not in (2, 4):
-            raise ValueError(f"cnn.blocks must be 2 or 4, got {cfg.blocks}")
-        stem = f"local_resnet_micro_b{cfg.blocks}__w8a8_integer"
-        param_dir = Path(cfg.param_dir)
-        manifest = json.loads((param_dir / f"{stem}__manifest.json").read_text())
-        if (manifest.get("model") != f"local_resnet_micro_b{cfg.blocks}"
-                or manifest.get("precision") != "w8a8_integer"
-                or len(manifest.get("blocks", [])) != cfg.blocks):
-            raise ValueError(f"Manifest does not describe local_resnet_micro_b{cfg.blocks} w8a8_integer")
-        with np.load(param_dir / f"{stem}__integer_artifacts.npz", allow_pickle=False) as z:
-            art = {k: z[k].copy() for k in z.files}
-
-        def scalar(key: str):
-            return np.asarray(art[key]).item()
-
-        self.blocks = cfg.blocks
-        self.post_blc_min, self.post_blc_max = (int(v) for v in manifest["raw_input"]["post_blc_range"])
-        self.raw_q = (int(scalar("raw_q31")), int(scalar("raw_exp")))
-        self.head = self._conv(art, "head")
-        self.head_q = (art["head_q31"].astype(np.int64), art["head_exp"].astype(np.int64))
-        self.res_blocks = [
-            {
-                "conv1": self._conv(art, f"block{i}__conv1"),
-                "conv2": self._conv(art, f"block{i}__conv2"),
-                "conv1_q": (art[f"block{i}__conv1_q31"].astype(np.int64), art[f"block{i}__conv1_exp"].astype(np.int64)),
-                "main_q": (art[f"block{i}__main_q31"].astype(np.int64), art[f"block{i}__main_exp"].astype(np.int64)),
-                "skip_q": (int(scalar(f"block{i}__skip_q31")), int(scalar(f"block{i}__skip_exp"))),
-            }
-            for i in range(cfg.blocks)
-        ]
-        self.tail = self._conv(art, "tail")
-        self.tail_q = (art["tail_q31"].astype(np.int64), art["tail_exp"].astype(np.int64))
-        self.global_skip_q = (int(scalar("global_skip_q31")), int(scalar("global_skip_exp")))
-        # float32 arithmetic mirrors the torch golden: round(q * float32(output_scale * POST_BLC_MAX)).
-        self.output_raw_scale = np.float32(np.float32(float(scalar("output_scale"))) * np.float32(self.post_blc_max))
-
-    @staticmethod
-    def _conv(art: dict, prefix: str) -> tuple[np.ndarray, np.ndarray]:
-        weight, bias = art[f"{prefix}__weight_int"], art[f"{prefix}__bias_int32"]
-        if weight.dtype != np.int8 or bias.dtype != np.int32 or weight.shape[-2:] != (3, 3):
-            raise TypeError(f"{prefix}: expected int8 3x3 weights and int32 bias")
-        bound = ACT_QMAX * np.abs(weight.astype(np.int64)).reshape(weight.shape[0], -1).sum(1) + np.abs(bias.astype(np.int64))
-        if bound.max() > INT32_MAX:
-            raise OverflowError(f"{prefix}: INT32 accumulator unsafe")
-        return weight, bias
-
     def _conv3x3(self, x: np.ndarray, conv: tuple[np.ndarray, np.ndarray]) -> np.ndarray:
         # Zero-padded 3x3 cross-correlation (torch conv2d, padding=1). float64 GEMM is exact:
         # every partial sum is an integer far below 2^53.
@@ -271,33 +257,104 @@ class CnnDenoiseW8A8:
             out[:, y0:y1] = (wm @ cols.reshape(cin * 9, -1)).reshape(-1, y1 - y0, w).astype(np.int64)
         return out + bias.astype(np.int64)[:, None, None]
 
-    def quantize_input(self, packed_post_blc: np.ndarray) -> np.ndarray:
-        raw = np.clip(packed_post_blc.astype(np.int64), self.post_blc_min, self.post_blc_max)
-        return sat8(q31_requant(raw, *self.raw_q))
+    def __init__(self, cfg: CnnConfig):
+        if cfg.blocks != 2:
+            raise ValueError("W8A8 mixed P99.9 Q31 supports B2 only")
+        if cfg.precision != CNN_PRECISION:
+            raise ValueError(f"Expected precision={CNN_PRECISION!r}, got {cfg.precision!r}")
+        stem = CNN_CHECKPOINT_STEM
+        self.checkpoint_path = Path(cfg.param_dir) / f"{stem}_checkpoint.npz"
+        self.manifest_path = Path(cfg.param_dir) / f"{stem}_manifest.json"
+        self.manifest = json.loads(self.manifest_path.read_text(encoding="utf-8"))
+        if (self.manifest.get("model") != "local_resnet_micro_b2"
+                or self.manifest.get("precision") != CNN_PRECISION):
+            raise ValueError(f"Checkpoint model/precision mismatch: {self.manifest_path}")
+        contract = self.manifest["residual_contract"]
+        for key, expected in (("local_skip_quantized", True), ("skip_shared_with_conv1_input", True),
+                              ("local_residual_add_output_quantized", False),
+                              ("global_raw_skip_quantized", False), ("final_output_quantized", False)):
+            if contract.get(key) is not expected:
+                raise ValueError(f"Unsupported residual contract: {key}={contract.get(key)}")
+        raw_contract = self.manifest["raw_contract"]
+        self.post_blc_min = int(raw_contract["post_blc_min_dn"])
+        self.post_blc_max = int(raw_contract["post_blc_max_dn"])
+        if (self.post_blc_min, self.post_blc_max) != (0, 959):
+            raise ValueError("Expected post-BLC RAW range [0,959]")
+        with np.load(self.checkpoint_path, allow_pickle=False) as z:
+            self.art = {key: z[key].copy() for key in z.files}
+        for key, expected in (("global_raw_skip_quantized", 0), ("local_skip_quantized", 1),
+                              ("local_residual_add_output_quantized", 0), ("final_output_quantized", 0)):
+            if int(self.art[key]) != expected:
+                raise ValueError(f"NPZ residual contract mismatch: {key}")
+        self.convs = {}
+        for name, cin, cout in (("head", 4, 16), ("b1_conv1", 16, 16), ("b1_conv2", 16, 16),
+                                ("b2_conv1", 16, 16), ("b2_conv2", 16, 16), ("tail", 16, 4)):
+            weight, bias = self.art[f"{name}__weight_int"], self.art[f"{name}__bias_int32"]
+            bits = int(self.art[f"{name}__weight_bits"])
+            max_weight = (1 << (bits - 1)) - 1
+            if (weight.dtype != np.int8 or bias.dtype != np.int32
+                    or weight.shape != (cout, cin, 3, 3) or bias.shape != (cout,)):
+                raise ValueError(f"Invalid convolution tensors: {name}")
+            if np.abs(weight.astype(np.int64)).max() > max_weight:
+                raise ValueError(f"{name} weights exceed logical W{bits} range")
+            input_bound = max(abs(int(self.art[f"{name}__input_qmin"])),
+                              abs(int(self.art[f"{name}__input_qmax"])))
+            bound = input_bound * np.abs(weight.astype(np.int64)).reshape(cout, -1).sum(1)
+            bound += np.abs(bias.astype(np.int64))
+            if bound.max() > INT32_MAX:
+                raise OverflowError(f"{name}: INT32 accumulator unsafe")
+            self.convs[name] = weight, bias
 
-    def forward_quantized(self, q_in: np.ndarray) -> np.ndarray:
-        """INT8 packed [4,H/2,W/2] -> INT8 packed [4,H/2,W/2]."""
-        y = sat8(q31_requant_per_channel(np.maximum(self._conv3x3(q_in, self.head), 0), *self.head_q))
-        for blk in self.res_blocks:
-            mid = sat8(q31_requant_per_channel(np.maximum(self._conv3x3(y, blk["conv1"]), 0), *blk["conv1_q"]))
-            main = q31_requant_per_channel(self._conv3x3(mid, blk["conv2"]), *blk["main_q"])
-            y = sat8(main + q31_requant(y, *blk["skip_q"]))
-        main = q31_requant_per_channel(self._conv3x3(y, self.tail), *self.tail_q)
-        return sat8(main + q31_requant(q_in, *self.global_skip_q))
+    def _requant(self, x: np.ndarray, stage: str) -> np.ndarray:
+        multiplier = self.art[f"{stage}__q31_multiplier"]
+        exponent = self.art[f"{stage}__q31_exponent"]
+        if multiplier.ndim == 0:
+            y = q31_requant(x, int(multiplier), int(exponent))
+        else:
+            y = q31_requant_per_channel(x, multiplier, exponent)
+        if f"{stage}__qmin" in self.art:
+            y = np.clip(y, int(self.art[f"{stage}__qmin"]), int(self.art[f"{stage}__qmax"]))
+        return y
 
-    def output_to_raw(self, q_out: np.ndarray) -> np.ndarray:
-        raw = np.round(q_out.astype(np.float32) * self.output_raw_scale)
-        return np.clip(raw, 0, self.post_blc_max).astype(np.uint16)
+    @staticmethod
+    def _add_int32(a: np.ndarray, b: np.ndarray) -> np.ndarray:
+        y = a.astype(np.int64) + b.astype(np.int64)
+        if y.size and (y.min() < INT32_MIN or y.max() > INT32_MAX):
+            raise OverflowError("Residual addition exceeds INT32 range")
+        return y
+
+    def forward_packed(self, packed: np.ndarray, trace: dict | None = None) -> np.ndarray:
+        """Packed post-BLC [4,H/2,W/2] DN -> packed RAW DN; no A8 global skip."""
+        raw = np.clip(packed.astype(np.int64), self.post_blc_min, self.post_blc_max)
+
+        def record(name, value):
+            if trace is not None:
+                trace[name] = value.copy()
+            return value
+
+        x = record("head_input", self._requant(raw, "raw10_to_head"))
+        head = np.maximum(self._conv3x3(x, self.convs["head"]), 0)
+        skip = record("b1_input", self._requant(head, "head_acc_to_b1_input"))
+        for block in (1, 2):
+            prefix = f"b{block}"
+            acc = np.maximum(self._conv3x3(skip, self.convs[f"{prefix}_conv1"]), 0)
+            mid = record(f"{prefix}_conv2_input", self._requant(acc, f"{prefix}_conv1_acc_to_{prefix}_conv2_input"))
+            main = self._requant(self._conv3x3(mid, self.convs[f"{prefix}_conv2"]), f"{prefix}_main_acc_to_skip_scale")
+            wide = record(f"{prefix}_residual", self._add_int32(skip, main))
+            next_stage = "b1_residual_to_b2_conv1_input" if block == 1 else "b2_residual_to_tail_input"
+            skip = record("b2_input" if block == 1 else "tail_input", self._requant(wide, next_stage))
+        tail = self._conv3x3(skip, self.convs["tail"])
+        residual = record("residual_dn", self._requant(tail, "tail_acc_to_raw_residual_dn"))
+        return np.clip(self._add_int32(raw, residual), 0, self.post_blc_max).astype(np.uint16)
 
     def __call__(self, raw_post_blc: np.ndarray) -> np.ndarray:
         h, w = raw_post_blc.shape
         if h % 2 or w % 2:
             raise ValueError(f"CNN needs even frame size, got {w}x{h}")
-        packed = np.stack((raw_post_blc[0::2, 0::2], raw_post_blc[0::2, 1::2],
-                           raw_post_blc[1::2, 0::2], raw_post_blc[1::2, 1::2]))
-        out_packed = self.output_to_raw(self.forward_quantized(self.quantize_input(packed)))
+        packed = np.stack([raw_post_blc[y::2, x::2] for y, x in ((0, 0), (0, 1), (1, 0), (1, 1))])
+        result = self.forward_packed(packed)
         out = np.empty((h, w), dtype=np.uint16)
-        out[0::2, 0::2], out[0::2, 1::2], out[1::2, 0::2], out[1::2, 1::2] = out_packed
+        out[0::2, 0::2], out[0::2, 1::2], out[1::2, 0::2], out[1::2, 1::2] = result
         return out
 
 
@@ -548,12 +605,14 @@ class IspGoldenModel:
     def __init__(self, cfg: IspConfig | None = None):
         self.cfg = cfg or IspConfig()
         self.cfg.validate()
-        self.cnn = None if "cnn" in self.cfg.bypass else CnnDenoiseW8A8(self.cfg.cnn)
+        self.cnn = None if "cnn" in self.cfg.bypass else CnnDenoiseW8A8MixedP999Q31(self.cfg.cnn)
 
     def run(self, raw10: np.ndarray, verbose: bool = False) -> dict[str, np.ndarray]:
         """RAW10 [H,W] -> dict of every stage output; 'gamma' is the final RGB8 [H,W,3]."""
         if raw10.ndim != 2:
             raise ValueError(f"Expected a 2-D Bayer RAW frame, got shape {raw10.shape}")
+        if not np.issubdtype(raw10.dtype, np.integer) or raw10.size == 0:
+            raise ValueError("Input must be a nonempty integer RAW10 frame")
         if raw10.min(initial=0) < 0 or raw10.max(initial=0) > RAW10_MAX:
             raise ValueError(f"Input must be RAW10 [0,{RAW10_MAX}]")
         cfg = self.cfg
@@ -597,9 +656,54 @@ class IspGoldenModel:
 RAW_FORMATS = ("auto", "u16", "packed3x10")
 
 
+def load_pgm_raw10(path: Path) -> np.ndarray:
+    """Read binary P5 samples without rescaling maxval=1023 to 65535."""
+    with path.open("rb") as stream:
+        def token() -> bytes:
+            value = bytearray()
+            while True:
+                ch = stream.read(1)
+                if not ch:
+                    raise ValueError(f"{path}: incomplete PGM header")
+                if ch == b"#":
+                    stream.readline()
+                    if value:
+                        return bytes(value)
+                elif ch in b" \t\r\n\v\f":
+                    if value:
+                        if ch == b"\r" and stream.peek(1)[:1] == b"\n":
+                            stream.read(1)
+                        return bytes(value)
+                else:
+                    value.extend(ch)
+
+        if token() != b"P5":
+            raise ValueError(f"{path}: expected binary P5 PGM")
+        width, height, maxval = int(token()), int(token()), int(token())
+        if width <= 0 or height <= 0 or not 1 <= maxval <= RAW10_MAX:
+            raise ValueError(f"{path}: expected RAW10 PGM, got {width}x{height}, maxval={maxval}")
+        dtype = np.dtype(">u2" if maxval > 255 else "u1")
+        payload = stream.read()
+    if len(payload) != width * height * dtype.itemsize:
+        raise ValueError(f"{path}: PGM payload size does not match header")
+    raw = np.frombuffer(payload, dtype=dtype).reshape(height, width).astype(np.uint16)
+    if raw.max() > maxval:
+        raise ValueError(f"{path}: pixel exceeds PGM maxval={maxval}")
+    metadata_path = path.with_name("input_metadata.json")
+    if metadata_path.is_file():
+        metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+        if metadata.get("cfa", "RGGB") != "RGGB":
+            raise ValueError(f"{metadata_path}: expected RGGB CFA")
+        if (metadata.get("height", height), metadata.get("width", width)) != raw.shape:
+            raise ValueError(f"{metadata_path}: dimensions disagree with PGM header")
+    return raw
+
+
 def load_raw(path: Path, width: int, height: int, raw_format: str = "auto") -> np.ndarray:
-    """.npy [H,W], or binary: 'u16' = one little-endian uint16 per pixel,
+    """RAW10 .pgm, .npy [H,W], or binary: 'u16' = one little-endian uint16 per pixel,
     'packed3x10' = 3 pixels per little-endian 32-bit word, pixel0 in bits 9:0 (Xilinx frame-buffer RAW10)."""
+    if path.suffix.lower() == ".pgm":
+        return load_pgm_raw10(path)
     if path.suffix.lower() == ".npy":
         raw = np.load(path, allow_pickle=False)
         if not np.issubdtype(raw.dtype, np.integer):
@@ -649,51 +753,157 @@ def write_png(path: Path, rgb8: np.ndarray) -> None:
                      + chunk(b"IEND", b""))
 
 
+def select_input_images(input_dir: Path, limit: int) -> list[Path]:
+    """Deterministic, evenly spaced samples across the sorted dataset."""
+    if limit < 1:
+        raise ValueError("--limit must be at least 1")
+    if not input_dir.is_dir():
+        raise FileNotFoundError(f"Input directory not found: {input_dir}")
+    supported = {".pgm", ".npy", ".bin", ".raw"}
+    paths = sorted((p for p in input_dir.rglob("*") if p.is_file() and p.suffix.lower() in supported),
+                   key=lambda p: p.relative_to(input_dir).as_posix().lower())
+    if not paths:
+        raise ValueError(f"No RAW10 .pgm/.npy/.bin/.raw images under {input_dir}")
+    indices = np.linspace(0, len(paths) - 1, min(limit, len(paths)), dtype=int)
+    return [paths[i] for i in indices]
+
+
+def save_stage_outputs(output_dir: Path, name: str, raw: np.ndarray, outputs: dict) -> None:
+    stage_dir = output_dir / f"{name}_stages"
+    stage_dir.mkdir(exist_ok=True)
+    np.save(stage_dir / "00_input_raw10.npy", raw)
+    for i, stage in enumerate(STAGES, start=1):
+        np.save(stage_dir / f"{i:02d}_{stage}.npy", outputs[stage])
+    np.save(stage_dir / "02_bpc_detections.npy", outputs.get("bpc_detections", np.zeros(raw.shape, bool)))
+
+
+def checkpoint_sources(cfg: CnnConfig) -> list[dict]:
+    """Record only the selected W8A8 mixed P99.9 Q31 checkpoint files."""
+    param_dir = Path(cfg.param_dir)
+    names = [
+        f"{CNN_CHECKPOINT_STEM}_checkpoint.npz",
+        f"{CNN_CHECKPOINT_STEM}_manifest.json",
+    ]
+    return [
+        {
+            "path": str((param_dir / name).resolve()),
+            "sha256": hashlib.sha256((param_dir / name).read_bytes()).hexdigest(),
+        }
+        for name in names
+    ]
+
+
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Integrated bit-accurate ISP golden model: "
-                                                 "BLC -> BPC -> CNN -> WB -> Demosaic -> CCM -> LTM -> Gamma")
+    parser = argparse.ArgumentParser(
+        description="Integrated ISP with LocalResNet-Micro B2 w8a8_mixed_p999_resfp Q31 only"
+    )
     src = parser.add_mutually_exclusive_group()
-    src.add_argument("--input", type=Path, help="Sensor RAW10 RGGB frame: .npy [H,W] or binary (see --raw-format)")
-    src.add_argument("--synthetic", action="store_true", help="Use a synthetic RAW10 frame instead of --input")
-    parser.add_argument("--width", type=int, default=1920, help="Frame width (binary input / synthetic)")
-    parser.add_argument("--height", type=int, default=1080, help="Frame height (binary input / synthetic)")
-    parser.add_argument("--raw-format", choices=RAW_FORMATS, default="auto",
-                        help="Binary layout: u16 (uint16 per pixel) or packed3x10 (3 pixels per 32-bit word); "
-                             "auto picks by file size")
-    parser.add_argument("--seed", type=int, default=0, help="Seed for --synthetic")
-    parser.add_argument("--config", type=Path, help="JSON config (see --print-config)")
-    parser.add_argument("--output-dir", type=Path, default=Path("output_image"), help="Where to write results")
-    parser.add_argument("--dump-stages", action="store_true", help="Also save every stage output as .npy")
-    parser.add_argument("--print-config", action="store_true", help="Print the default config as JSON and exit")
+    src.add_argument("--input", type=Path, help="Sensor RAW10 RGGB frame: .pgm, .npy [H,W] or binary")
+    src.add_argument("--input-dir", type=Path, help="Recursively read RAW10 images")
+    src.add_argument("--synthetic", action="store_true", help="Use a synthetic RAW10 frame")
+    parser.add_argument("--limit", type=int, default=10, help="Maximum batch image count")
+    parser.add_argument("--param-dir", type=Path, help="Parameter directory; default: ./params")
+    parser.add_argument("--width", type=int, default=1920, help="Frame width for binary/synthetic")
+    parser.add_argument("--height", type=int, default=1080, help="Frame height for binary/synthetic")
+    parser.add_argument("--raw-format", choices=RAW_FORMATS, default="auto", help="Binary RAW10 layout")
+    parser.add_argument("--seed", type=int, default=0, help="Seed for synthetic input")
+    parser.add_argument("--config", type=Path, help="JSON ISP config; CNN mode is fixed")
+    parser.add_argument("--output-dir", type=Path, default=SCRIPT_DIR / "output_image_w8a8_mixed_p999", help="Output directory")
+    parser.add_argument("--dump-stages", action="store_true", help="Save every ISP stage as .npy")
+    parser.add_argument("--print-config", action="store_true", help="Print default config and exit")
     args = parser.parse_args()
 
     if args.print_config:
         print(json.dumps(asdict(IspConfig()), indent=2))
         return
-    if not args.input and not args.synthetic:
-        parser.error("give --input FILE or --synthetic")
 
     cfg = IspConfig.from_json(args.config) if args.config else IspConfig()
-    if args.synthetic:
-        raw, name = synthetic_raw10(args.width, args.height, args.seed), "synthetic"
-    else:
-        raw, name = load_raw(args.input, args.width, args.height, args.raw_format), args.input.stem
+    if args.param_dir is not None:
+        cfg.cnn.param_dir = str(args.param_dir.resolve())
+    cfg.validate()
 
-    print(f"ISP golden model: input {raw.shape[1]}x{raw.shape[0]}, bypass={cfg.bypass or 'none'}")
-    outputs = IspGoldenModel(cfg).run(raw, verbose=True)
+    if args.limit < 1:
+        parser.error("--limit must be at least 1")
+
+    batch = args.input is None and not args.synthetic
+    paths = select_input_images(args.input_dir or DEFAULT_INPUT_DIR, args.limit) if batch else [args.input]
+    model = IspGoldenModel(cfg)
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
-    png_path = args.output_dir / f"{name}.png"
-    write_png(png_path, outputs["gamma"])
-    if args.dump_stages:
-        stage_dir = args.output_dir / f"{name}_stages"
-        stage_dir.mkdir(exist_ok=True)
-        np.save(stage_dir / "00_input_raw10.npy", raw)
-        for i, stage in enumerate(STAGES, start=1):
-            np.save(stage_dir / f"{i:02d}_{stage}.npy", outputs[stage])
-        np.save(stage_dir / "02_bpc_detections.npy", outputs.get("bpc_detections", np.zeros(raw.shape, bool)))
-        print(f"Stage dumps in {stage_dir}")
-    print(f"Wrote {png_path}")
+    report_path = args.output_dir / "run_cnn_w8a8_mixed_p999_b2.json"
+    csv_path = args.output_dir / "run_cnn_w8a8_mixed_p999_b2.csv"
+
+    report = {
+        "status": "running",
+        "cnn_precision": CNN_PRECISION,
+        "cnn_blocks": 2,
+        "quantized_output_contract": (
+            "U8/S8 boundaries from exported Q31; local skip shared with Conv1 input; "
+            "Conv2 main aligned to skip scale; local residual ADD kept INT32 without clamp; "
+            "global RAW skip unchanged; tail accumulator -> signed RAW residual DN; "
+            "final RAW = clip(original RAW + residual_DN, 0, 959)."
+        ),
+        "inputs": [str(p.resolve()) if p is not None else f"synthetic seed={args.seed}" for p in paths],
+        "config": asdict(model.cfg),
+        "checkpoints": checkpoint_sources(model.cfg.cnn) if model.cnn is not None else [],
+        "checkpoint_manifest_version": model.cnn.manifest.get("version") if model.cnn is not None else None,
+        "images": [],
+    }
+    report_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+
+    print(f"Running {len(paths)} image(s), CNN={CNN_PRECISION}, B2", flush=True)
+
+    for index, path in enumerate(paths, start=1):
+        if path is None:
+            raw = synthetic_raw10(args.width, args.height, args.seed)
+            name = "synthetic"
+        else:
+            raw = load_raw(path, args.width, args.height, args.raw_format)
+            name = path.parent.name if path.stem == "clean_rggb" else path.stem
+
+        if batch:
+            name = f"{index:02d}__{name}"
+
+        print(f"[{index}/{len(paths)}] {name}: {raw.shape[1]}x{raw.shape[0]}", flush=True)
+        print("  CNN W8A8_MIXED_P999 B2", flush=True)
+
+        t0 = time.perf_counter()
+        outputs = model.run(raw, verbose=True)
+        elapsed = time.perf_counter() - t0
+
+        output_name = f"{name}__cnn_w8a8_mixed_p999_b2"
+        png_path = args.output_dir / f"{output_name}.png"
+        write_png(png_path, outputs["gamma"])
+
+        if args.dump_stages:
+            save_stage_outputs(args.output_dir, output_name, raw, outputs)
+
+        row = {
+            "image": name,
+            "input": str(path.resolve()) if path is not None else "synthetic",
+            "width": int(raw.shape[1]),
+            "height": int(raw.shape[0]),
+            "cnn_precision": CNN_PRECISION,
+            "cnn_blocks": 2,
+            "png": png_path.name,
+            "seconds": round(elapsed, 3),
+            "cnn_raw10_min": int(outputs["cnn"].min()),
+            "cnn_raw10_max": int(outputs["cnn"].max()),
+            "rgb8_min": int(outputs["gamma"].min()),
+            "rgb8_max": int(outputs["gamma"].max()),
+        }
+
+        report["images"].append(row)
+        report["status"] = "complete" if index == len(paths) else "running"
+        report_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+
+        with csv_path.open("w", newline="", encoding="utf-8") as stream:
+            writer = csv.DictWriter(stream, fieldnames=list(row))
+            writer.writeheader()
+            writer.writerows(report["images"])
+
+    print(f"Saved {len(paths)} PNG output(s) to {args.output_dir}")
+    print(f"Reports: {csv_path.name}, {report_path.name}")
 
 
 if __name__ == "__main__":

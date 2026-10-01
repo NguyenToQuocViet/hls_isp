@@ -1,0 +1,9 @@
+{
+  "source": "/home/quocviet/Project/Adaptive-Directional-BPC-HLS/Viet/artifacts/hdrplus_bl64/source/6G7M_20150321_151858_636/payload_N003.dng",
+  "libraw": "0.22.2-Release",
+  "width": 1920, "height": 1080,
+  "cfa": "RGGB", "bit_depth": 10, "pixel_max": 1023,
+  "white_level": 1023,
+  "crop_top": 1021, "crop_left": 1145,
+  "native_black_r_gr_gb_b": [64,64,64,64], "black_r_gr_gb_b": [64,64,64,64]
+}

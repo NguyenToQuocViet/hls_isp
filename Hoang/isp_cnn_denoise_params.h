@@ -1,693 +1,353 @@
-#ifndef LOCAL_RESNET_MICRO_PARAMS_H
-#define LOCAL_RESNET_MICRO_PARAMS_H
+#ifndef LOCAL_RESNET_MICRO_PARAMS_W8A8_H
+#define LOCAL_RESNET_MICRO_PARAMS_W8A8_H
 
 #include "isp_cnn_denoise.h"
 
+// AUTO-GENERATED from local_resnet_micro_b2__w8a8_mixed_p999_resfp__Q31_checkpoint.npz
+// Variant: w8a8
+// QAT/deployment contract: v9 skip-quant + residual-preserve
+// RAW post-BLC domain: [0, 959]
+
+#define LOCAL_RESNET_PARAMS_VALID 1
+#define CNN_BODY_PARAMS_VALID 1
+#define LOCAL_RESNET_RESBLOCKS 2
+#define LOCAL_RESNET_POST_BLC_MAX 959
+#define LOCAL_RESNET_LOCAL_RESIDUAL_WIDE_INT32 1
+#define LOCAL_RESNET_GLOBAL_RAW_SKIP_EXACT 1
+#define LOCAL_RESNET_FINAL_OUTPUT_QUANTIZED 0
+
+#define L0_LOGICAL_WEIGHT_BITS 8
+#define L0_INPUT_BITS 8
+#define L0_INPUT_SIGNED 0
+#define L0_INPUT_QMIN 0
+#define L0_INPUT_QMAX 255
+#define L1_LOGICAL_WEIGHT_BITS 8
+#define L1_INPUT_BITS 8
+#define L1_INPUT_SIGNED 0
+#define L1_INPUT_QMIN 0
+#define L1_INPUT_QMAX 255
+#define L2_LOGICAL_WEIGHT_BITS 8
+#define L2_INPUT_BITS 8
+#define L2_INPUT_SIGNED 0
+#define L2_INPUT_QMIN 0
+#define L2_INPUT_QMAX 255
+#define L3_LOGICAL_WEIGHT_BITS 8
+#define L3_INPUT_BITS 8
+#define L3_INPUT_SIGNED 1
+#define L3_INPUT_QMIN -127
+#define L3_INPUT_QMAX 127
+#define L4_LOGICAL_WEIGHT_BITS 8
+#define L4_INPUT_BITS 8
+#define L4_INPUT_SIGNED 0
+#define L4_INPUT_QMIN 0
+#define L4_INPUT_QMAX 255
+#define L5_LOGICAL_WEIGHT_BITS 8
+#define L5_INPUT_BITS 8
+#define L5_INPUT_SIGNED 1
+#define L5_INPUT_QMIN -127
+#define L5_INPUT_QMAX 127
+
+static const q31_t L0_RAW_TO_HEAD_Q31 = 1142040246;
+static const qexp_t L0_RAW_TO_HEAD_EXP = -1;
+static const int L0_RAW_TO_HEAD_QMIN = 0;
+static const int L0_RAW_TO_HEAD_QMAX = 255;
+
 #define L0_PARAMS_VALID 1
-
-
-static const q31_t  L0_RAW_Q31 = 1218475039;
-static const qexp_t L0_RAW_EXP = -2;
-
+// L0: head; logical W8, compatibility lane=W8
 static const weight_word_t L0_WBANK[9][L0_CIN] = {
-    {
-        (((weight_word_t)0x2c2d04261b1d1814ULL << 64) | (weight_word_t)0x4a10ed0d41face98ULL), (((weight_word_t)0x2ff6db070cae00b4ULL << 64) | (weight_word_t)0xfbe4fc0c37f28d35ULL), (((weight_word_t)0xe5c9d83034390eddULL << 64) | (weight_word_t)0xe2fafb1a11d9e517ULL), (((weight_word_t)0xc94fe6acd86607fbULL << 64) | (weight_word_t)0xef0692ea112cf9dfULL)
-    },
-    {
-        (((weight_word_t)0x12e9e606177ff1f4ULL << 64) | (weight_word_t)0x2341d6da20514d09ULL), (((weight_word_t)0xef9a1a092604ee44ULL << 64) | (weight_word_t)0x03f7e3322c0005c8ULL), (((weight_word_t)0xeb2717c407c10284ULL << 64) | (weight_word_t)0xd2ca01b0f5e634d2ULL), (((weight_word_t)0x3439d281c648d9f6ULL << 64) | (weight_word_t)0xa4f6b4c9f0deb4e3ULL)
-    },
-    {
-        (((weight_word_t)0xf3cdf832e80edb4bULL << 64) | (weight_word_t)0x3008efbe292184b4ULL), (((weight_word_t)0xedf3033ff8e0fff5ULL << 64) | (weight_word_t)0x1ffb12021bfbedb9ULL), (((weight_word_t)0xf801f20410a4c581ULL << 64) | (weight_word_t)0x0ae28bdb15194ef3ULL), (((weight_word_t)0x1199ddde2403e0fcULL << 64) | (weight_word_t)0x0b1b17331ce03cb6ULL)
-    },
-    {
-        (((weight_word_t)0x0bb030167fac2234ULL << 64) | (weight_word_t)0x05205e17f08138e7ULL), (((weight_word_t)0x0210a6db01c21d3cULL << 64) | (weight_word_t)0xeb1b2d20d1f79bdcULL), (((weight_word_t)0xf90500f6c6643ebcULL << 64) | (weight_word_t)0x1de4e1d4e6d8cd9bULL), (((weight_word_t)0xc3577fa40f9d532aULL << 64) | (weight_word_t)0xf9007fe0baf3299cULL)
-    },
-    {
-        (((weight_word_t)0x150341b921caea83ULL << 64) | (weight_word_t)0x41109439ab405bd1ULL), (((weight_word_t)0xd9d8cb87140eb39aULL << 64) | (weight_word_t)0x127d7f44bb73c9bbULL), (((weight_word_t)0x1aac63be8c5f2a96ULL << 64) | (weight_word_t)0x43fe190d8116ab38ULL), (((weight_word_t)0xe890dfd63864c7feULL << 64) | (weight_word_t)0x63f77f81bbdff430ULL)
-    },
-    {
-        (((weight_word_t)0x02ad090ff8258c9dULL << 64) | (weight_word_t)0xb61b3bef07f44cbcULL), (((weight_word_t)0x47f92934fb548a48ULL << 64) | (weight_word_t)0xedf23a2025ff8a28ULL), (((weight_word_t)0x054438e50acc9088ULL << 64) | (weight_word_t)0xbd208c19fcf11209ULL), (((weight_word_t)0xcdd2e2dd28e79d31ULL << 64) | (weight_word_t)0xb5b9146b27383281ULL)
-    },
-    {
-        (((weight_word_t)0x9cb118fce8b158c6ULL << 64) | (weight_word_t)0x511de7fcf29cd820ULL), (((weight_word_t)0x7f08f4f5e0ca7ffdULL << 64) | (weight_word_t)0xe7f722dcdf21bbc3ULL), (((weight_word_t)0xc0c3f749114d6cb5ULL << 64) | (weight_word_t)0xecede4141a0f47ccULL), (((weight_word_t)0x60d62ee403a57c03ULL << 64) | (weight_word_t)0xf12de71100f359b1ULL)
-    },
-    {
-        (((weight_word_t)0x2cd7e235fe464e75ULL << 64) | (weight_word_t)0x0c811409ae2b32cfULL), (((weight_word_t)0x9c81f918c9f6f5c1ULL << 64) | (weight_word_t)0xc7332cf6dcf243f6ULL), (((weight_word_t)0x1c0b1c401b455fd6ULL << 64) | (weight_word_t)0xf202ec00e507843dULL), (((weight_word_t)0x18b8f0e8350323a8ULL << 64) | (weight_word_t)0x2ff137f5fb1d9113ULL)
-    },
-    {
-        (((weight_word_t)0xe0cfc720ef11cde6ULL << 64) | (weight_word_t)0x81bb79092c378102ULL), (((weight_word_t)0x0f21f63720dbbfa1ULL << 64) | (weight_word_t)0xa402e9d64900fd0aULL), (((weight_word_t)0xed1a0757ff1de0d0ULL << 64) | (weight_word_t)0xd2ffef2345f5dc02ULL), (((weight_word_t)0x00bd28fa09ffe548ULL << 64) | (weight_word_t)0x9215c32c49f65504ULL)
-    }
-};
+    {(((weight_word_t)0xE8B918B61AE9057FULL << 64) | (weight_word_t)0x2F3D657FEB13EE3CULL), (((weight_word_t)0x0D36B71C1F13F857ULL << 64) | (weight_word_t)0x0BDCD6DC0AD42BD3ULL), (((weight_word_t)0x11C420AE14DA11C5ULL << 64) | (weight_word_t)0xCA0DC225DFEF1C17ULL), (((weight_word_t)0xC1F42103AD2DDB99ULL << 64) | (weight_word_t)0xD5FD91C2AC9BA1B5ULL)},
+    {(((weight_word_t)0xFAD32D06AA811CE7ULL << 64) | (weight_word_t)0x5018DC162681F0FEULL), (((weight_word_t)0x201A2581E8101307ULL << 64) | (weight_word_t)0x03D9E5131ED4E82BULL), (((weight_word_t)0x0EBA69221DF1EB69ULL << 64) | (weight_word_t)0x930FF043B38E2503ULL), (((weight_word_t)0xB942B7395547D5A0ULL << 64) | (weight_word_t)0x7FE2C41935ECD5FEULL)},
+    {(((weight_word_t)0xEC29DB3B50CE20D7ULL << 64) | (weight_word_t)0xDBEAF2C66160F0C6ULL), (((weight_word_t)0x0BEAD8221005010AULL << 64) | (weight_word_t)0xE513FDCCEE1C17D6ULL), (((weight_word_t)0xFE1AFAD2F70B1A14ULL << 64) | (weight_word_t)0xDE207A09DDFDF6D8ULL), (((weight_word_t)0xF01D270C35C2F9C6ULL << 64) | (weight_word_t)0x4507F2FFED0A041FULL)},
+    {(((weight_word_t)0xB9E960CDB2272E47ULL << 64) | (weight_word_t)0x40DC193DE101DCEEULL), (((weight_word_t)0x0CC6A4C44CF009B1ULL << 64) | (weight_word_t)0x4AFB770631981001ULL), (((weight_word_t)0x429D393DC3F1000FULL << 64) | (weight_word_t)0x01F62FEC12475BCFULL), (((weight_word_t)0x18CE56A4341CC624ULL << 64) | (weight_word_t)0xCAE9ECCE2CC470FCULL)},
+    {(((weight_word_t)0x3B3634A73D64F7C8ULL << 64) | (weight_word_t)0x03F39EA181B6FC4EULL), (((weight_word_t)0xD2E817F1810BD8D6ULL << 64) | (weight_word_t)0xCB7F1BB668E5A951ULL), (((weight_word_t)0xB843DBFF9215CBD7ULL << 64) | (weight_word_t)0x7BF2BFB5F698F6D1ULL), (((weight_word_t)0x7F237F34093781A5ULL << 64) | (weight_word_t)0x336E3BCA2614490DULL)},
+    {(((weight_word_t)0x389DDE3DCC0E109CULL << 64) | (weight_word_t)0xA0997FFC5EC30625ULL), (((weight_word_t)0xF48DFC22D63A155DULL << 64) | (weight_word_t)0xF2D8A740FE04FAC2ULL), (((weight_word_t)0xF5D3B19C53E9DFFBULL << 64) | (weight_word_t)0xDED931D0F9EF0ADAULL), (((weight_word_t)0xDF92DEEEC6C7EBC8ULL << 64) | (weight_word_t)0x01168506F74513CDULL)},
+    {(((weight_word_t)0xEC2CFB2B381F12E8ULL << 64) | (weight_word_t)0xFFDE06DDF349E0E9ULL), (((weight_word_t)0xFC6AE1214BCFF4D2ULL << 64) | (weight_word_t)0x08021E110214B228ULL), (((weight_word_t)0x1651E4DB6F0E14C6ULL << 64) | (weight_word_t)0x1A1599D8F944F622ULL), (((weight_word_t)0x0275F795770EDAD1ULL << 64) | (weight_word_t)0xDC11FD3CEC611EAFULL)},
+    {(((weight_word_t)0x217FB3A1DC1D0BCAULL << 64) | (weight_word_t)0xBE489D0FEA2AE6C6ULL), (((weight_word_t)0x3A6BD1FE8CE2E436ULL << 64) | (weight_word_t)0x563B43DEDE398B31ULL), (((weight_word_t)0xD254164793F31444ULL << 64) | (weight_word_t)0x00CB4B14135D7F2FULL), (((weight_word_t)0x33093F08B102E0FDULL << 64) | (weight_word_t)0xFBA416F2135BE82AULL)},
+    {(((weight_word_t)0xEEE537C119FF200AULL << 64) | (weight_word_t)0xF9CAF818074D2E09ULL), (((weight_word_t)0x0EC332DE011D12F4ULL << 64) | (weight_word_t)0x35119126F01A0E31ULL), (((weight_word_t)0xC7EBF1B3200B2432ULL << 64) | (weight_word_t)0xF5F8CE0EEF353881ULL), (((weight_word_t)0x0CAAE0B365DCFBF4ULL << 64) | (weight_word_t)0xBD1648E226FED313ULL)}};
 
 static const bias_t L0_BIAS[L0_COUT] = {
-    -7889, -14680, 759, -495, 1036, 1749, 1329, 469,
-    -14714, -687, 710, 676, 404, 922, -14846, -15
-};
+    -112, 3437, 3004, 2254, -344, 60, 4434, 1661,
+    -3833, 3506, 1218, -21372, -21890, 2280, -658, 1946};
 
-static const q31_t L0_HEAD_Q31[L0_COUT] = {
-    1801917824, 1544124288, 1668412800, 1579242368,
-    1838550912, 1233487104, 2104964224, 1182674944,
-    1444871040, 2044286336, 1969878400, 1790770048,
-    1315074688, 1852432128, 1651359232, 1276817536
-};
+static const q31_t L0_HEAD_TO_B1_Q31[L0_COUT] = {
+    1899193472, 1363187584, 1440645888, 1986147456,
+    1197651200, 1943997824, 1750326528, 1324448000,
+    1822429440, 2103819520, 2144296576, 1707091328,
+    1105386752, 1437281152, 1139371904, 1239384704};
+static const qexp_t L0_HEAD_TO_B1_EXP[L0_COUT] = {
+    -6, -6, -6, -6, -6, -7, -6, -6,
+    -7, -6, -6, -7, -6, -6, -6, -5};
 
-static const qexp_t L0_HEAD_EXP[L0_COUT] = {
-    -9, -9, -8, -8, -8, -8, -8, -9,
-    -9, -9, -9, -8, -9, -8, -9, -8
-};
-
-
-#define CNN_BODY_PARAMS_VALID 1
-
-// L1
+// L1: block0.conv1; logical W8, compatibility lane=W8
 static const body_weight_word_t L1_WBANK[9][CNN_C] = {
-    {
-        (((body_weight_word_t)0xfefe421bdbf4f808ULL << 64) | (body_weight_word_t)0xf3ffe84d02196e22ULL), (((body_weight_word_t)0xf1f815f7cd0118fdULL << 64) | (body_weight_word_t)0x00e607f20cf5ce0aULL), (((body_weight_word_t)0x0a0a2ee9f3ed19fdULL << 64) | (body_weight_word_t)0x0ce81153df236745ULL), (((body_weight_word_t)0x3086b741c50c20b5ULL << 64) | (body_weight_word_t)0x973837c6a21bcdfaULL),
-        (((body_weight_word_t)0xf51028fe201610f5ULL << 64) | (body_weight_word_t)0x0705d7b8e22828e2ULL), (((body_weight_word_t)0xebeea21131fefaf3ULL << 64) | (body_weight_word_t)0x17ebf9ac05078528ULL), (((body_weight_word_t)0xe4e7f7ece7d6fff5ULL << 64) | (body_weight_word_t)0x01effeab26ed39ffULL), (((body_weight_word_t)0x11fde10c7fe57018ULL << 64) | (body_weight_word_t)0xfdea1ce8fdf4a9e3ULL),
-        (((body_weight_word_t)0xf7f746f2f7f4e700ULL << 64) | (body_weight_word_t)0x04fb023a06f12f16ULL), (((body_weight_word_t)0x358cbde3060b0e81ULL << 64) | (body_weight_word_t)0xb2022b0bad36d625ULL), (((body_weight_word_t)0xf4fc16271e0301fcULL << 64) | (body_weight_word_t)0x0fe50ce5eb229922ULL), (((body_weight_word_t)0x0e15450cf3ff0df4ULL << 64) | (body_weight_word_t)0xf9fb0cf106e8b10dULL),
-        (((body_weight_word_t)0xf315d651fbe71700ULL << 64) | (body_weight_word_t)0xf21f02f4f616d6d3ULL), (((body_weight_word_t)0x0917e5f7ed180202ULL << 64) | (body_weight_word_t)0x04f2ecb1f7d710e5ULL), (((body_weight_word_t)0xfcfee3f420e6fd04ULL << 64) | (body_weight_word_t)0x08ecfe5315e613f8ULL), (((body_weight_word_t)0xf351df0925080c55ULL << 64) | (body_weight_word_t)0x58f7f7fc7f5bd7efULL)
-    },
-    {
-        (((body_weight_word_t)0x14f91211f405fe04ULL << 64) | (body_weight_word_t)0x0afdfd47fa1631f4ULL), (((body_weight_word_t)0x10f5ccf8f7f3f907ULL << 64) | (body_weight_word_t)0xf8e9e9f404e4261cULL), (((body_weight_word_t)0x031da62a0ff414eeULL << 64) | (body_weight_word_t)0x11e12708fc36b808ULL), (((body_weight_word_t)0x4fde20f0c82833bbULL << 64) | (body_weight_word_t)0x9f336105a1ebb3e1ULL),
-        (((body_weight_word_t)0x18fab7ef0af7eeffULL << 64) | (body_weight_word_t)0xfa11fab0e9d958f6ULL), (((body_weight_word_t)0xe40a9d0f151909e6ULL << 64) | (body_weight_word_t)0x0c0719f1f0403e07ULL), (((body_weight_word_t)0xfd131aefd2fe0207ULL << 64) | (body_weight_word_t)0xe9fcf38f16a158d6ULL), (((body_weight_word_t)0x2bf3cb00df1ad406ULL << 64) | (body_weight_word_t)0xed1ebb99051fa83aULL),
-        (((body_weight_word_t)0x010abdf0edfd14feULL << 64) | (body_weight_word_t)0xfa130e5009f952eaULL), (((body_weight_word_t)0x348a0003c9161ab1ULL << 64) | (body_weight_word_t)0x9d2f7febcc069ce8ULL), (((body_weight_word_t)0xfb080f1ff72e27e9ULL << 64) | (body_weight_word_t)0x15bf0866ef459c15ULL), (((body_weight_word_t)0x07eaedd330151d06ULL << 64) | (body_weight_word_t)0xfa14b38119f6d510ULL),
-        (((body_weight_word_t)0x10f1ff19cff9d9fbULL << 64) | (body_weight_word_t)0xf929314cefeed9d6ULL), (((body_weight_word_t)0x08188d26f0fb15f0ULL << 64) | (body_weight_word_t)0x02130193e5a2f2f0ULL), (((body_weight_word_t)0x0a0f3c010e0cf5faULL << 64) | (body_weight_word_t)0x06122ae405f12819ULL), (((body_weight_word_t)0x4b2bac4c167ffc6bULL << 64) | (body_weight_word_t)0x64253a377f4d14e1ULL)
-    },
-    {
-        (((body_weight_word_t)0xf1f01afb05fae7f8ULL << 64) | (body_weight_word_t)0x0815de4c0304eb09ULL), (((body_weight_word_t)0xf3032019e1131c00ULL << 64) | (body_weight_word_t)0x103bf6ccf41848eaULL), (((body_weight_word_t)0x10fb06fd19e71406ULL << 64) | (body_weight_word_t)0xd2de1322092b1d50ULL), (((body_weight_word_t)0xdca9f30aef2c08bdULL << 64) | (body_weight_word_t)0x9a07fb50d710d40cULL),
-        (((body_weight_word_t)0xe2f2a2e6efd7020fULL << 64) | (body_weight_word_t)0xf71a01f0fde1de09ULL), (((body_weight_word_t)0x2d0d35f22206edecULL << 64) | (body_weight_word_t)0xf9e3e78ffa13c104ULL), (((body_weight_word_t)0xff0429efddf0f3f6ULL << 64) | (body_weight_word_t)0x012be231f1e3d9d3ULL), (((body_weight_word_t)0xe1fdd112e1f7c2ffULL << 64) | (body_weight_word_t)0x004ee8b8141a5b00ULL),
-        (((body_weight_word_t)0x11fe130ae6fbf909ULL << 64) | (body_weight_word_t)0x0901062605ef30f9ULL), (((body_weight_word_t)0x17d2c71a14110fb2ULL << 64) | (body_weight_word_t)0xa8e41f9a0d16ae0bULL), (((body_weight_word_t)0x05ebb30e0800f3f3ULL << 64) | (body_weight_word_t)0xffa1154111f84b39ULL), (((body_weight_word_t)0xeef196f16900fe02ULL << 64) | (body_weight_word_t)0xe7f002900c00cfd8ULL),
-        (((body_weight_word_t)0xe9f7f7fdf3e417edULL << 64) | (body_weight_word_t)0xf90d1ef9070ba0dbULL), (((body_weight_word_t)0x0b0b810ddb0afeefULL << 64) | (body_weight_word_t)0xf332083aeb161905ULL), (((body_weight_word_t)0xeb003af8eaff0602ULL << 64) | (body_weight_word_t)0xf4140226f5e868fbULL), (((body_weight_word_t)0x494f0c20ce4ee169ULL << 64) | (body_weight_word_t)0x5c5410dd5e7510f9ULL)
-    },
-    {
-        (((body_weight_word_t)0x2308ad0aec040ffbULL << 64) | (body_weight_word_t)0xf420254bfcf10e1cULL), (((body_weight_word_t)0x05f8c4f8c6f7f602ULL << 64) | (body_weight_word_t)0x0b1005d107123e18ULL), (((body_weight_word_t)0xfd00c419ea04f8fdULL << 64) | (body_weight_word_t)0xfd080daee6088901ULL), (((body_weight_word_t)0x41e762d2d60b54c0ULL << 64) | (body_weight_word_t)0xb869301f9023ba08ULL),
-        (((body_weight_word_t)0x0514e7fbea020310ULL << 64) | (body_weight_word_t)0x13f3e2e0b45bddf1ULL), (((body_weight_word_t)0x0906f029001ee0f2ULL << 64) | (body_weight_word_t)0x07350bd71831ba1fULL), (((body_weight_word_t)0xe3e8c536fadf15f6ULL << 64) | (body_weight_word_t)0x08e712e9260c26edULL), (((body_weight_word_t)0xc7ffae445b2849ffULL << 64) | (body_weight_word_t)0x24ba34d8f8ec650eULL),
-        (((body_weight_word_t)0x130145fcdf0b17feULL << 64) | (body_weight_word_t)0xf321024d0408cffdULL), (((body_weight_word_t)0x10d520e7f6eb39ceULL << 64) | (body_weight_word_t)0xd1f31d06d202d40aULL), (((body_weight_word_t)0xecf70d150005e901ULL << 64) | (body_weight_word_t)0x0aef0ea2fee8c1ffULL), (((body_weight_word_t)0xf80ff5e8efe81f0bULL << 64) | (body_weight_word_t)0x0f26efcb00fcde11ULL),
-        (((body_weight_word_t)0x07f517d7e21ff000ULL << 64) | (body_weight_word_t)0x1210de41e804e8feULL), (((body_weight_word_t)0x0d0e3c07de080a08ULL << 64) | (body_weight_word_t)0xf94b0ad4fce18d00ULL), (((body_weight_word_t)0x09f14afbeeeb0b07ULL << 64) | (body_weight_word_t)0x0204eaef0107b7f7ULL), (((body_weight_word_t)0x2f4dce31fb1e0145ULL << 64) | (body_weight_word_t)0x5705f9c37938a944ULL)
-    },
-    {
-        (((body_weight_word_t)0xe20114fb02effa03ULL << 64) | (body_weight_word_t)0xf9090c49f11c29f5ULL), (((body_weight_word_t)0x02031809caf9f805ULL << 64) | (body_weight_word_t)0xfae019f30205ad26ULL), (((body_weight_word_t)0x051fe4f2d91eeae9ULL << 64) | (body_weight_word_t)0xf5c836d4f7e4a315ULL), (((body_weight_word_t)0x1dbb28abb11c63c4ULL << 64) | (body_weight_word_t)0xb7545128890ad4cbULL),
-        (((body_weight_word_t)0x28fef5d2941be60eULL << 64) | (body_weight_word_t)0x01f0d2f600fe8631ULL), (((body_weight_word_t)0xa1f283fdd5390cffULL << 64) | (body_weight_word_t)0x017f189108162222ULL), (((body_weight_word_t)0xe71133279e474102ULL << 64) | (body_weight_word_t)0xfe0dec1e04a4ccffULL), (((body_weight_word_t)0xce1c451ef91418fdULL << 64) | (body_weight_word_t)0xfccbeb280f21c30aULL),
-        (((body_weight_word_t)0x1002e710e30f13ffULL << 64) | (body_weight_word_t)0xfd07042003072e1fULL), (((body_weight_word_t)0x2eb6a91b0f187fc6ULL << 64) | (body_weight_word_t)0xc4f57cada609c700ULL), (((body_weight_word_t)0xe7f034ee850308faULL << 64) | (body_weight_word_t)0x0e0008de1d1c6322ULL), (((body_weight_word_t)0x1c08b9e13aef1801ULL << 64) | (body_weight_word_t)0x00fbe194ecd8ccd8ULL),
-        (((body_weight_word_t)0x1d0843a139105bffULL << 64) | (body_weight_word_t)0x08b0fe5905febb65ULL), (((body_weight_word_t)0xe40adf12d7c51300ULL << 64) | (body_weight_word_t)0x104c14f016daef03ULL), (((body_weight_word_t)0xf4090814df0aec09ULL << 64) | (body_weight_word_t)0x00f4f6150a13b3e6ULL), (((body_weight_word_t)0x324bc37f252c2253ULL << 64) | (body_weight_word_t)0x4b3dfa57754dd9c0ULL)
-    },
-    {
-        (((body_weight_word_t)0xff093ef027fa0400ULL << 64) | (body_weight_word_t)0x050df144feef7fd6ULL), (((body_weight_word_t)0x03f914fbef00ef0bULL << 64) | (body_weight_word_t)0x05ec135702014ee4ULL), (((body_weight_word_t)0x60140cb34601db09ULL << 64) | (body_weight_word_t)0xd1db29af261d9103ULL), (((body_weight_word_t)0xe586c00ee60d21bcULL << 64) | (body_weight_word_t)0xa20411fad4f7f8f0ULL),
-        (((body_weight_word_t)0x13f40eeb2329dcfdULL << 64) | (body_weight_word_t)0xfbd5e1a718f15d0eULL), (((body_weight_word_t)0xea0ab0fdf8c418ffULL << 64) | (body_weight_word_t)0x115d2ba1feff2dd7ULL), (((body_weight_word_t)0x1a030615f6dc03f8ULL << 64) | (body_weight_word_t)0x0302fe39ffd8d716ULL), (((body_weight_word_t)0xaff854430f12ec1aULL << 64) | (body_weight_word_t)0x150e1bd3062c264aULL),
-        (((body_weight_word_t)0xf8ffb40f250615faULL << 64) | (body_weight_word_t)0x0af9f7b301f3caecULL), (((body_weight_word_t)0x01a055df0d051aadULL << 64) | (body_weight_word_t)0xcb21fc240202170fULL), (((body_weight_word_t)0xd9ebbd050bc7d503ULL << 64) | (body_weight_word_t)0x10bbf710f6220717ULL), (((body_weight_word_t)0x22fd9215410e0806ULL << 64) | (body_weight_word_t)0x05fefbe70b03b304ULL),
-        (((body_weight_word_t)0xeae611f7d9d5c6fdULL << 64) | (body_weight_word_t)0xf9f09bbef8f2201eULL), (((body_weight_word_t)0xd006d1c522ee0a14ULL << 64) | (body_weight_word_t)0xef7bfcc5fcfc46eeULL), (((body_weight_word_t)0x0700bffffaf319faULL << 64) | (body_weight_word_t)0xf513d210eeff4e0dULL), (((body_weight_word_t)0x1c4820fecc3af752ULL << 64) | (body_weight_word_t)0x591435b25c33d781ULL)
-    },
-    {
-        (((body_weight_word_t)0x0d04a70deefa06faULL << 64) | (body_weight_word_t)0x06faf6c4f1000211ULL), (((body_weight_word_t)0xf20108f8eee711fbULL << 64) | (body_weight_word_t)0x0102fe40fe1f6015ULL), (((body_weight_word_t)0xeff0db1ce3ff0005ULL << 64) | (body_weight_word_t)0x0d08f7eb01f2eff1ULL), (((body_weight_word_t)0x4791351ce20e2db5ULL << 64) | (body_weight_word_t)0xc1221441a40d07fcULL),
-        (((body_weight_word_t)0x0007bfea09f51e0fULL << 64) | (body_weight_word_t)0x100ef3bde110c301ULL), (((body_weight_word_t)0x2703facc1a1fd70eULL << 64) | (body_weight_word_t)0xd4080a95011e442dULL), (((body_weight_word_t)0x0debe028e3e9db04ULL << 64) | (body_weight_word_t)0xfcd9042af4f5bbf7ULL), (((body_weight_word_t)0x7fd7b6370240b5f0ULL << 64) | (body_weight_word_t)0xf2e5ef10f5ee9329ULL),
-        (((body_weight_word_t)0x07fce1f5e00a0f08ULL << 64) | (body_weight_word_t)0x0a11f7b80cfc3006ULL), (((body_weight_word_t)0x0981022dec061493ULL << 64) | (body_weight_word_t)0x81120600be06ec0aULL), (((body_weight_word_t)0x15ffe3ec3d06d100ULL << 64) | (body_weight_word_t)0xf8cffce210c90e24ULL), (((body_weight_word_t)0xda0227f5c4f6fa02ULL << 64) | (body_weight_word_t)0x1a06012bec189cf5ULL),
-        (((body_weight_word_t)0x08031fec2a19fd06ULL << 64) | (body_weight_word_t)0x0300fe0507f6f8d7ULL), (((body_weight_word_t)0x03149b020209f81dULL << 64) | (body_weight_word_t)0xfd32f6d60d0daadbULL), (((body_weight_word_t)0x0505fc05e8e50202ULL << 64) | (body_weight_word_t)0x06e01b4800f0e9e3ULL), (((body_weight_word_t)0x0453e30d291cee3fULL << 64) | (body_weight_word_t)0x7f09115d6d7f0feeULL)
-    },
-    {
-        (((body_weight_word_t)0x0a08b0fbcf1c1700ULL << 64) | (body_weight_word_t)0x09042509f3f5abe5ULL), (((body_weight_word_t)0xf701f617f0e4f8fdULL << 64) | (body_weight_word_t)0x0aeb10e2ed0f41ffULL), (((body_weight_word_t)0xccf7a6dff1f603e9ULL << 64) | (body_weight_word_t)0x17ef3de611d49e46ULL), (((body_weight_word_t)0x17aa204ddb273bb7ULL << 64) | (body_weight_word_t)0x92260851c70db5e6ULL),
-        (((body_weight_word_t)0xeaf7cdfe0026110bULL << 64) | (body_weight_word_t)0x07ebcde4e80c58faULL), (((body_weight_word_t)0xf7fbf8a70a10e314ULL << 64) | (body_weight_word_t)0x090403aee71541b9ULL), (((body_weight_word_t)0xe106fff3f91a0b03ULL << 64) | (body_weight_word_t)0xef06f00feea9d434ULL), (((body_weight_word_t)0x16f1e608dbaaf8e5ULL << 64) | (body_weight_word_t)0xe3f3c1b30518bd15ULL),
-        (((body_weight_word_t)0xff0611f7ddebea08ULL << 64) | (body_weight_word_t)0x0906030d04e8130bULL), (((body_weight_word_t)0x1eb8e2e3f2060fbbULL << 64) | (body_weight_word_t)0x96d502ff87f5f6edULL), (((body_weight_word_t)0x02060bfcff0be1ffULL << 64) | (body_weight_word_t)0xf3cddeb91a04cf33ULL), (((body_weight_word_t)0x090aaf1e1ce6ee0cULL << 64) | (body_weight_word_t)0x07ebf13ee30318f3ULL),
-        (((body_weight_word_t)0x07061e10e8e5f50eULL << 64) | (body_weight_word_t)0x0b1352c004f33401ULL), (((body_weight_word_t)0x0c0397cfe5cdff0cULL << 64) | (body_weight_word_t)0xf9f8252e0e1031faULL), (((body_weight_word_t)0xf112200df9080a03ULL << 64) | (body_weight_word_t)0x040e1217fc162feeULL), (((body_weight_word_t)0xe93c3525553c1655ULL << 64) | (body_weight_word_t)0x51f7fe177d539303ULL)
-    },
-    {
-        (((body_weight_word_t)0xecfdf807fd100a01ULL << 64) | (body_weight_word_t)0x0710e040f7f10de4ULL), (((body_weight_word_t)0xfcfae517380f1101ULL << 64) | (body_weight_word_t)0xf5f617da081aa11eULL), (((body_weight_word_t)0x3e0ac7ed202bd40fULL << 64) | (body_weight_word_t)0xf8c52beb440e3c1aULL), (((body_weight_word_t)0x3d9cbb05f01427b9ULL << 64) | (body_weight_word_t)0xbb1510a5e60ca9d9ULL),
-        (((body_weight_word_t)0xe3f5442ff4e71116ULL << 64) | (body_weight_word_t)0x0eeafede18ea27fcULL), (((body_weight_word_t)0xccf62cd02402f511ULL << 64) | (body_weight_word_t)0xf40af49cfcf493f2ULL), (((body_weight_word_t)0x12f9e809c3fbe7f7ULL << 64) | (body_weight_word_t)0xf30ffc02f70055f9ULL), (((body_weight_word_t)0xe6f94707b720e1f7ULL << 64) | (body_weight_word_t)0xfa6bd5b1f60f504aULL),
-        (((body_weight_word_t)0x0ff6ddfeff12f609ULL << 64) | (body_weight_word_t)0x040509580005affeULL), (((body_weight_word_t)0x0db4b4f60e04f4a2ULL << 64) | (body_weight_word_t)0x9b07fcea10000c06ULL), (((body_weight_word_t)0xedf0e51d3bc8d0f8ULL << 64) | (body_weight_word_t)0x07e7e606210cee25ULL), (((body_weight_word_t)0x0100c94ffaea0a0aULL << 64) | (body_weight_word_t)0x0c1ef50df01f0930ULL),
-        (((body_weight_word_t)0xf205de4810f60306ULL << 64) | (body_weight_word_t)0xf8c7f7140821a857ULL), (((body_weight_word_t)0xf1001dcc3007ea0bULL << 64) | (body_weight_word_t)0xe8ff060b18de4eeeULL), (((body_weight_word_t)0x00fb4a12cbe92400ULL << 64) | (body_weight_word_t)0xfb1bf3cf03025714ULL), (((body_weight_word_t)0x1f46d4fae734074fULL << 64) | (body_weight_word_t)0x5f1ceadc65019a0fULL)
-    }
-};
+    {(((body_weight_word_t)0xF20C7FFAC82E7F3AULL << 64) | (body_weight_word_t)0x44A4777B1DE23C32ULL), (((body_weight_word_t)0xF9EDEEF602F002F4ULL << 64) | (body_weight_word_t)0x01EEFC000AED13F1ULL), (((body_weight_word_t)0x3F0DF322EDDA0707ULL << 64) | (body_weight_word_t)0xD91314EFE9FD05FDULL), (((body_weight_word_t)0xF00BF4F3FB02FD32ULL << 64) | (body_weight_word_t)0xF9F1FD0E04EBF320ULL),
+     (((body_weight_word_t)0x1F04310BE20D10E2ULL << 64) | (body_weight_word_t)0xFF9417F30017E32FULL), (((body_weight_word_t)0xF5047017EC562131ULL << 64) | (body_weight_word_t)0x2FA8294026F2F5F7ULL), (((body_weight_word_t)0x1DFBF3FA3121E80AULL << 64) | (body_weight_word_t)0x110BF600140ED1E1ULL), (((body_weight_word_t)0x151814E2F3F2F0EDULL << 64) | (body_weight_word_t)0xF628ED130F1918E0ULL),
+     (((body_weight_word_t)0xD5F2DB25E601EA20ULL << 64) | (body_weight_word_t)0x02BEF006D5F00C04ULL), (((body_weight_word_t)0xD9F909550D1505ABULL << 64) | (body_weight_word_t)0xFDDC01FB19F11434ULL), (((body_weight_word_t)0x0FF9F9E90008EB4FULL << 64) | (body_weight_word_t)0x0318070A0E1111E8ULL), (((body_weight_word_t)0x0704FA42FBCCFCECULL << 64) | (body_weight_word_t)0xDEF4E5E2F4A56CFCULL),
+     (((body_weight_word_t)0xEA0E41190606F3F1ULL << 64) | (body_weight_word_t)0xFBFDFB1E0B2AB0F5ULL), (((body_weight_word_t)0xE5070BCDEFFD0B61ULL << 64) | (body_weight_word_t)0x070CFE12F7060311ULL), (((body_weight_word_t)0xC0E42392032DF2D9ULL << 64) | (body_weight_word_t)0x7FD5F35545E4F103ULL), (((body_weight_word_t)0xF11B23010725F358ULL << 64) | (body_weight_word_t)0xFD0CF4090D190422ULL)},
+    {(((body_weight_word_t)0x06CD0B03FC1CCF50ULL << 64) | (body_weight_word_t)0x08E44AE92B1029F0ULL), (((body_weight_word_t)0xEB1CD80D01D9E30CULL << 64) | (body_weight_word_t)0x06D2FAF912EBE014ULL), (((body_weight_word_t)0x1DFEF2F0FA100F30ULL << 64) | (body_weight_word_t)0xEDF4EB0015EC090AULL), (((body_weight_word_t)0xF6FA091DEF00ED20ULL << 64) | (body_weight_word_t)0x04D71106020906F0ULL),
+     (((body_weight_word_t)0xF9E026FCDF03DEF3ULL << 64) | (body_weight_word_t)0xE1E5E4D92704310DULL), (((body_weight_word_t)0xF6052201E847510BULL << 64) | (body_weight_word_t)0x12B8503B49FC2157ULL), (((body_weight_word_t)0x0BD63039F9F92BB9ULL << 64) | (body_weight_word_t)0xEEF600FAF301F602ULL), (((body_weight_word_t)0x3509FBE309FB18CEULL << 64) | (body_weight_word_t)0x0038D5F6F8DB12DCULL),
+     (((body_weight_word_t)0x09EE040C1319EDE8ULL << 64) | (body_weight_word_t)0x0EBDDC1BFAF63803ULL), (((body_weight_word_t)0xD61310DD2C00EE8BULL << 64) | (body_weight_word_t)0xFEF8ED0A1314200EULL), (((body_weight_word_t)0x12DB1E350CFFFF6DULL << 64) | (body_weight_word_t)0xF3E716F9DDFDED27ULL), (((body_weight_word_t)0x14E3D7F20A1D051BULL << 64) | (body_weight_word_t)0x3DF9EECA1BB5292BULL),
+     (((body_weight_word_t)0xF10313EC2115EEFAULL << 64) | (body_weight_word_t)0x07E5EB091104F619ULL), (((body_weight_word_t)0xF10E0C0DF8F3F63AULL << 64) | (body_weight_word_t)0x09F3FB0EF3F8080FULL), (((body_weight_word_t)0x38DCFB05B820220CULL << 64) | (body_weight_word_t)0x35E9CF090AFD29EAULL), (((body_weight_word_t)0x301608B8071B0C19ULL << 64) | (body_weight_word_t)0x25DDF2121412FC41ULL)},
+    {(((body_weight_word_t)0x082E24E0C8F6DFE9ULL << 64) | (body_weight_word_t)0x05F73554FA03F0E6ULL), (((body_weight_word_t)0x0BEBF51208FD0FCAULL << 64) | (body_weight_word_t)0x17DEF9F70606F9F6ULL), (((body_weight_word_t)0x120900E80214F50AULL << 64) | (body_weight_word_t)0xFEFAB008FD0909FCULL), (((body_weight_word_t)0xFCFE0B1505E30EECULL << 64) | (body_weight_word_t)0xF50004FBE9F3F810ULL),
+     (((body_weight_word_t)0xCCE9EE1F231B049DULL << 64) | (body_weight_word_t)0x41A9E90F192107F7ULL), (((body_weight_word_t)0x01DD3EF9D44A3032ULL << 64) | (body_weight_word_t)0xFC991C4739DD4A3DULL), (((body_weight_word_t)0xFBEA03EF0AFD09D1ULL << 64) | (body_weight_word_t)0x0EFB0E01FDFDE8D8ULL), (((body_weight_word_t)0x2BFAF10114ED0AE6ULL << 64) | (body_weight_word_t)0xDE1CF4EFF7FD100AULL),
+     (((body_weight_word_t)0xF1F32CF6040FF600ULL << 64) | (body_weight_word_t)0x2806FE38F505F730ULL), (((body_weight_word_t)0xD30EFAD614FDF7EAULL << 64) | (body_weight_word_t)0x21F6F81323002032ULL), (((body_weight_word_t)0xF1F00B11EDFDFC2FULL << 64) | (body_weight_word_t)0x07E31C05E307090BULL), (((body_weight_word_t)0x1E03311BE42BF2AFULL << 64) | (body_weight_word_t)0x32CA08F10BBFEDFDULL),
+     (((body_weight_word_t)0x2FD122D6E8EFFEFFULL << 64) | (body_weight_word_t)0x11BEFDD90DFBD240ULL), (((body_weight_word_t)0x1205090D050B0555ULL << 64) | (body_weight_word_t)0xF7F20AFAF7F8F908ULL), (((body_weight_word_t)0xD8EF0A30112AF50AULL << 64) | (body_weight_word_t)0xF0D70DA4FF041D08ULL), (((body_weight_word_t)0x4725FE10F40EFF11ULL << 64) | (body_weight_word_t)0x06F2E4F72104E6EDULL)},
+    {(((body_weight_word_t)0xD5F854E2014D3350ULL << 64) | (body_weight_word_t)0x2ADF766D0BF5F31EULL), (((body_weight_word_t)0xFE0504E5F8DC02C6ULL << 64) | (body_weight_word_t)0xF90E0CEC0A12F308ULL), (((body_weight_word_t)0xF7F9F21A0F030801ULL << 64) | (body_weight_word_t)0xF20703D4FCF805F1ULL), (((body_weight_word_t)0x2D040DFA01F1004EULL << 64) | (body_weight_word_t)0xE6F5F006000C3311ULL),
+     (((body_weight_word_t)0x16EE0FDE0F06EE05ULL << 64) | (body_weight_word_t)0xF6BEF2E91BDE0F5CULL), (((body_weight_word_t)0x0CC33610BCF0E4D4ULL << 64) | (body_weight_word_t)0x14EA04220E040232ULL), (((body_weight_word_t)0x30021BE3FD2AE391ULL << 64) | (body_weight_word_t)0x182301111005CDC4ULL), (((body_weight_word_t)0xF6F21DCAF506021BULL << 64) | (body_weight_word_t)0x18110409EA0BF732ULL),
+     (((body_weight_word_t)0xE8FA2218FC28FAD9ULL << 64) | (body_weight_word_t)0x01C2E61AE8F4660CULL), (((body_weight_word_t)0x0A01E727F80610FEULL << 64) | (body_weight_word_t)0xE1E203FC08FA190EULL), (((body_weight_word_t)0x33EA21FFDCFCED79ULL << 64) | (body_weight_word_t)0xE13AE4F5F4232F2BULL), (((body_weight_word_t)0x05210C04F80D0215ULL << 64) | (body_weight_word_t)0xC5E6D9E625EB4600ULL),
+     (((body_weight_word_t)0x22EB07DFF40DF614ULL << 64) | (body_weight_word_t)0xE2D60DFB0FE1DB33ULL), (((body_weight_word_t)0xF4E529DA071BFDF6ULL << 64) | (body_weight_word_t)0x05EE00FBFB1511F8ULL), (((body_weight_word_t)0x79F73DDAE126FFDEULL << 64) | (body_weight_word_t)0x4EEDEE3201EA0834ULL), (((body_weight_word_t)0xE90BF1F3E4FAFA5BULL << 64) | (body_weight_word_t)0x17100710D20CDD4AULL)},
+    {(((body_weight_word_t)0xEFC215ED20F5FA02ULL << 64) | (body_weight_word_t)0x2AFDD4EF621842FEULL), (((body_weight_word_t)0xED1319E9F8F0E209ULL << 64) | (body_weight_word_t)0x1CE30714FD13D0E8ULL), (((body_weight_word_t)0x8AF81D181D1C0B34ULL << 64) | (body_weight_word_t)0xF80F1900F911FD07ULL), (((body_weight_word_t)0x161B2634032C17CBULL << 64) | (body_weight_word_t)0xED0403DE30ECD8EAULL),
+     (((body_weight_word_t)0xD6F4F12A2A1DEFE9ULL << 64) | (body_weight_word_t)0x2493E413F4E617FBULL), (((body_weight_word_t)0xFDE05824C9732FDBULL << 64) | (body_weight_word_t)0x1BBF431743FCE213ULL), (((body_weight_word_t)0x28EDF629C4211BBAULL << 64) | (body_weight_word_t)0xD624EEE39F02B2F4ULL), (((body_weight_word_t)0xF5FD2FBBCBE10AE6ULL << 64) | (body_weight_word_t)0x0FE0F809EAA210EBULL),
+     (((body_weight_word_t)0xF6F639F9FFE5FCD0ULL << 64) | (body_weight_word_t)0x0BC1F147E1FC7FDCULL), (((body_weight_word_t)0xD402F7DEEC0DEFF2ULL << 64) | (body_weight_word_t)0x14F303ECEE11022AULL), (((body_weight_word_t)0x14DAF027FDF8014BULL << 64) | (body_weight_word_t)0x01FBE8D8B7FE2875ULL), (((body_weight_word_t)0xE9E0F022E512EBB1ULL << 64) | (body_weight_word_t)0x1208D5C7FC955E00ULL),
+     (((body_weight_word_t)0x0DDB0AF6090F02D1ULL << 64) | (body_weight_word_t)0xFDC40D10E7017D44ULL), (((body_weight_word_t)0x08E7D9E81A1B0558ULL << 64) | (body_weight_word_t)0x0E0A0410ED04F73EULL), (((body_weight_word_t)0x60F40921E2F8FACBULL << 64) | (body_weight_word_t)0x4FE0EE300FEAF102ULL), (((body_weight_word_t)0x1613F6DA0123FC21ULL << 64) | (body_weight_word_t)0x0AF0FA1306313822ULL)},
+    {(((body_weight_word_t)0xE8FFFBCB0E2B0A01ULL << 64) | (body_weight_word_t)0xFF09D509F02605FAULL), (((body_weight_word_t)0x17100609260603F4ULL << 64) | (body_weight_word_t)0xF519FF0A0AF3D1FAULL), (((body_weight_word_t)0xB7FEF8DE3EDCFE03ULL << 64) | (body_weight_word_t)0x31F9F24D0EEE0FF4ULL), (((body_weight_word_t)0xFD0CD90CCD11F6D8ULL << 64) | (body_weight_word_t)0xE3080EE5FCF4E310ULL),
+     (((body_weight_word_t)0xF3E3E97F393BEED9ULL << 64) | (body_weight_word_t)0x5F98043A16F2F9FAULL), (((body_weight_word_t)0xFCC933F1EF1E2D3BULL << 64) | (body_weight_word_t)0x1CE14311FC080E0FULL), (((body_weight_word_t)0xEDF20D15FBF506D7ULL << 64) | (body_weight_word_t)0xF715F5ECE30BD7BCULL), (((body_weight_word_t)0xF824E82314CD0EDCULL << 64) | (body_weight_word_t)0x111C03FADBEE29FDULL),
+     (((body_weight_word_t)0xCFDCDE1A1FC6DB4BULL << 64) | (body_weight_word_t)0x2BE0F42301D519F6ULL), (((body_weight_word_t)0x080B0DCF17EEFE2CULL << 64) | (body_weight_word_t)0x1CF9FA0BE1191F25ULL), (((body_weight_word_t)0xDED7F404E1D9FE2AULL << 64) | (body_weight_word_t)0xD405FDE9C1052838ULL), (((body_weight_word_t)0xEFF21F31261F0F01ULL << 64) | (body_weight_word_t)0x0AD6120912A21505ULL),
+     (((body_weight_word_t)0x0DEC33D4E2FCF316ULL << 64) | (body_weight_word_t)0x0BC9060410E31F1DULL), (((body_weight_word_t)0x4807FD30D5EE0844ULL << 64) | (body_weight_word_t)0xDFDC02E00CE6192CULL), (((body_weight_word_t)0xA6EB0ABD1215FCDAULL << 64) | (body_weight_word_t)0x480303570CEE0615ULL), (((body_weight_word_t)0x302BF1E8CF13FF1EULL << 64) | (body_weight_word_t)0x051BF0F05AE2F0BDULL)},
+    {(((body_weight_word_t)0xE6CB66DFCD7F27E9ULL << 64) | (body_weight_word_t)0x2EAD7F7F21DCED3FULL), (((body_weight_word_t)0xE30AF6FBFCFA0FC8ULL << 64) | (body_weight_word_t)0x0602FDFDF0E9D9F5ULL), (((body_weight_word_t)0xEA05DE1E4DEEF8EEULL << 64) | (body_weight_word_t)0xCFFCF9B00DFBF50AULL), (((body_weight_word_t)0x19FFFED2E8E9F834ULL << 64) | (body_weight_word_t)0xF3F2F2F90309314AULL),
+     (((body_weight_word_t)0x1FE1CF012E05F719ULL << 64) | (body_weight_word_t)0x4AA0F52808FFF83CULL), (((body_weight_word_t)0xD0B9511AEA1501E0ULL << 64) | (body_weight_word_t)0x0BC81841F3B90641ULL), (((body_weight_word_t)0xFCF60BF6F01D0EC3ULL << 64) | (body_weight_word_t)0x3C140A10DCEBCEE7ULL), (((body_weight_word_t)0xBF0E2CE10A20EF18ULL << 64) | (body_weight_word_t)0x07200A0ABC04CF44ULL),
+     (((body_weight_word_t)0x06F51FD0DDE90025ULL << 64) | (body_weight_word_t)0x37BAF20DD6E421EBULL), (((body_weight_word_t)0x36F0F934FE1706A9ULL << 64) | (body_weight_word_t)0xE2EA06F40BE4042FULL), (((body_weight_word_t)0xF0DD16ECF4E6F530ULL << 64) | (body_weight_word_t)0xF8080B10E72BFDE3ULL), (((body_weight_word_t)0xF7F6F833E8F4F527ULL << 64) | (body_weight_word_t)0xC3F9E205F0E42813ULL),
+     (((body_weight_word_t)0x33F62014E7300323ULL << 64) | (body_weight_word_t)0xEDD004F90300067FULL), (((body_weight_word_t)0xE8FD1AC3DE02F4F0ULL << 64) | (body_weight_word_t)0xF5F00814FDF7FBBDULL), (((body_weight_word_t)0x37EC0901E627070AULL << 64) | (body_weight_word_t)0x20ECFE3F06E61529ULL), (((body_weight_word_t)0xF40DFFFA15F404F4ULL << 64) | (body_weight_word_t)0xE8F210F8280E12CBULL)},
+    {(((body_weight_word_t)0xDEE0EACC1ABFFC4CULL << 64) | (body_weight_word_t)0x0F0572D1240221D3ULL), (((body_weight_word_t)0x0A1AF8DB04E6ECD0ULL << 64) | (body_weight_word_t)0x010A100CF617F7C2ULL), (((body_weight_word_t)0x8101F7FB71160FBFULL << 64) | (body_weight_word_t)0xF4111D00FE12EBF1ULL), (((body_weight_word_t)0x0711DE6BDF3009D5ULL << 64) | (body_weight_word_t)0xCBE6FBD65D1929FBULL),
+     (((body_weight_word_t)0x23AF1F091A34057FULL << 64) | (body_weight_word_t)0x3681F0F50113F304ULL), (((body_weight_word_t)0xA9BA3FD71F4F0344ULL << 64) | (body_weight_word_t)0xF5C5101BECEC3113ULL), (((body_weight_word_t)0xF1F7F42EF9FAF5ECULL << 64) | (body_weight_word_t)0x0C260601E2F8D614ULL), (((body_weight_word_t)0xF8F504E8FB18FF24ULL << 64) | (body_weight_word_t)0x15031119EC1A053BULL),
+     (((body_weight_word_t)0x0BEEF9CDFDF40107ULL << 64) | (body_weight_word_t)0x36BAF42312A825F3ULL), (((body_weight_word_t)0x21E8F9E8D4F617A8ULL << 64) | (body_weight_word_t)0xEBE208EDFDF7240FULL), (((body_weight_word_t)0xE9042F3CD91DF63BULL << 64) | (body_weight_word_t)0xF00C09FCEA23D20CULL), (((body_weight_word_t)0x1402F0E4DA34DAC4ULL << 64) | (body_weight_word_t)0x22F2E7DD17E6E2ECULL),
+     (((body_weight_word_t)0x0AF317F4E602F801ULL << 64) | (body_weight_word_t)0x1008FBF9DE815F3DULL), (((body_weight_word_t)0x2E1AD5F5DAE40008ULL << 64) | (body_weight_word_t)0x0207F805FDE8FC07ULL), (((body_weight_word_t)0x27E8180C08F2F8D7ULL << 64) | (body_weight_word_t)0x2707E0EF03071D22ULL), (((body_weight_word_t)0x0032E4ECFAC606F0ULL << 64) | (body_weight_word_t)0x18FF0CFD4A1819A4ULL)},
+    {(((body_weight_word_t)0x0EE5FFC81CEC00F6ULL << 64) | (body_weight_word_t)0xF0FAD4252404FE22ULL), (((body_weight_word_t)0xFE0FFF09E6FCFE1FULL << 64) | (body_weight_word_t)0x1016FCF01307E6E8ULL), (((body_weight_word_t)0xBB0715F47F00FAECULL << 64) | (body_weight_word_t)0x3EFA093719FFF50CULL), (((body_weight_word_t)0xB503EB071B15FFE9ULL << 64) | (body_weight_word_t)0xD5E813054409F6F6ULL),
+     (((body_weight_word_t)0x408119F6EE1707C4ULL << 64) | (body_weight_word_t)0x4A950D2A20F90E30ULL), (((body_weight_word_t)0xEAAB2FBB4C21343EULL << 64) | (body_weight_word_t)0x09CA4624F8184033ULL), (((body_weight_word_t)0xF0EFF71617EFFDFCULL << 64) | (body_weight_word_t)0x08FF06FE30F2F61EULL), (((body_weight_word_t)0xE6F90A1B29030029ULL << 64) | (body_weight_word_t)0x010A0503E410360AULL),
+     (((body_weight_word_t)0x28D5E1061FE90F33ULL << 64) | (body_weight_word_t)0xF6E4F91D1AB5030AULL), (((body_weight_word_t)0x51E40EFEDD0105D3ULL << 64) | (body_weight_word_t)0x21F40408ECF2291DULL), (((body_weight_word_t)0xADD4110D1411063DULL << 64) | (body_weight_word_t)0xE002171DCD12DA19ULL), (((body_weight_word_t)0xE20CEF1F40261B2BULL << 64) | (body_weight_word_t)0x0BC610F9EED527FCULL),
+     (((body_weight_word_t)0x1ABBD9FE251DF615ULL << 64) | (body_weight_word_t)0x181212FB02CB11E0ULL), (((body_weight_word_t)0x1721FD1FC0E3FDE5ULL << 64) | (body_weight_word_t)0xD8FCF9EBFAFB2018ULL), (((body_weight_word_t)0x02060EF92E07021EULL << 64) | (body_weight_word_t)0x23F4E11BDE06020AULL), (((body_weight_word_t)0x050D150206E80115ULL << 64) | (body_weight_word_t)0x13080BFF7F00FAEDULL)}};
+
 static const bias_t L1_BIAS[CNN_C] = {
-    -133, -4486, -1794, -52, -7855, -3, -2033, 216,
-    -112, -40, -656, 1798, -120, -14539, -216, 212
-};
-static const q31_t L1_Q31[CNN_C] = {
-    1703579392, 1971122560, 1112374784, 1816192384,
-    1216187904, 1767840512, 1695111168, 1957504128,
-    1365642240, 1091119488, 1122300544, 1397689088,
-    1472811136, 1262032256, 2097021952, 1248734720
-};
-static const qexp_t L1_EXP[CNN_C] = {
-    -8, -10, -7, -7, -9, -8, -8, -7,
-    -6, -7, -7, -8, -7, -9, -7, -7
-};
+    -61242, 5082, 2279, -13103, 1006, -789, 7180, -5092,
+    -134050, -3280, -8908, -4451, -7123, 1584, 1222, -3585};
+static const q31_t L1_TO_CONV2_Q31[CNN_C] = {
+    1653588992, 1871078400, 1575332992, 1946080000,
+    1633392896, 1190908800, 1342311424, 2054059904,
+    2085831040, 1422733952, 1355737728, 1442877312,
+    1512325760, 1255631616, 1282257536, 1993915520};
+static const qexp_t L1_TO_CONV2_EXP[CNN_C] = {
+    -8, -8, -7, -8, -7, -6, -7, -8,
+    -9, -6, -7, -8, -8, -7, -7, -8};
 
-// L2
+// L2: block0.conv2 + local skip; logical W8, compatibility lane=W8
 static const body_weight_word_t L2_WBANK[9][CNN_C] = {
-    {
-        (((body_weight_word_t)0x1218e0fccc02f5fbULL << 64) | (body_weight_word_t)0x03f8f7ba2ed510e6ULL), (((body_weight_word_t)0xf514fcf0f4ac12e2ULL << 64) | (body_weight_word_t)0x1a0205be1d2828e5ULL), (((body_weight_word_t)0x0fbb36b925f80744ULL << 64) | (body_weight_word_t)0xb3e31608c62904e1ULL), (((body_weight_word_t)0xd4c1e942d73d0012ULL << 64) | (body_weight_word_t)0x7ffeddfa23f8c828ULL),
-        (((body_weight_word_t)0x000307e347ac0ce4ULL << 64) | (body_weight_word_t)0xe4f02ee2220a05f5ULL), (((body_weight_word_t)0xe9f3ee1f0606f1f2ULL << 64) | (body_weight_word_t)0x4cfee51ce80cf624ULL), (((body_weight_word_t)0x1302ea00de0ff806ULL << 64) | (body_weight_word_t)0x24fee9fb3aec10fbULL), (((body_weight_word_t)0xf831cb3b2a6ef4dcULL << 64) | (body_weight_word_t)0x0c04c5cd1be93d4eULL),
-        (((body_weight_word_t)0xd604181dcebb1515ULL << 64) | (body_weight_word_t)0x2eff1540f30fceedULL), (((body_weight_word_t)0xf7222beab2e104f3ULL << 64) | (body_weight_word_t)0xe71108c21d7fedf3ULL), (((body_weight_word_t)0xde2bd22ef854e4feULL << 64) | (body_weight_word_t)0xfc0303f91aa10f14ULL), (((body_weight_word_t)0xeeb321a4d6bbeab5ULL << 64) | (body_weight_word_t)0x2eb6eb1bfe56a3f5ULL),
-        (((body_weight_word_t)0x278b4091d70ff95aULL << 64) | (body_weight_word_t)0xb6f924ef933d330cULL), (((body_weight_word_t)0xfb01edea3d150bdaULL << 64) | (body_weight_word_t)0xf8def1ae1ffff4e6ULL), (((body_weight_word_t)0x6c7f0b232a091cc0ULL << 64) | (body_weight_word_t)0xd51cfbb57805350cULL), (((body_weight_word_t)0x2ad0f6f449ee2704ULL << 64) | (body_weight_word_t)0x01fe0f3afaac0212ULL)
-    },
-    {
-        (((body_weight_word_t)0xde38f3ecd6d913d9ULL << 64) | (body_weight_word_t)0xe109dbff2bb8e144ULL), (((body_weight_word_t)0x1416f2ecc8060fedULL << 64) | (body_weight_word_t)0x2af11afc2308d735ULL), (((body_weight_word_t)0x06e3efc2f5020522ULL << 64) | (body_weight_word_t)0x0d2306f9fcf72624ULL), (((body_weight_word_t)0xbce9d95dd41b17f7ULL << 64) | (body_weight_word_t)0x2b02f2f8fbd8bc1bULL),
-        (((body_weight_word_t)0xfdfa12fad3eb060fULL << 64) | (body_weight_word_t)0x1f1ef1efed271fdeULL), (((body_weight_word_t)0x272dce3235dbe602ULL << 64) | (body_weight_word_t)0x5204e6207fb1e3f6ULL), (((body_weight_word_t)0x05e900f0f109293eULL << 64) | (body_weight_word_t)0x0af90f26f8e42218ULL), (((body_weight_word_t)0xed48fd1a27fef9f7ULL << 64) | (body_weight_word_t)0x2002e381e82220ffULL),
-        (((body_weight_word_t)0x1bdde32ab0c4e6ecULL << 64) | (body_weight_word_t)0x15cff007b4e2c93bULL), (((body_weight_word_t)0xf7e00c26eafee625ULL << 64) | (body_weight_word_t)0x0ddc01fe1003eb13ULL), (((body_weight_word_t)0xc8f00b01eac41be2ULL << 64) | (body_weight_word_t)0x0fd5cff2f42102c4ULL), (((body_weight_word_t)0xab000134a8972506ULL << 64) | (body_weight_word_t)0x4cbf324590359e0aULL),
-        (((body_weight_word_t)0xfcc13b97d9e0e2deULL << 64) | (body_weight_word_t)0xbc145e449a4b2e13ULL), (((body_weight_word_t)0x18d60af3c91206e0ULL << 64) | (body_weight_word_t)0xe00e1dfeeb0714d0ULL), (((body_weight_word_t)0x253806f61b0be701ULL << 64) | (body_weight_word_t)0x1b17c4a72902e615ULL), (((body_weight_word_t)0x1bf318bce5f8151bULL << 64) | (body_weight_word_t)0xc6130bdebd2cf112ULL)
-    },
-    {
-        (((body_weight_word_t)0xcdcffa13dcf11cf6ULL << 64) | (body_weight_word_t)0xbbe2d5d7f2eec417ULL), (((body_weight_word_t)0xfbf1dbed0cf60728ULL << 64) | (body_weight_word_t)0x1c06e61f0208fc09ULL), (((body_weight_word_t)0xe4f413f508f6d433ULL << 64) | (body_weight_word_t)0xcff71beacf303a1eULL), (((body_weight_word_t)0xfae5de4ee3eddcf7ULL << 64) | (body_weight_word_t)0x1ff7e7b5600881d9ULL),
-        (((body_weight_word_t)0xee0d1f18d542fafbULL << 64) | (body_weight_word_t)0x0ef20d21f1041de6ULL), (((body_weight_word_t)0xfdf7df1601d72bc7ULL << 64) | (body_weight_word_t)0x09e7c2ddfae1e33cULL), (((body_weight_word_t)0xefef00f701080c16ULL << 64) | (body_weight_word_t)0x1901edd1aef80cfdULL), (((body_weight_word_t)0xfe4300013f3205e8ULL << 64) | (body_weight_word_t)0xfd13b4cd42f2e562ULL),
-        (((body_weight_word_t)0xf4f4d520e7010aa9ULL << 64) | (body_weight_word_t)0x5b09ed0debe6f1c5ULL), (((body_weight_word_t)0xff080b0f0824d1ebULL << 64) | (body_weight_word_t)0x021c1da13b1eebcdULL), (((body_weight_word_t)0x290b15ede4000037ULL << 64) | (body_weight_word_t)0xf604ddf221f90d26ULL), (((body_weight_word_t)0x44f027def9b8c20cULL << 64) | (body_weight_word_t)0x13daeedbf826f720ULL),
-        (((body_weight_word_t)0xfabd2de7e5deed5dULL << 64) | (body_weight_word_t)0xc8f05632a93d5316ULL), (((body_weight_word_t)0xe712f40a190cf0e5ULL << 64) | (body_weight_word_t)0xec2011d628fd14dbULL), (((body_weight_word_t)0xecfb16261deaf8e6ULL << 64) | (body_weight_word_t)0x0ee8ecdf1212dcf7ULL), (((body_weight_word_t)0x060307e51a06fd02ULL << 64) | (body_weight_word_t)0xfdf9194805071204ULL)
-    },
-    {
-        (((body_weight_word_t)0x464fe0089e81e3efULL << 64) | (body_weight_word_t)0xf0f4d4e01d05e32cULL), (((body_weight_word_t)0xf82a11e7ed18ee01ULL << 64) | (body_weight_word_t)0xe4d719d6ffef22edULL), (((body_weight_word_t)0xf8b102f460d9db12ULL << 64) | (body_weight_word_t)0xdf1cf910f1381c05ULL), (((body_weight_word_t)0xcfa1dd42aef710f3ULL << 64) | (body_weight_word_t)0x7f0fd037fad8c726ULL),
-        (((body_weight_word_t)0x130eea16d9d713eaULL << 64) | (body_weight_word_t)0xf7ded626f8edea29ULL), (((body_weight_word_t)0xfac3d21d4cf40203ULL << 64) | (body_weight_word_t)0xfef7ec081c180c06ULL), (((body_weight_word_t)0x15c0811ec523bcf1ULL << 64) | (body_weight_word_t)0x1bf084f95eefe347ULL), (((body_weight_word_t)0x0d56c522cbf708fbULL << 64) | (body_weight_word_t)0x000539cbfcae4661ULL),
-        (((body_weight_word_t)0xc4c6f920ecd1f5eaULL << 64) | (body_weight_word_t)0x50ffe82bf9d92333ULL), (((body_weight_word_t)0xd1180225ddbffa1eULL << 64) | (body_weight_word_t)0x27040a30ca150219ULL), (((body_weight_word_t)0xe521a934b74e3803ULL << 64) | (body_weight_word_t)0x392938a81a982b30ULL), (((body_weight_word_t)0x72910b219e90f581ULL << 64) | (body_weight_word_t)0x3f15ffe557aaf83eULL),
-        (((body_weight_word_t)0xf3e03581d1df104aULL << 64) | (body_weight_word_t)0xcbfa183c9a254827ULL), (((body_weight_word_t)0xeee722edea2309f5ULL << 64) | (body_weight_word_t)0xea200dbde004fd21ULL), (((body_weight_word_t)0xe650f11310c618fdULL << 64) | (body_weight_word_t)0xd1f12daa1b14f8f2ULL), (((body_weight_word_t)0xfeeb30d3157017fbULL << 64) | (body_weight_word_t)0xf2e1feccf6a10c16ULL)
-    },
-    {
-        (((body_weight_word_t)0x2508edd6a381f908ULL << 64) | (body_weight_word_t)0x23caeeff12dbd2cdULL), (((body_weight_word_t)0xf7e92213ee3408fcULL << 64) | (body_weight_word_t)0x0a04f9d30fe2cffdULL), (((body_weight_word_t)0x2dd513974acd0d33ULL << 64) | (body_weight_word_t)0xe2190e420a30161dULL), (((body_weight_word_t)0xfba5d802d7182214ULL << 64) | (body_weight_word_t)0x06e310471addcc6dULL),
-        (((body_weight_word_t)0xfb0cecf1132705f0ULL << 64) | (body_weight_word_t)0xee251ff923f91ddcULL), (((body_weight_word_t)0x1ff2d6187f1981f5ULL << 64) | (body_weight_word_t)0x0a268deaa7d92120ULL), (((body_weight_word_t)0x14fed602fbecde3aULL << 64) | (body_weight_word_t)0x08cc81e7d616fb48ULL), (((body_weight_word_t)0xf73dec17d5e30b1cULL << 64) | (body_weight_word_t)0x0a06fccc3497edefULL),
-        (((body_weight_word_t)0xf48ff323b4e6dfd2ULL << 64) | (body_weight_word_t)0xcce2e934a6eef20cULL), (((body_weight_word_t)0xef2816fa97dba73fULL << 64) | (body_weight_word_t)0xd681e7e49538cc5cULL), (((body_weight_word_t)0xefdd221fdc1718acULL << 64) | (body_weight_word_t)0x469e8d97fde1525eULL), (((body_weight_word_t)0xcaa204c29f16cbfbULL << 64) | (body_weight_word_t)0xc29df6195dfe7fa3ULL),
-        (((body_weight_word_t)0xf5d433a035db016aULL << 64) | (body_weight_word_t)0xd6dd34440b1e4369ULL), (((body_weight_word_t)0x08dfece631e3e61cULL << 64) | (body_weight_word_t)0xe2edf22103fc21f0ULL), (((body_weight_word_t)0xc27410cbfdd0fce5ULL << 64) | (body_weight_word_t)0xf821f5b49a1c1702ULL), (((body_weight_word_t)0x03c931babc31f621ULL << 64) | (body_weight_word_t)0xdc297c01c1082fe1ULL)
-    },
-    {
-        (((body_weight_word_t)0xcd03f0cfcce8fddbULL << 64) | (body_weight_word_t)0xf9f7a2a50fdbc812ULL), (((body_weight_word_t)0xfa200bfb1e1d0706ULL << 64) | (body_weight_word_t)0x1df417c8ff2cfa23ULL), (((body_weight_word_t)0xfdcd5dcc5119f359ULL << 64) | (body_weight_word_t)0xd2ea0690f9432af2ULL), (((body_weight_word_t)0x8108d64ae31212a8ULL << 64) | (body_weight_word_t)0x32f0e4d517ebbd05ULL),
-        (((body_weight_word_t)0x0cf0140cd326f119ULL << 64) | (body_weight_word_t)0xf321290427d9f9feULL), (((body_weight_word_t)0xfbc5ef013eca11dcULL << 64) | (body_weight_word_t)0xd7f1ed04e9361713ULL), (((body_weight_word_t)0x1bc7eeefe6c4fcc5ULL << 64) | (body_weight_word_t)0xff03d8978e1619f3ULL), (((body_weight_word_t)0x051fd70db50e0423ULL << 64) | (body_weight_word_t)0xc508f7bc0dccea4eULL),
-        (((body_weight_word_t)0xd71adf22b4f90da7ULL << 64) | (body_weight_word_t)0xf900f11ceafedc8fULL), (((body_weight_word_t)0xec18080cf206ac09ULL << 64) | (body_weight_word_t)0x0df6ffe7a9d2e204ULL), (((body_weight_word_t)0x0ee2e1db0fff3213ULL << 64) | (body_weight_word_t)0x1938fbf6c0f23df2ULL), (((body_weight_word_t)0x52a7de114715d737ULL << 64) | (body_weight_word_t)0x1a0d2de4d21011edULL),
-        (((body_weight_word_t)0xe6c928b539e61940ULL << 64) | (body_weight_word_t)0x81c506f9d34a3e5cULL), (((body_weight_word_t)0x25ea160ae7b8f5e9ULL << 64) | (body_weight_word_t)0x11fef5e3d7f016f0ULL), (((body_weight_word_t)0xc9d31e300fc1ea11ULL << 64) | (body_weight_word_t)0x0fddeba89923db35ULL), (((body_weight_word_t)0x08fd11f61706ed0dULL << 64) | (body_weight_word_t)0xe72423f4232a0ee0ULL)
-    },
-    {
-        (((body_weight_word_t)0x2afcf0eed5d5d4e2ULL << 64) | (body_weight_word_t)0xefe300e5dd17f226ULL), (((body_weight_word_t)0x09cde4f9c3ad0421ULL << 64) | (body_weight_word_t)0x0a27c7b61be9f0ebULL), (((body_weight_word_t)0xefcef2e33d24d532ULL << 64) | (body_weight_word_t)0xefef17dad91f050cULL), (((body_weight_word_t)0xe3f4f85fb9172326ULL << 64) | (body_weight_word_t)0x650fdf10d7c99e51ULL),
-        (((body_weight_word_t)0x1fbaf5e4d4def914ULL << 64) | (body_weight_word_t)0xf4c611d9d20938f2ULL), (((body_weight_word_t)0xd230fbdd108c1810ULL << 64) | (body_weight_word_t)0x310b4fddfc33f9ceULL), (((body_weight_word_t)0x18daeeb5e2c0c82cULL << 64) | (body_weight_word_t)0xb1d442b1df1b2321ULL), (((body_weight_word_t)0x0773fe18d9100312ULL << 64) | (body_weight_word_t)0x310d0ee1fdc2f460ULL),
-        (((body_weight_word_t)0xef05f744e8e10bf4ULL << 64) | (body_weight_word_t)0x5f07e520caf3e2e3ULL), (((body_weight_word_t)0x0d21d53cd70f0cd7ULL << 64) | (body_weight_word_t)0x3607faf62aede93cULL), (((body_weight_word_t)0xca77ec24db193bfbULL << 64) | (body_weight_word_t)0x0efff048f3c7c3dfULL), (((body_weight_word_t)0x4e28a01abead32eaULL << 64) | (body_weight_word_t)0x250f0cbc52147f1bULL),
-        (((body_weight_word_t)0x09d126bb2df7ec27ULL << 64) | (body_weight_word_t)0xc7fe0615b4251c08ULL), (((body_weight_word_t)0x14e9e602e138fdd6ULL << 64) | (body_weight_word_t)0x0e210df8ed201fd2ULL), (((body_weight_word_t)0x0f3b0f1c23393d31ULL << 64) | (body_weight_word_t)0xeef813f13afa121aULL), (((body_weight_word_t)0x13ff0f01091f16feULL << 64) | (body_weight_word_t)0xf701db1019c72b0cULL)
-    },
-    {
-        (((body_weight_word_t)0xeb39e4ffabe711feULL << 64) | (body_weight_word_t)0xd8e116fa03e5fa09ULL), (((body_weight_word_t)0x0708e7eee3af0820ULL << 64) | (body_weight_word_t)0x1d01d11a1bf906d4ULL), (((body_weight_word_t)0x17cd7fc319b6ed0aULL << 64) | (body_weight_word_t)0xba31e6452bf44c2aULL), (((body_weight_word_t)0xbb1dda6de2c6082eULL << 64) | (body_weight_word_t)0x50e0e4edb1e0a87fULL),
-        (((body_weight_word_t)0x0e0cf3fe0ddafa25ULL << 64) | (body_weight_word_t)0x1418251d201727f6ULL), (((body_weight_word_t)0xd8e70fc12feb9af4ULL << 64) | (body_weight_word_t)0xd317ee3681002ee2ULL), (((body_weight_word_t)0xda08098493c9f03fULL << 64) | (body_weight_word_t)0xaaf12f19f0ea2a1eULL), (((body_weight_word_t)0x1179e7220d17eaf4ULL << 64) | (body_weight_word_t)0x1309ffc7e1c21146ULL),
-        (((body_weight_word_t)0xc9bcea1e02fad521ULL << 64) | (body_weight_word_t)0x21e3ed15cbee0414ULL), (((body_weight_word_t)0x03e3cd51c5c0ece1ULL << 64) | (body_weight_word_t)0x32dbd00e570ee71dULL), (((body_weight_word_t)0xce07f811f081fd33ULL << 64) | (body_weight_word_t)0xfee502e3e807c4c5ULL), (((body_weight_word_t)0x22a1173118175dbdULL << 64) | (body_weight_word_t)0x4f0ede0279337f4dULL),
-        (((body_weight_word_t)0xeecd19ce1afbf40fULL << 64) | (body_weight_word_t)0xb004101859154603ULL), (((body_weight_word_t)0xebfd1918e3b1111fULL << 64) | (body_weight_word_t)0x07e7f5d3182ef20fULL), (((body_weight_word_t)0x041202efef0b072cULL << 64) | (body_weight_word_t)0xf41318f5c200efc3ULL), (((body_weight_word_t)0x1b2a0ddd0c160331ULL << 64) | (body_weight_word_t)0xd4f136d0c912ededULL)
-    },
-    {
-        (((body_weight_word_t)0x11e2ffefbbf4f46aULL << 64) | (body_weight_word_t)0xce06f8d6d6fee609ULL), (((body_weight_word_t)0x022cdc0d0d20fe1dULL << 64) | (body_weight_word_t)0x2a0acb30fee4e31cULL), (((body_weight_word_t)0xf3e3fba2f2c9eb30ULL << 64) | (body_weight_word_t)0xcfff7fec023a672eULL), (((body_weight_word_t)0xd0d6cc7bc8fd18ebULL << 64) | (body_weight_word_t)0x4c05b2bd21cfbaedULL),
-        (((body_weight_word_t)0x03e1050cdaf206dbULL << 64) | (body_weight_word_t)0x2911d5de04cde9f7ULL), (((body_weight_word_t)0xf8de12dd75e71d21ULL << 64) | (body_weight_word_t)0xe5f8ea28d622f101ULL), (((body_weight_word_t)0xfeb907ab04d80a41ULL << 64) | (body_weight_word_t)0xf1fb25afd6413024ULL), (((body_weight_word_t)0x1b70f4030311fed9ULL << 64) | (body_weight_word_t)0xd216efaedaaf814cULL),
-        (((body_weight_word_t)0xe1cfd152c4f301ceULL << 64) | (body_weight_word_t)0x27f5c30529e81210ULL), (((body_weight_word_t)0x16eada33b7f107f3ULL << 64) | (body_weight_word_t)0x55f1edc213e8d0e7ULL), (((body_weight_word_t)0xf2e8f7fdb4ebf60fULL << 64) | (body_weight_word_t)0xf8f0f4d2cc140907ULL), (((body_weight_word_t)0x1df5bff6fae908cdULL << 64) | (body_weight_word_t)0xbce011dad601f20cULL),
-        (((body_weight_word_t)0xefe60dae0b051524ULL << 64) | (body_weight_word_t)0x05fe1e46d20d3805ULL), (((body_weight_word_t)0xedfae3f000f803f9ULL << 64) | (body_weight_word_t)0xfbd237fc02130b30ULL), (((body_weight_word_t)0xc6fc0efb201f0814ULL << 64) | (body_weight_word_t)0xf4dd1710970e03ecULL), (((body_weight_word_t)0x0b13f5fd0c1802edULL << 64) | (body_weight_word_t)0xe50403f401e2e7fcULL)
-    }
-};
+    {(((body_weight_word_t)0xEC0EF116F6180606ULL << 64) | (body_weight_word_t)0xFEEB0612E2EBE6FDULL), (((body_weight_word_t)0x15FAEF450A41E0EFULL << 64) | (body_weight_word_t)0xCDE201EA0901030FULL), (((body_weight_word_t)0xF8F9BA2C273A0808ULL << 64) | (body_weight_word_t)0xCC0A9C70EDF7D02DULL), (((body_weight_word_t)0x8121372608490F1DULL << 64) | (body_weight_word_t)0x2EBC1D2FB0E2B6E2ULL),
+     (((body_weight_word_t)0xF949FC3B17FB28CFULL << 64) | (body_weight_word_t)0x0F3D070326E10735ULL), (((body_weight_word_t)0xF9181B18FD260AA1ULL << 64) | (body_weight_word_t)0x0149FE2821DECD57ULL), (((body_weight_word_t)0x00EF0A222FFB083CULL << 64) | (body_weight_word_t)0x1EDD080AEA0404CAULL), (((body_weight_word_t)0x0D9FF4A7011FC9E7ULL << 64) | (body_weight_word_t)0x05BEFE1DEBF3D1C8ULL),
+     (((body_weight_word_t)0x0AFE14C1FACE0D0FULL << 64) | (body_weight_word_t)0xDAFF0E160C1E0D15ULL), (((body_weight_word_t)0x060D2105F3212411ULL << 64) | (body_weight_word_t)0xF6FD1930E8FF04D6ULL), (((body_weight_word_t)0x4407F7EA00F93C29ULL << 64) | (body_weight_word_t)0x23F7331C14ED24F1ULL), (((body_weight_word_t)0xFA1B37EBEDDD1DF9ULL << 64) | (body_weight_word_t)0xDBF816FFD981EE04ULL),
+     (((body_weight_word_t)0xD7EDBE1A2B19DD33ULL << 64) | (body_weight_word_t)0x1318E50BFE1BF60AULL), (((body_weight_word_t)0xFD06EE17E912FDF9ULL << 64) | (body_weight_word_t)0x06C4EF3BCDE0BF08ULL), (((body_weight_word_t)0x0FF7E6E904EEEFEBULL << 64) | (body_weight_word_t)0xE9FA1D1EEFF8F539ULL), (((body_weight_word_t)0xFD0CE32BFD0AF1FCULL << 64) | (body_weight_word_t)0xF0DFCDF30F01DB28ULL)},
+    {(((body_weight_word_t)0x2E071324DD2FEA04ULL << 64) | (body_weight_word_t)0xC1FB0014F3041819ULL), (((body_weight_word_t)0xF9FDE20E1D2301D5ULL << 64) | (body_weight_word_t)0x0C37C6EBDFFB46EEULL), (((body_weight_word_t)0x18F4C26ABF2C7FCFULL << 64) | (body_weight_word_t)0xEDA24A84EFF03921ULL), (((body_weight_word_t)0xCA1B53ED1F1E1801ULL << 64) | (body_weight_word_t)0xEDF30019C20BCEEDULL),
+     (((body_weight_word_t)0x1347DCFF21303F0CULL << 64) | (body_weight_word_t)0x041DFCF660EDDD36ULL), (((body_weight_word_t)0x040BDF1005F628F0ULL << 64) | (body_weight_word_t)0x0424F31732D6EE36ULL), (((body_weight_word_t)0x03EC171C230C0104ULL << 64) | (body_weight_word_t)0x0403CFE90915FDEEULL), (((body_weight_word_t)0xE2D2E302FD00D0EEULL << 64) | (body_weight_word_t)0xC9D32D03F9101CB1ULL),
+     (((body_weight_word_t)0xEE08B7EFEBF7E259ULL << 64) | (body_weight_word_t)0xF7E70E04221231F0ULL), (((body_weight_word_t)0xEB04E0CFF13B03E1ULL << 64) | (body_weight_word_t)0xC7052BF8D0EF11FFULL), (((body_weight_word_t)0x461E0D05933527F1ULL << 64) | (body_weight_word_t)0x1B0F2F17AFD62AF4ULL), (((body_weight_word_t)0x0E0B02D70CFF1502ULL << 64) | (body_weight_word_t)0xDF11ECEBF19319EDULL),
+     (((body_weight_word_t)0x37EBF739DBB4FE20ULL << 64) | (body_weight_word_t)0xF3CBB6DFA0185608ULL), (((body_weight_word_t)0xE2F111F603A002C6ULL << 64) | (body_weight_word_t)0xFDE30EDFBEF20A06ULL), (((body_weight_word_t)0x31FCF608FACDEAD8ULL << 64) | (body_weight_word_t)0x020F0318F004FD18ULL), (((body_weight_word_t)0xF406C1F116D5FFE3ULL << 64) | (body_weight_word_t)0x00151FF9F510091EULL)},
+    {(((body_weight_word_t)0xFB10130C2E44ECFFULL << 64) | (body_weight_word_t)0xEFFCFF0081F51DF6ULL), (((body_weight_word_t)0x06FBE0CF0C29EE2AULL << 64) | (body_weight_word_t)0x0400F6C605F5DC14ULL), (((body_weight_word_t)0x030FD1EB1B26EDD2ULL << 64) | (body_weight_word_t)0xE6E6F806C607F112ULL), (((body_weight_word_t)0xCB1428D5DD3D0EF4ULL << 64) | (body_weight_word_t)0x1722F52807FDECFAULL),
+     (((body_weight_word_t)0x053EC400F8311B0AULL << 64) | (body_weight_word_t)0xF83B07F422F3FC49ULL), (((body_weight_word_t)0x0606EE0605100E04ULL << 64) | (body_weight_word_t)0xDD16D31AED06E638ULL), (((body_weight_word_t)0xEAFFD42517EAEB25ULL << 64) | (body_weight_word_t)0xFCE90BC7F4EB011CULL), (((body_weight_word_t)0x23B5031BFAF7DAD8ULL << 64) | (body_weight_word_t)0x1BC713E8F121EADBULL),
+     (((body_weight_word_t)0xE60464EDD5591F30ULL << 64) | (body_weight_word_t)0x9603DD10C806D8DEULL), (((body_weight_word_t)0xFC3410F8CC2834D6ULL << 64) | (body_weight_word_t)0x2FF0320323E1DB29ULL), (((body_weight_word_t)0x2514E324E0313BEDULL << 64) | (body_weight_word_t)0xD6FBFB10431B1412ULL), (((body_weight_word_t)0xF11000030114DD1FULL << 64) | (body_weight_word_t)0xEDDC13E6D9ACF4E2ULL),
+     (((body_weight_word_t)0x01EF143C091EED0BULL << 64) | (body_weight_word_t)0x3208EFF7F7C3EC06ULL), (((body_weight_word_t)0xE60325CE250015F5ULL << 64) | (body_weight_word_t)0xF0D9F72EDD00EEE4ULL), (((body_weight_word_t)0xF801FC11D8E1F622ULL << 64) | (body_weight_word_t)0xF91305DF18F70B22ULL), (((body_weight_word_t)0xEC1DF806201BF0FFULL << 64) | (body_weight_word_t)0xF525FFF2F6F20524ULL)},
+    {(((body_weight_word_t)0x2B12DA0CF8FDF50DULL << 64) | (body_weight_word_t)0x04FE1507EC081EF1ULL), (((body_weight_word_t)0x5103C2EEFBA5CF07ULL << 64) | (body_weight_word_t)0xF71ADB0C10101F0AULL), (((body_weight_word_t)0xDBFA0534F20DC5BBULL << 64) | (body_weight_word_t)0xFDEB813E0EEFC5FAULL), (((body_weight_word_t)0xC62C300ECF410A00ULL << 64) | (body_weight_word_t)0x2103E3D60BF3F40AULL),
+     (((body_weight_word_t)0xEF301354374CE61FULL << 64) | (body_weight_word_t)0xF65A01C538E83649ULL), (((body_weight_word_t)0xED533C7F22330A0BULL << 64) | (body_weight_word_t)0x0A3210D314C85725ULL), (((body_weight_word_t)0x1AF3D33DFEEC1C33ULL << 64) | (body_weight_word_t)0x00D301E801EFE9FBULL), (((body_weight_word_t)0xEDB414D8F0AAD7FCULL << 64) | (body_weight_word_t)0x16C10CFED8EAC5BCULL),
+     (((body_weight_word_t)0xF7060C95E8EA0DFFULL << 64) | (body_weight_word_t)0x112814DE0D0333E1ULL), (((body_weight_word_t)0x150CEBD1DDC9170BULL << 64) | (body_weight_word_t)0xFBE1FDEDF8D40FBEULL), (((body_weight_word_t)0x0901FD2BD71B13DCULL << 64) | (body_weight_word_t)0x21051BC9EE0614F3ULL), (((body_weight_word_t)0x1411131E0F29F2F6ULL << 64) | (body_weight_word_t)0x1E1C041129AD0010ULL),
+     (((body_weight_word_t)0x0AF8000F19D9EC00ULL << 64) | (body_weight_word_t)0xEABFDA36E514E709ULL), (((body_weight_word_t)0xDE01B8E616E40334ULL << 64) | (body_weight_word_t)0x05FAC201080DFBFFULL), (((body_weight_word_t)0x2E02EA8E0B920AF3ULL << 64) | (body_weight_word_t)0x01EE0E13EAECF7ECULL), (((body_weight_word_t)0xEF13D432FFF8F60FULL << 64) | (body_weight_word_t)0x0101E9F8EA0BAA2CULL)},
+    {(((body_weight_word_t)0xE90EF5D3EBCD0BF6ULL << 64) | (body_weight_word_t)0x191FE5312810CC05ULL), (((body_weight_word_t)0xA9FEF4BBC2C8D2C5ULL << 64) | (body_weight_word_t)0x07F2EDD03D0239E6ULL), (((body_weight_word_t)0x1FE9B8FA20B2BB81ULL << 64) | (body_weight_word_t)0xBCB2F97F8C2381BDULL), (((body_weight_word_t)0xF91620D0E4331021ULL << 64) | (body_weight_word_t)0x341AE9EED720F1F6ULL),
+     (((body_weight_word_t)0xEE2506ECD72F0A1CULL << 64) | (body_weight_word_t)0xFE42DDCE5600F21DULL), (((body_weight_word_t)0xF922241A052220F7ULL << 64) | (body_weight_word_t)0x5F0BD4183AE714FBULL), (((body_weight_word_t)0xB8054841F3A00EA8ULL << 64) | (body_weight_word_t)0x811F0CC90CFDAD41ULL), (((body_weight_word_t)0xF0DAEFF1DC1BFD11ULL << 64) | (body_weight_word_t)0xC11B0936F4FBF4D1ULL),
+     (((body_weight_word_t)0x0B02B0FBA8B3FF4BULL << 64) | (body_weight_word_t)0x2BF40FFB2BE204DFULL), (((body_weight_word_t)0x1409C50E9C345ACBULL << 64) | (body_weight_word_t)0xD381FAC29AF252C6ULL), (((body_weight_word_t)0xE918C61DF61B08D8ULL << 64) | (body_weight_word_t)0x36D9C3E5CBE5FFFFULL), (((body_weight_word_t)0x27FAD1F90AECF628ULL << 64) | (body_weight_word_t)0x311321E906EBFA04ULL),
+     (((body_weight_word_t)0x3FFE163408A419D3ULL << 64) | (body_weight_word_t)0x3CADD1EFB6FC0506ULL), (((body_weight_word_t)0x08F1D81325B111CFULL << 64) | (body_weight_word_t)0xFCB5AF1C15EBCEFFULL), (((body_weight_word_t)0x0CF7F71EB9A1D926ULL << 64) | (body_weight_word_t)0xDF0235EC20F61C50ULL), (((body_weight_word_t)0xB80AE81121BD07FBULL << 64) | (body_weight_word_t)0xE6D8E619080D0711ULL)},
+    {(((body_weight_word_t)0xCC1BE1D4BBFCFD1CULL << 64) | (body_weight_word_t)0xFE1DF20AE9F0D011ULL), (((body_weight_word_t)0x0DF7F4D61CEA0205ULL << 64) | (body_weight_word_t)0xF42604DCCDFFF309ULL), (((body_weight_word_t)0xF0F964C213AC2234ULL << 64) | (body_weight_word_t)0xCDEBA7492F1AE2B1ULL), (((body_weight_word_t)0x1529F4F3102221DDULL << 64) | (body_weight_word_t)0x1DE7F50B0EF9F222ULL),
+     (((body_weight_word_t)0xF42F052914311C53ULL << 64) | (body_weight_word_t)0xFE34E71C2F00FC36ULL), (((body_weight_word_t)0x032F2315F947313AULL << 64) | (body_weight_word_t)0x53E923291201F30EULL), (((body_weight_word_t)0x01F8DD05F2261D21ULL << 64) | (body_weight_word_t)0xEA1E37DCE7EFD4FEULL), (((body_weight_word_t)0xF1E0FFE8F315DAC1ULL << 64) | (body_weight_word_t)0x07C219F7D81707D8ULL),
+     (((body_weight_word_t)0xA708220E9C81FDFFULL << 64) | (body_weight_word_t)0xFC1A05ACAC02D3FCULL), (((body_weight_word_t)0x1643F9EFA14739F7ULL << 64) | (body_weight_word_t)0x103FF9371B06C91BULL), (((body_weight_word_t)0x2719F62D09000BD1ULL << 64) | (body_weight_word_t)0xF8AE1A0918021F09ULL), (((body_weight_word_t)0x15E6000A1F0EEEF7ULL << 64) | (body_weight_word_t)0x23F7FCEECF01E5D8ULL),
+     (((body_weight_word_t)0x0E040E5CBB05BBDEULL << 64) | (body_weight_word_t)0x06181D04F8DAFBF3ULL), (((body_weight_word_t)0x13FB1FF0EAD027EBULL << 64) | (body_weight_word_t)0xD10610B314F1C600ULL), (((body_weight_word_t)0xF9010B3E119B131DULL << 64) | (body_weight_word_t)0xE7161734E6FD0CE3ULL), (((body_weight_word_t)0xF319E2130DA8024EULL << 64) | (body_weight_word_t)0xE413DF0E141DFE24ULL)},
+    {(((body_weight_word_t)0x0B0103141C0AED00ULL << 64) | (body_weight_word_t)0x073C172CE5020B0AULL), (((body_weight_word_t)0x3DF6F9D90FE2D60AULL << 64) | (body_weight_word_t)0x3000E3DD25031B04ULL), (((body_weight_word_t)0xE1FFC6DDFE0B2B59ULL << 64) | (body_weight_word_t)0xD811D7EBED051BEEULL), (((body_weight_word_t)0x0A212EFE133A27F5ULL << 64) | (body_weight_word_t)0x3E1B2B1901F1E817ULL),
+     (((body_weight_word_t)0xEF21FE33213F1023ULL << 64) | (body_weight_word_t)0xF14E221216ED1B24ULL), (((body_weight_word_t)0x2C7FE03BDF403134ULL << 64) | (body_weight_word_t)0x1E4F1EE541F5F167ULL), (((body_weight_word_t)0xD00BF521300310FDULL << 64) | (body_weight_word_t)0x0AFB3ECFEB01DEECULL), (((body_weight_word_t)0x04EF16E203EFF3F3ULL << 64) | (body_weight_word_t)0x0CDEF0DFF53304D8ULL),
+     (((body_weight_word_t)0xFB0314C63DB5061CULL << 64) | (body_weight_word_t)0x040A1CFA21E4F015ULL), (((body_weight_word_t)0x1E08FEF5E023FEDAULL << 64) | (body_weight_word_t)0xEFF2EF10F7FA0BF7ULL), (((body_weight_word_t)0x1812F60E0D130CFBULL << 64) | (body_weight_word_t)0x1C180FFA13FEF509ULL), (((body_weight_word_t)0xFD17F315090BFC0DULL << 64) | (body_weight_word_t)0xFF1E18F608EEF618ULL),
+     (((body_weight_word_t)0x07ECDEEDE7C8EC04ULL << 64) | (body_weight_word_t)0xE9E3C81DEC0DE8F8ULL), (((body_weight_word_t)0x0BFDEAC4B1D10FF7ULL << 64) | (body_weight_word_t)0xE8CDE224FF201002ULL), (((body_weight_word_t)0x14F6FA1518C2EBF5ULL << 64) | (body_weight_word_t)0xF718082F0607EAEDULL), (((body_weight_word_t)0xF71CFEF00A0100F5ULL << 64) | (body_weight_word_t)0xFBF8EEF70CE4E822ULL)},
+    {(((body_weight_word_t)0xE71C2B2E0E092C2BULL << 64) | (body_weight_word_t)0x321B1D2326F313EEULL), (((body_weight_word_t)0xFBF314080424E702ULL << 64) | (body_weight_word_t)0xFED406D1E6F81AE8ULL), (((body_weight_word_t)0xFE2381BCB6E304D9ULL << 64) | (body_weight_word_t)0xC4EA8FFEFC160023ULL), (((body_weight_word_t)0xE8241702C616F8F9ULL << 64) | (body_weight_word_t)0x24EFEEED04F5E00FULL),
+     (((body_weight_word_t)0xFB120A3612290A35ULL << 64) | (body_weight_word_t)0xFC3B1D1A2D0C184EULL), (((body_weight_word_t)0x152DD001DB182705ULL << 64) | (body_weight_word_t)0x1E20F4D614E51C53ULL), (((body_weight_word_t)0xBEFACF19F1CDD6F8ULL << 64) | (body_weight_word_t)0x21EBAEA1E6F9A500ULL), (((body_weight_word_t)0xD4DFFC1A1BF8FAF6ULL << 64) | (body_weight_word_t)0xFA07F80CFDFA09D4ULL),
+     (((body_weight_word_t)0xDA01EC321B96192FULL << 64) | (body_weight_word_t)0x42DC381BF7C105CFULL), (((body_weight_word_t)0x0E1917AAE4DB28C1ULL << 64) | (body_weight_word_t)0x18860927FE05D8FAULL), (((body_weight_word_t)0xF1120AE6813713EBULL << 64) | (body_weight_word_t)0x05FB131F1BDC4905ULL), (((body_weight_word_t)0xF4FB0429180F061DULL << 64) | (body_weight_word_t)0xF3150B12FE1506FCULL),
+     (((body_weight_word_t)0x65F7C4112B8713F1ULL << 64) | (body_weight_word_t)0xFDBBD5E7D0F92700ULL), (((body_weight_word_t)0x030A02062FAF0DFCULL << 64) | (body_weight_word_t)0xE4D501B1DFFFD5DFULL), (((body_weight_word_t)0x1E0127F429D50617ULL << 64) | (body_weight_word_t)0xFDF1EC2901F02712ULL), (((body_weight_word_t)0xDDF6E003E9D01140ULL << 64) | (body_weight_word_t)0xBDFEF0F60606E115ULL)},
+    {(((body_weight_word_t)0x0B15DFE810220018ULL << 64) | (body_weight_word_t)0x14F90017E8F51002ULL), (((body_weight_word_t)0xF8F3E33524E6F818ULL << 64) | (body_weight_word_t)0x074D21FB0AEBF8FDULL), (((body_weight_word_t)0x000EE8D6CE23F5EBULL << 64) | (body_weight_word_t)0xEEAFE4A1D50E31CCULL), (((body_weight_word_t)0xF10A23E50CF0FEFEULL << 64) | (body_weight_word_t)0x0C0EF300E700F2F6ULL),
+     (((body_weight_word_t)0x0122EB2407400E31ULL << 64) | (body_weight_word_t)0x0247F706230B0A39ULL), (((body_weight_word_t)0x1C640523A2360136ULL << 64) | (body_weight_word_t)0x2F2EC9B729FDFB7FULL), (((body_weight_word_t)0xE6F0F2501DE9E635ULL << 64) | (body_weight_word_t)0xD72805110506C6FAULL), (((body_weight_word_t)0x0AE70EE7F00813B6ULL << 64) | (body_weight_word_t)0x1FEF001CE103FEE2ULL),
+     (((body_weight_word_t)0x81F8D8E6BBD138E7ULL << 64) | (body_weight_word_t)0x2CFABCCCC3DABA30ULL), (((body_weight_word_t)0x115500F2E1454DCFULL << 64) | (body_weight_word_t)0x382118FF16EC1108ULL), (((body_weight_word_t)0xD11A111EC3FF300FULL << 64) | (body_weight_word_t)0x34EB0235F1021224ULL), (((body_weight_word_t)0x15EAFDE3F4EBEFFBULL << 64) | (body_weight_word_t)0x0BD8FCEFFBE9EEFEULL),
+     (((body_weight_word_t)0xF8FD132EEE12D808ULL << 64) | (body_weight_word_t)0x550B2605BFCCFCEAULL), (((body_weight_word_t)0x080CF6FD0BFAF616ULL << 64) | (body_weight_word_t)0xEC0B09D0F4E4E60CULL), (((body_weight_word_t)0x2F0DE21DF3E5D4F2ULL << 64) | (body_weight_word_t)0x0D090DDA0A06E309ULL), (((body_weight_word_t)0xEC140F1FEB19EE67ULL << 64) | (body_weight_word_t)0xE223CF07160C111DULL)}};
+
 static const bias_t L2_BIAS[CNN_C] = {
-    -2016, 956, -1310, -100, -2921, -3029, -2951, -986,
-    1438, -81, -1814, -1722, -562, -881, -22, -485
-};
-static const q31_t L2_MAIN_Q31[CNN_C] = {
-    1778696960, 1081042688, 1132263936, 1263189376,
-    1441819264, 1745399936, 1945350912, 1120792320,
-    2137065600, 1108352640, 1303577216, 1487316608,
-    1705760256, 1353778560, 1913878528, 1537619200
-};
-static const qexp_t L2_MAIN_EXP[CNN_C] = {
-    -9, -8, -8, -8, -9, -9, -9, -8,
-    -9, -7, -9, -9, -8, -8, -9, -8
-};
-static const q31_t L2_SKIP_Q31 = 1439926547;
-static const qexp_t L2_SKIP_EXP = 1;
+    -2006, -12576, -10221, -11045, 5079, 20753, -13794, -5375,
+    6129, -25631, -13229, 4877, -3257, -899, 786, -21582};
+static const q31_t L2_MAIN_TO_SKIP_Q31[CNN_C] = {
+    1436751744, 1729026048, 1426824832, 1842165504,
+    1649214336, 2001701504, 1616977408, 1393182848,
+    1649224192, 1202860800, 1159694208, 1432719744,
+    1449761664, 1745627008, 1387571200, 2047173120};
+static const qexp_t L2_MAIN_TO_SKIP_EXP[CNN_C] = {
+    -8, -9, -8, -9, -9, -9, -9, -9,
+    -9, -8, -9, -9, -9, -9, -7, -9};
+#define L2_SKIP_ALREADY_IN_TARGET_SCALE 1
+#define L2_RESIDUAL_OUTPUT_CLAMP 0
+#define L2_RESIDUAL_STORAGE_BITS 32
 
-// L3
+// L3: block1.conv1; logical W8, compatibility lane=W8
 static const body_weight_word_t L3_WBANK[9][CNN_C] = {
-    {
-        (((body_weight_word_t)0xeef21b1619080e10ULL << 64) | (body_weight_word_t)0xe804f244efdff6e9ULL), (((body_weight_word_t)0xb0f823e3ebf403f1ULL << 64) | (body_weight_word_t)0x35f0d6262143cedeULL), (((body_weight_word_t)0xfb2727fd1ece4d67ULL << 64) | (body_weight_word_t)0x3617f61417e70fe6ULL), (((body_weight_word_t)0xda16d80f2ddb1effULL << 64) | (body_weight_word_t)0x08f8fed7f3dcd9feULL),
-        (((body_weight_word_t)0xe31b3fd716b50219ULL << 64) | (body_weight_word_t)0x7ffdd9e6f4280bf3ULL), (((body_weight_word_t)0x280439e774f04351ULL << 64) | (body_weight_word_t)0x94054437f0bc01b7ULL), (((body_weight_word_t)0x13f68115812fb998ULL << 64) | (body_weight_word_t)0xcb1afb0ce4ebd13cULL), (((body_weight_word_t)0xf22efdf84ff71ae9ULL << 64) | (body_weight_word_t)0x21320e0f26f50917ULL),
-        (((body_weight_word_t)0x00e3cdfbc4f1fb12ULL << 64) | (body_weight_word_t)0xc206e6e5fae2b80cULL), (((body_weight_word_t)0xea0ed5f9fc05f812ULL << 64) | (body_weight_word_t)0x0cef06f607f22513ULL), (((body_weight_word_t)0x1617fff23eff1decULL << 64) | (body_weight_word_t)0xe9022efaf0e3f507ULL), (((body_weight_word_t)0x08091336e3e52907ULL << 64) | (body_weight_word_t)0x04d3e4fa1b10f71aULL),
-        (((body_weight_word_t)0xcb2ad80005d60406ULL << 64) | (body_weight_word_t)0x2f3101ed0107e11dULL), (((body_weight_word_t)0x08f2e00fde03f1d0ULL << 64) | (body_weight_word_t)0x1203cb1805c72305ULL), (((body_weight_word_t)0x7f0037120febf4ceULL << 64) | (body_weight_word_t)0x3529ed1be7819f22ULL), (((body_weight_word_t)0x2e0527f0f307320eULL << 64) | (body_weight_word_t)0xee0321300fdae8f8ULL)
-    },
-    {
-        (((body_weight_word_t)0xebeafe08a409f8f2ULL << 64) | (body_weight_word_t)0x12d90414fcf9c2d8ULL), (((body_weight_word_t)0x0bfcf2ff1834f511ULL << 64) | (body_weight_word_t)0x400c022be6f7bdb6ULL), (((body_weight_word_t)0xde32fed6b3083d05ULL << 64) | (body_weight_word_t)0x141702c6fb4ceeeeULL), (((body_weight_word_t)0xf1450d0b3ddb14eeULL << 64) | (body_weight_word_t)0x040308330e9ff843ULL),
-        (((body_weight_word_t)0xca1007f6f905c6bbULL << 64) | (body_weight_word_t)0x3fffd6dad32c1911ULL), (((body_weight_word_t)0x3606500afd245149ULL << 64) | (body_weight_word_t)0xfbf5040617d8dd11ULL), (((body_weight_word_t)0x1cead6619bd9c0b3ULL << 64) | (body_weight_word_t)0xa2cdf5c7470cd774ULL), (((body_weight_word_t)0xf9163cf221fd3117ULL << 64) | (body_weight_word_t)0x480402db06f74126ULL),
-        (((body_weight_word_t)0xf8e5ece1dceeff1dULL << 64) | (body_weight_word_t)0xd705e70b2513d0d2ULL), (((body_weight_word_t)0x1102020426ca2303ULL << 64) | (body_weight_word_t)0x37f90af307f90c11ULL), (((body_weight_word_t)0x1f22f6d047c52503ULL << 64) | (body_weight_word_t)0x3c05d1dfc70bd1e1ULL), (((body_weight_word_t)0xe8f01fc8bfc408dbULL << 64) | (body_weight_word_t)0xfdeb240b311ef23bULL),
-        (((body_weight_word_t)0xe2100df327d714e7ULL << 64) | (body_weight_word_t)0x2b16f9edf92716f7ULL), (((body_weight_word_t)0x14f40000e4d9feb9ULL << 64) | (body_weight_word_t)0x44fdc61226dd34e8ULL), (((body_weight_word_t)0x580afdcdecedf314ULL << 64) | (body_weight_word_t)0x3e1b13e6e2deccb6ULL), (((body_weight_word_t)0x3cf40ed81f061ef3ULL << 64) | (body_weight_word_t)0xedfcf905c30e2fc7ULL)
-    },
-    {
-        (((body_weight_word_t)0xeeee0b01092b17f8ULL << 64) | (body_weight_word_t)0x0ce2d501e71bcadcULL), (((body_weight_word_t)0x3fe6fff0ad4b2c0dULL << 64) | (body_weight_word_t)0x06ced86e0509e4d1ULL), (((body_weight_word_t)0xcc01fb113ffbebd5ULL << 64) | (body_weight_word_t)0xcaf105e91331160fULL), (((body_weight_word_t)0xf8111dfb1cfe2ffeULL << 64) | (body_weight_word_t)0x11f9f400f928291bULL),
-        (((body_weight_word_t)0xe0d8f0dadd0ef2ebULL << 64) | (body_weight_word_t)0x16140a12111015faULL), (((body_weight_word_t)0x24002e1d01e3e419ULL << 64) | (body_weight_word_t)0xecea00050417be09ULL), (((body_weight_word_t)0xfae6d1eabbf0531cULL << 64) | (body_weight_word_t)0x0c04c6e60ff8ea4cULL), (((body_weight_word_t)0x0f174a0410f00df1ULL << 64) | (body_weight_word_t)0x0043fce10aed1841ULL),
-        (((body_weight_word_t)0x09e704f7fcf6e8f9ULL << 64) | (body_weight_word_t)0xcddb31d8f608c29dULL), (((body_weight_word_t)0x0402f4fed7011df8ULL << 64) | (body_weight_word_t)0x03de04070a1de903ULL), (((body_weight_word_t)0x1227170c4d1db5e6ULL << 64) | (body_weight_word_t)0xcbc948f9fc11d4c4ULL), (((body_weight_word_t)0xfff52016c30410dcULL << 64) | (body_weight_word_t)0xcaf7de0bee06e326ULL),
-        (((body_weight_word_t)0xe12def111bce25f6ULL << 64) | (body_weight_word_t)0x3b181eff0900e70aULL), (((body_weight_word_t)0x061417f8cafc5f1fULL << 64) | (body_weight_word_t)0x2ceae56ff710ed45ULL), (((body_weight_word_t)0x2af21012074abfe9ULL << 64) | (body_weight_word_t)0xfe0ef413f81081d5ULL), (((body_weight_word_t)0x07fb280b280b12f3ULL << 64) | (body_weight_word_t)0x1003ff1a0f2615edULL)
-    },
-    {
-        (((body_weight_word_t)0xd4352a0e39ab26b6ULL << 64) | (body_weight_word_t)0x0a24e5dcebca0806ULL), (((body_weight_word_t)0x2ff40be0e11901c2ULL << 64) | (body_weight_word_t)0x110aebfa3dff0fe0ULL), (((body_weight_word_t)0x12f010faef1422dbULL << 64) | (body_weight_word_t)0xeb280df21ae2bcfeULL), (((body_weight_word_t)0x2cf2021b100f0108ULL << 64) | (body_weight_word_t)0x301302fbe4e12917ULL),
-        (((body_weight_word_t)0xd3e1161d5c45f9ceULL << 64) | (body_weight_word_t)0x48ecf10cde3f2badULL), (((body_weight_word_t)0xb92e277f2b1f6758ULL << 64) | (body_weight_word_t)0xc704e8f41e547a41ULL), (((body_weight_word_t)0x2d288db9292eebbfULL << 64) | (body_weight_word_t)0xf6161bb5e0cf0c3fULL), (((body_weight_word_t)0xbc1d08184b051cfaULL << 64) | (body_weight_word_t)0x63310fbc0432044bULL),
-        (((body_weight_word_t)0x20debdf0cbfad4f8ULL << 64) | (body_weight_word_t)0x0dfd10e00cc7b90cULL), (((body_weight_word_t)0x0c1a16fd330e20ecULL << 64) | (body_weight_word_t)0x14f20b0dffc3933aULL), (((body_weight_word_t)0xf4080a42232309fdULL << 64) | (body_weight_word_t)0x0e1810dde80e1918ULL), (((body_weight_word_t)0x39f0f801f9bc242aULL << 64) | (body_weight_word_t)0x5feef52d1caac9c7ULL),
-        (((body_weight_word_t)0xdc23fe09f20adadbULL << 64) | (body_weight_word_t)0xfb23fadf0002e91dULL), (((body_weight_word_t)0xfc04deff0420f517ULL << 64) | (body_weight_word_t)0x17f800cbd8240736ULL), (((body_weight_word_t)0x3fd7321018d8ebe9ULL << 64) | (body_weight_word_t)0x20131939e1aa78dfULL), (((body_weight_word_t)0x222a1402f3140ef6ULL << 64) | (body_weight_word_t)0x2c3f17fa10bbec0fULL)
-    },
-    {
-        (((body_weight_word_t)0x060ff6f015f627d9ULL << 64) | (body_weight_word_t)0xdcf830ba200ae3ccULL), (((body_weight_word_t)0x252affd40921ce32ULL << 64) | (body_weight_word_t)0xda0402d3fda1e33dULL), (((body_weight_word_t)0xfd27dff8eb420220ULL << 64) | (body_weight_word_t)0x40f107e9f13481d1ULL), (((body_weight_word_t)0x180ffb1b29ee2c08ULL << 64) | (body_weight_word_t)0x1d1816e8f8a4bd15ULL),
-        (((body_weight_word_t)0xc6def504343ec973ULL << 64) | (body_weight_word_t)0x53e3d4f3921406dcULL), (((body_weight_word_t)0x97810b2d3a7f12faULL << 64) | (body_weight_word_t)0xf0191bf37f5970cfULL), (((body_weight_word_t)0x31f40634fb5dbb31ULL << 64) | (body_weight_word_t)0x29eb7ffc4804e722ULL), (((body_weight_word_t)0xf4ed13ff160f1c12ULL << 64) | (body_weight_word_t)0x40f6f6b9d4e81f39ULL),
-        (((body_weight_word_t)0xdef0091411e4ce41ULL << 64) | (body_weight_word_t)0x0bdde31b0bebdf13ULL), (((body_weight_word_t)0x2b22481223fbd9f4ULL << 64) | (body_weight_word_t)0x31120adffa330d2bULL), (((body_weight_word_t)0xf9db2000e7e52781ULL << 64) | (body_weight_word_t)0x0d3f5fdee3eb1ad6ULL), (((body_weight_word_t)0x33f1054723023312ULL << 64) | (body_weight_word_t)0xfbe7943a30b3ab1fULL),
-        (((body_weight_word_t)0xff1bef1405f4d80bULL << 64) | (body_weight_word_t)0xeef41bd9fbeb151bULL), (((body_weight_word_t)0xc823f097b50b1f07ULL << 64) | (body_weight_word_t)0x8f67d9ccfc701224ULL), (((body_weight_word_t)0x19ed2825ebe702e4ULL << 64) | (body_weight_word_t)0x2be90ad5e1ea6218ULL), (((body_weight_word_t)0x02041d06f409fa0bULL << 64) | (body_weight_word_t)0x0f15f5e4a5b6f525ULL)
-    },
-    {
-        (((body_weight_word_t)0x1b062b030a321608ULL << 64) | (body_weight_word_t)0xf9ccf80c1af8b4cdULL), (((body_weight_word_t)0x69d815f0f2071125ULL << 64) | (body_weight_word_t)0xc50e1d1afa0df7ecULL), (((body_weight_word_t)0xefd2021330e7a4c6ULL << 64) | (body_weight_word_t)0xb3b932ec2202b825ULL), (((body_weight_word_t)0x5605f1ff32fafbe9ULL << 64) | (body_weight_word_t)0x001128d016e4b427ULL),
-        (((body_weight_word_t)0x1828f91dd10d0822ULL << 64) | (body_weight_word_t)0xefd5dffce9cb1feeULL), (((body_weight_word_t)0xeece1fc3c9563523ULL << 64) | (body_weight_word_t)0x0de0e9291d2731f2ULL), (((body_weight_word_t)0x1b09da1dd2313e1bULL << 64) | (body_weight_word_t)0x14d832dddaffdf27ULL), (((body_weight_word_t)0x06010df5350b1ddaULL << 64) | (body_weight_word_t)0x22f10b02f822c303ULL),
-        (((body_weight_word_t)0xe10dd8d9ca07141bULL << 64) | (body_weight_word_t)0xb4fb05f612ff0c8fULL), (((body_weight_word_t)0xf7f1eff8271ce1f5ULL << 64) | (body_weight_word_t)0xfe0315081efac2fcULL), (((body_weight_word_t)0xdd0408b25402bbc2ULL << 64) | (body_weight_word_t)0xba05b203f009e701ULL), (((body_weight_word_t)0x24052d05e7f93228ULL << 64) | (body_weight_word_t)0x38e932b2edde9f0aULL),
-        (((body_weight_word_t)0x02f02f02e90d09f1ULL << 64) | (body_weight_word_t)0x02123614edf6ee24ULL), (((body_weight_word_t)0xa2ecdfb6c22e7f0dULL << 64) | (body_weight_word_t)0xeef5d57f2664fb12ULL), (((body_weight_word_t)0xe0194b2d3e0ad22fULL << 64) | (body_weight_word_t)0x0dd5190ed7370e35ULL), (((body_weight_word_t)0xfcf84404e002f7faULL << 64) | (body_weight_word_t)0x2a05e74ad7112ef3ULL)
-    },
-    {
-        (((body_weight_word_t)0xdbf0072fecd61c02ULL << 64) | (body_weight_word_t)0x2f2f1012d4d1f3deULL), (((body_weight_word_t)0x03f7c508f417baf4ULL << 64) | (body_weight_word_t)0xf5d8eb0c140728d7ULL), (((body_weight_word_t)0x150536e8f2f6f606ULL << 64) | (body_weight_word_t)0xd9f70b0ff30f38dfULL), (((body_weight_word_t)0x04e0030413fefe08ULL << 64) | (body_weight_word_t)0xfafae8ebf71a3607ULL),
-        (((body_weight_word_t)0xeff5e8193704b3f1ULL << 64) | (body_weight_word_t)0x4efdf70f2528e8e8ULL), (((body_weight_word_t)0xc409f134d0d8cd19ULL << 64) | (body_weight_word_t)0xc449e107014a00b4ULL), (((body_weight_word_t)0x034defee15ec3b27ULL << 64) | (body_weight_word_t)0xe252f6ef0f0618c2ULL), (((body_weight_word_t)0xdd11ed0f29eaf1f8ULL << 64) | (body_weight_word_t)0x2ff60cc9f4009a21ULL),
-        (((body_weight_word_t)0xee3ccdfa1234dee1ULL << 64) | (body_weight_word_t)0x091122c7fff3323fULL), (((body_weight_word_t)0xf50fdbeb00090312ULL << 64) | (body_weight_word_t)0x1131e5e2081df435ULL), (((body_weight_word_t)0xe50312fa0eedfb2fULL << 64) | (body_weight_word_t)0xf130f82f460225eaULL), (((body_weight_word_t)0x0feddce3d0f60ceaULL << 64) | (body_weight_word_t)0x25f3eddeeaee23f6ULL),
-        (((body_weight_word_t)0xf91bd709fff4b2dfULL << 64) | (body_weight_word_t)0xfe140bdfffd015f4ULL), (((body_weight_word_t)0x0be4e814f1fae620ULL << 64) | (body_weight_word_t)0xe20bce0c1c0cffe0ULL), (((body_weight_word_t)0xf117163630f6d9f2ULL << 64) | (body_weight_word_t)0x3a54112117fb7305ULL), (((body_weight_word_t)0xf5033606140ad8fbULL << 64) | (body_weight_word_t)0xed0e240205f72c01ULL)
-    },
-    {
-        (((body_weight_word_t)0xf2e74ef3e0ffff0eULL << 64) | (body_weight_word_t)0xf41915ffe2f8f00bULL), (((body_weight_word_t)0x1819e2e6d2f5dc25ULL << 64) | (body_weight_word_t)0x2b08cef821f821cbULL), (((body_weight_word_t)0xf4ad091ee601591bULL << 64) | (body_weight_word_t)0xe5b72178fc25f438ULL), (((body_weight_word_t)0x390fd8fb05fe01fcULL << 64) | (body_weight_word_t)0x0a02f9de06e4fd0cULL),
-        (((body_weight_word_t)0x1a0105470ff8c316ULL << 64) | (body_weight_word_t)0x20ea1dd752f8d8d8ULL), (((body_weight_word_t)0xa0e933f0f5ef98d2ULL << 64) | (body_weight_word_t)0x16654fd0f3252804ULL), (((body_weight_word_t)0xeedde700b80b733aULL << 64) | (body_weight_word_t)0xfd27326dce2f145fULL), (((body_weight_word_t)0x2a1a1ef525202722ULL << 64) | (body_weight_word_t)0xef01f8d0fe11cf09ULL),
-        (((body_weight_word_t)0x072cc807feeb04e0ULL << 64) | (body_weight_word_t)0xdffbefeae1f348e3ULL), (((body_weight_word_t)0xf10808051e0113faULL << 64) | (body_weight_word_t)0x3803f2ec10e3b645ULL), (((body_weight_word_t)0xe5f5ea0d210b670cULL << 64) | (body_weight_word_t)0xf85724181c04137fULL), (((body_weight_word_t)0x0c230a31aa20ddcaULL << 64) | (body_weight_word_t)0x02daf5c3b1e9081bULL),
-        (((body_weight_word_t)0x04040f23e512d2fdULL << 64) | (body_weight_word_t)0xee04f0eecfff2811ULL), (((body_weight_word_t)0xdbd802fb0bfbdc26ULL << 64) | (body_weight_word_t)0xee5e37cdf942fbcbULL), (((body_weight_word_t)0xdbdeef2622e1ede3ULL << 64) | (body_weight_word_t)0x1849032edd3d50f1ULL), (((body_weight_word_t)0xe51b0dd9ddfcdadeULL << 64) | (body_weight_word_t)0x04f225fde91237e3ULL)
-    },
-    {
-        (((body_weight_word_t)0xd1e32b01010926faULL << 64) | (body_weight_word_t)0x0df004f00a1ed0d1ULL), (((body_weight_word_t)0x0ec5d2ea0130e115ULL << 64) | (body_weight_word_t)0x2521ac2119312be4ULL), (((body_weight_word_t)0x14f940e0d5f403f0ULL << 64) | (body_weight_word_t)0x90810e1c1fee0b1eULL), (((body_weight_word_t)0x17fe0906e2081204ULL << 64) | (body_weight_word_t)0xd4ebf713f102dde6ULL),
-        (((body_weight_word_t)0x44fcc2f5e5ee0202ULL << 64) | (body_weight_word_t)0x07ff0df421ecf2dcULL), (((body_weight_word_t)0xe2b3211414eac900ULL << 64) | (body_weight_word_t)0x3b3905cec8141ae4ULL), (((body_weight_word_t)0xe617e4dd1d033a0fULL << 64) | (body_weight_word_t)0xebcb0a58e211ef1cULL), (((body_weight_word_t)0x08ece717010915f6ULL << 64) | (body_weight_word_t)0x1f1be812fe0cbc11ULL),
-        (((body_weight_word_t)0xea0dc8f4d31504fdULL << 64) | (body_weight_word_t)0xd7ff07f80de420edULL), (((body_weight_word_t)0x0202f0e903011703ULL << 64) | (body_weight_word_t)0x06f8e3e1fafc4d00ULL), (((body_weight_word_t)0xf11b01ac101e36f8ULL << 64) | (body_weight_word_t)0x11e50b0c2df728f7ULL), (((body_weight_word_t)0xfc1ff6e5f7f70be1ULL << 64) | (body_weight_word_t)0x2fcd02a9b80402b2ULL),
-        (((body_weight_word_t)0x0f0bcc08fe06e4e8ULL << 64) | (body_weight_word_t)0x3b1f0ac6e4c21c20ULL), (((body_weight_word_t)0xeed7121ed0f60808ULL << 64) | (body_weight_word_t)0xe2f0e924f5082d43ULL), (((body_weight_word_t)0xac0a3a0e14e8b513ULL << 64) | (body_weight_word_t)0xf8f1eadb45555831ULL), (((body_weight_word_t)0xe7f9461610ed1636ULL << 64) | (body_weight_word_t)0x0a04e0f815214cd9ULL)
-    }
-};
+    {(((body_weight_word_t)0xD7180E001117CE00ULL << 64) | (body_weight_word_t)0x05C40BECEB3DFA09ULL), (((body_weight_word_t)0x05D61EBE1E57F107ULL << 64) | (body_weight_word_t)0xBDE60BFC1703CD09ULL), (((body_weight_word_t)0xF003FC2B1E06D900ULL << 64) | (body_weight_word_t)0xCF050CAB08AFED12ULL), (((body_weight_word_t)0xF00BFFCF011B51F2ULL << 64) | (body_weight_word_t)0xE22AFA132FADCE16ULL),
+     (((body_weight_word_t)0xF4092DF5DBF6F014ULL << 64) | (body_weight_word_t)0xAF4D340905C32805ULL), (((body_weight_word_t)0xEA0326BE9DDDEABAULL << 64) | (body_weight_word_t)0xE01E130FEA08D9E9ULL), (((body_weight_word_t)0x1F02F562ECD7FBD9ULL << 64) | (body_weight_word_t)0x25EB01EDCB08CCEDULL), (((body_weight_word_t)0x2AF13AF11C0C81F6ULL << 64) | (body_weight_word_t)0x12CBF5D89C1029CAULL),
+     (((body_weight_word_t)0x022DECC0EBDF75ECULL << 64) | (body_weight_word_t)0x1610E1F332D3D93EULL), (((body_weight_word_t)0xFD343C612E2CE8F8ULL << 64) | (body_weight_word_t)0xF0E72324FC38F600ULL), (((body_weight_word_t)0x0FFDF36E0646EA2DULL << 64) | (body_weight_word_t)0x19F9F8D9F8E3A8E8ULL), (((body_weight_word_t)0xE8E8D343BC090DE3ULL << 64) | (body_weight_word_t)0x09C7DF28140EE21DULL),
+     (((body_weight_word_t)0x18DBA203EDD5E6D1ULL << 64) | (body_weight_word_t)0xD62008EAE9DBFFCCULL), (((body_weight_word_t)0xFDFCF707376FD21BULL << 64) | (body_weight_word_t)0xDB16E50CEFED3B02ULL), (((body_weight_word_t)0x99154805D4319A24ULL << 64) | (body_weight_word_t)0xF0231A3A842FBED0ULL), (((body_weight_word_t)0xEE1B87BFD6A2D6F8ULL << 64) | (body_weight_word_t)0x6B05D0FD1F2002F7ULL)},
+    {(((body_weight_word_t)0xFA23F214EC14F608ULL << 64) | (body_weight_word_t)0xBFEAF8E8B3F47EBFULL), (((body_weight_word_t)0x13FD4AB8DBE05E2EULL << 64) | (body_weight_word_t)0xE015EA1A4F330AA6ULL), (((body_weight_word_t)0xDC1DF139B80CDBD4ULL << 64) | (body_weight_word_t)0x1A1310EF3F060003ULL), (((body_weight_word_t)0x25F40ADF590D1EC9ULL << 64) | (body_weight_word_t)0x1100E023B317EBCBULL),
+     (((body_weight_word_t)0xF904280A332AE22EULL << 64) | (body_weight_word_t)0x102FF20EEA041CCCULL), (((body_weight_word_t)0x44093D22B2E7F4C6ULL << 64) | (body_weight_word_t)0x3602DDD8F208C30AULL), (((body_weight_word_t)0x29C89D46100CEBEBULL << 64) | (body_weight_word_t)0x1015F8EDD215D610ULL), (((body_weight_word_t)0x0AB550360BC2D3F5ULL << 64) | (body_weight_word_t)0x04131FC0F3E5C07FULL),
+     (((body_weight_word_t)0x7FD9FC59DBC15F45ULL << 64) | (body_weight_word_t)0x1E020DD1CAC3C315ULL), (((body_weight_word_t)0x1DCDFD0FC9250228ULL << 64) | (body_weight_word_t)0x17090107D23805D6ULL), (((body_weight_word_t)0xB3C2DD0755BA75EAULL << 64) | (body_weight_word_t)0x08061705FFD3FF11ULL), (((body_weight_word_t)0xFB13D2E9B4DD0513ULL << 64) | (body_weight_word_t)0xABEF310E081B0CEEULL),
+     (((body_weight_word_t)0x20FCB9D97FBCE614ULL << 64) | (body_weight_word_t)0xF91515BB359CCEF0ULL), (((body_weight_word_t)0xF7F8F4E009D7EDDFULL << 64) | (body_weight_word_t)0xFB0F1FFBE2D8E9E2ULL), (((body_weight_word_t)0xB6381600E914A701ULL << 64) | (body_weight_word_t)0xEB37FC4FE41FCFD9ULL), (((body_weight_word_t)0xB91581D1DDA5B10DULL << 64) | (body_weight_word_t)0x0E3A33DC14F21D57ULL)},
+    {(((body_weight_word_t)0x081C010DF9D702EBULL << 64) | (body_weight_word_t)0x0A041020D10B931DULL), (((body_weight_word_t)0x010EC5DC3ED31C11ULL << 64) | (body_weight_word_t)0x2D05F42130F0FEEFULL), (((body_weight_word_t)0xE4F32324DE04D80DULL << 64) | (body_weight_word_t)0xD8F0FBE8D9C0E30CULL), (((body_weight_word_t)0x2E07B8FFC6F41FD7ULL << 64) | (body_weight_word_t)0x12FFFC3104423800ULL),
+     (((body_weight_word_t)0xD31211F92A33321EULL << 64) | (body_weight_word_t)0xBBE8E91F08080C09ULL), (((body_weight_word_t)0x26EB27270C3C2304ULL << 64) | (body_weight_word_t)0x14F009EEE820DB27ULL), (((body_weight_word_t)0xF0FB1CA0D401F9F6ULL << 64) | (body_weight_word_t)0x19E1F82829351EE3ULL), (((body_weight_word_t)0xC8E8F543FBFF3ED7ULL << 64) | (body_weight_word_t)0xCAE709FDE5E0F602ULL),
+     (((body_weight_word_t)0x31F9E9E1EF1B3232ULL << 64) | (body_weight_word_t)0xFCFEF824C4471D0EULL), (((body_weight_word_t)0x1D033F06DE3AF606ULL << 64) | (body_weight_word_t)0x0CED12CAD2B9F1F4ULL), (((body_weight_word_t)0xB70F0921A2E830F9ULL << 64) | (body_weight_word_t)0xF406DA1D21F1FAC4ULL), (((body_weight_word_t)0x1116E52020E20A18ULL << 64) | (body_weight_word_t)0xF6111B0A09F713DFULL),
+     (((body_weight_word_t)0xCCF1BE6EE6E3DD1AULL << 64) | (body_weight_word_t)0xECFEDADD1FA4F712ULL), (((body_weight_word_t)0xEB0B0630DAD805BCULL << 64) | (body_weight_word_t)0x1304F3F3F6C6E517ULL), (((body_weight_word_t)0xBB0A141BF713BA12ULL << 64) | (body_weight_word_t)0x120914FFE80ED7E0ULL), (((body_weight_word_t)0x0ACE0A97F5F7DEDFULL << 64) | (body_weight_word_t)0x19C301B730CEB707ULL)},
+    {(((body_weight_word_t)0xD0EEE7CDF1EA25EAULL << 64) | (body_weight_word_t)0xDFEF1E2914532EF2ULL), (((body_weight_word_t)0x1209D518E90C23E1ULL << 64) | (body_weight_word_t)0x942E2B2218FAEFF8ULL), (((body_weight_word_t)0xE4FB1AC939F861DDULL << 64) | (body_weight_word_t)0x2A25C9182B49140AULL), (((body_weight_word_t)0xC94A24810CE2E4EFULL << 64) | (body_weight_word_t)0xF6F6E3D934AAAC50ULL),
+     (((body_weight_word_t)0x02E92D4FAC310D26ULL << 64) | (body_weight_word_t)0x1D3A6DD6E81517EEULL), (((body_weight_word_t)0xFB11F81DE8D9EFCAULL << 64) | (body_weight_word_t)0x19DAFDD9C8FCE9DEULL), (((body_weight_word_t)0x0BFCF5DE0A89F22FULL << 64) | (body_weight_word_t)0x271A9B010DEC0100ULL), (((body_weight_word_t)0x220992F2C8815EB4ULL << 64) | (body_weight_word_t)0xE82AADE8B71B23C5ULL),
+     (((body_weight_word_t)0xE9A2D6E7B3075C0BULL << 64) | (body_weight_word_t)0xD02B0401AED5DB34ULL), (((body_weight_word_t)0x07192CEC0020E4E9ULL << 64) | (body_weight_word_t)0xF8EFEA241E0817FFULL), (((body_weight_word_t)0x34F7F349247E824DULL << 64) | (body_weight_word_t)0x09EFD29C11DCC4EFULL), (((body_weight_word_t)0x0FFCAA0E173AFA07ULL << 64) | (body_weight_word_t)0xF6F4E4F5271BFD37ULL),
+     (((body_weight_word_t)0x0EEDF40ABCE3DFC8ULL << 64) | (body_weight_word_t)0xE9DCD23D0BFCE9DBULL), (((body_weight_word_t)0x0DF710DA27241BDCULL << 64) | (body_weight_word_t)0x2B220E20DFD827E9ULL), (((body_weight_word_t)0xCF111B2BB52C98F9ULL << 64) | (body_weight_word_t)0x4C1C521BB352FFACULL), (((body_weight_word_t)0x06DCCDC03226F87FULL << 64) | (body_weight_word_t)0xBF1CCDFE40073603ULL)},
+    {(((body_weight_word_t)0xD23323FFD2400B2AULL << 64) | (body_weight_word_t)0x0DC5082BF6B719B1ULL), (((body_weight_word_t)0x0B1319B9E9022EE8ULL << 64) | (body_weight_word_t)0x8117DB0610EE37EBULL), (((body_weight_word_t)0x17150E0C9FFE0AFFULL << 64) | (body_weight_word_t)0x08CD7F5BEC7F2C04ULL), (((body_weight_word_t)0x187220EFF4B002F6ULL << 64) | (body_weight_word_t)0xD70A10E973212143ULL),
+     (((body_weight_word_t)0x1DB71AF4EF1F0A42ULL << 64) | (body_weight_word_t)0x0F37E3E2EE230D3AULL), (((body_weight_word_t)0x1E1BF900EF19CEBFULL << 64) | (body_weight_word_t)0xE70B3B08E5CD13A5ULL), (((body_weight_word_t)0x18E12F152DB8DDF5ULL << 64) | (body_weight_word_t)0xD527F9D8EE45F264ULL), (((body_weight_word_t)0xE604083CF6817BE3ULL << 64) | (body_weight_word_t)0xF347C0DDFC3FFDE0ULL),
+     (((body_weight_word_t)0x2D811B03ECEBE3ECULL << 64) | (body_weight_word_t)0x1BF8D9F400D6B7E7ULL), (((body_weight_word_t)0x0647F6EE1627FE1CULL << 64) | (body_weight_word_t)0xFBCE0AF5BE02FBFBULL), (((body_weight_word_t)0x180BA94C50409F1CULL << 64) | (body_weight_word_t)0xF128D808CE1C08FAULL), (((body_weight_word_t)0x290717C0E3E2EEDFULL << 64) | (body_weight_word_t)0x12EC3FEFDB46F83EULL),
+     (((body_weight_word_t)0x01FE8EE44EEB19DEULL << 64) | (body_weight_word_t)0xF4F746D12BE22CEBULL), (((body_weight_word_t)0x0FF24837CF13022FULL << 64) | (body_weight_word_t)0x1C3F10FEEC5C1A28ULL), (((body_weight_word_t)0xE7044C1B2B1EC00DULL << 64) | (body_weight_word_t)0x1A20653CBF4B27CEULL), (((body_weight_word_t)0xE90B77B4FC130E12ULL << 64) | (body_weight_word_t)0xD546A2D73E47F939ULL)},
+    {(((body_weight_word_t)0x03061722E4F7FCFCULL << 64) | (body_weight_word_t)0x193E14FE035481C9ULL), (((body_weight_word_t)0x0DE22BB35BFA06EDULL << 64) | (body_weight_word_t)0x87F607D94545220EULL), (((body_weight_word_t)0x04E8FD07FC03001FULL << 64) | (body_weight_word_t)0x0FDD0342C60D63C4ULL), (((body_weight_word_t)0x323AEEF0EAE821E3ULL << 64) | (body_weight_word_t)0xB8EE0D43EA63FE13ULL),
+     (((body_weight_word_t)0x0F2A12BA2C37F6FEULL << 64) | (body_weight_word_t)0x0B0B1811FFF41111ULL), (((body_weight_word_t)0x32D840E134112A11ULL << 64) | (body_weight_word_t)0x0A17DFEBE1A255FEULL), (((body_weight_word_t)0xDFF846C3BAFF16C5ULL << 64) | (body_weight_word_t)0xFAD9DE22EB09451FULL), (((body_weight_word_t)0xD4F4AAEBF90ECF00ULL << 64) | (body_weight_word_t)0xFB15F9FDE421456FULL),
+     (((body_weight_word_t)0x18FF13290918F8E0ULL << 64) | (body_weight_word_t)0x0CDFF230F528B02AULL), (((body_weight_word_t)0x1C133623D02708E1ULL << 64) | (body_weight_word_t)0x0CD7F60ACCE626EEULL), (((body_weight_word_t)0x0607D43FF3EE162EULL << 64) | (body_weight_word_t)0xD0301A12F64AE3DCULL), (((body_weight_word_t)0xE103DA45F91A28E8ULL << 64) | (body_weight_word_t)0xEFD822EC20D81709ULL),
+     (((body_weight_word_t)0xC9F0D0FDF0F20A24ULL << 64) | (body_weight_word_t)0xECFD0408111D34E9ULL), (((body_weight_word_t)0xEB0CF92FDDFD313AULL << 64) | (body_weight_word_t)0x073DFCB1FAF612D8ULL), (((body_weight_word_t)0xD30F09182310D7FDULL << 64) | (body_weight_word_t)0x18041805DAEAFEEBULL), (((body_weight_word_t)0x2CE7489EA81DC94EULL << 64) | (body_weight_word_t)0xADB816C945FDBDD5ULL)},
+    {(((body_weight_word_t)0xE513ED391AED1014ULL << 64) | (body_weight_word_t)0x41F62E4322302102ULL), (((body_weight_word_t)0xEC051B120CFBF3CFULL << 64) | (body_weight_word_t)0x46DC5C181612DF05ULL), (((body_weight_word_t)0xAE2307CF5B03CE1DULL << 64) | (body_weight_word_t)0xF1D4C2030340E5E8ULL), (((body_weight_word_t)0x150ED9040AF3A724ULL << 64) | (body_weight_word_t)0x1222F2A1C7E6A0D7ULL),
+     (((body_weight_word_t)0xEBEE2D26C6FADDFFULL << 64) | (body_weight_word_t)0x27FFFB0B3A0E0C12ULL), (((body_weight_word_t)0x000ED8E3D51BF02AULL << 64) | (body_weight_word_t)0x3B1010F2FCEFB50BULL), (((body_weight_word_t)0x16FA2A240CF02EB5ULL << 64) | (body_weight_word_t)0x9BED2528DA01ED0FULL), (((body_weight_word_t)0x20ECD7E31ED51BF2ULL << 64) | (body_weight_word_t)0xF23CC51EBF0A1B17ULL),
+     (((body_weight_word_t)0xC9EBDCFBC9ED0CCFULL << 64) | (body_weight_word_t)0xDA0A051FCB070423ULL), (((body_weight_word_t)0x38074159F822EBF1ULL << 64) | (body_weight_word_t)0x1AFBF4099C092EF1ULL), (((body_weight_word_t)0x1B05FC2B0E4BAFF1ULL << 64) | (body_weight_word_t)0xE7E3C7B9B4B7FE9DULL), (((body_weight_word_t)0xFB101D9CE6FA29C9ULL << 64) | (body_weight_word_t)0x12F712FC4019C408ULL),
+     (((body_weight_word_t)0xC7FE1A31B708FD40ULL << 64) | (body_weight_word_t)0xDCBD2034F037180CULL), (((body_weight_word_t)0xF8FE093D1DE13AE0ULL << 64) | (body_weight_word_t)0xE4DCF600D1E61F25ULL), (((body_weight_word_t)0xB5093C101A24C64FULL << 64) | (body_weight_word_t)0x1D084815C40098D0ULL), (((body_weight_word_t)0x150B041743DF1109ULL << 64) | (body_weight_word_t)0x1ADD301BE406290AULL)},
+    {(((body_weight_word_t)0xFFE9130C4D0CECE0ULL << 64) | (body_weight_word_t)0x38F50254F0F6F1FAULL), (((body_weight_word_t)0xE41243E2A20D1AEAULL << 64) | (body_weight_word_t)0x05DC140AE1E2142BULL), (((body_weight_word_t)0xF3000AFEB1F14D0AULL << 64) | (body_weight_word_t)0x03B82C7FF74D5F16ULL), (((body_weight_word_t)0xE835C3EF5FD0F605ULL << 64) | (body_weight_word_t)0x62CE53DDF620F634ULL),
+     (((body_weight_word_t)0x0DE020F82BFDD305ULL << 64) | (body_weight_word_t)0xE2DEB00C111DFDE6ULL), (((body_weight_word_t)0x3D2206A7CBEBDBF8ULL << 64) | (body_weight_word_t)0x0A0B461BDB18DE01ULL), (((body_weight_word_t)0x002516CA1C1100EDULL << 64) | (body_weight_word_t)0x0B00580E7F1A0D15ULL), (((body_weight_word_t)0x10F9F84914C01EF2ULL << 64) | (body_weight_word_t)0x3D51FE27862CF718ULL),
+     (((body_weight_word_t)0xE6E1C85EF6FEA70FULL << 64) | (body_weight_word_t)0xF8251BEDE7FA2FF3ULL), (((body_weight_word_t)0x1D0EDE29C610ECE6ULL << 64) | (body_weight_word_t)0x1B1C160DBFD015F7ULL), (((body_weight_word_t)0x22FAF82467EC34D0ULL << 64) | (body_weight_word_t)0x06441FEC35B6E194ULL), (((body_weight_word_t)0xE9EDEFDB38E7FADEULL << 64) | (body_weight_word_t)0x0101052D1F08EBFCULL),
+     (((body_weight_word_t)0xDCFDDBB04B002621ULL << 64) | (body_weight_word_t)0xF8E0E732AAF8050FULL), (((body_weight_word_t)0xFDEDE56AA82913F1ULL << 64) | (body_weight_word_t)0xBF0516CA26FFC416ULL), (((body_weight_word_t)0xCF140F031B16CBF3ULL << 64) | (body_weight_word_t)0xE41C22F4EC01CAD9ULL), (((body_weight_word_t)0x1CCF18BA2A2EEE0DULL << 64) | (body_weight_word_t)0x3EFE16F55AB73A1AULL)},
+    {(((body_weight_word_t)0xE3143AF41E170021ULL << 64) | (body_weight_word_t)0xD7E81B0802E604CFULL), (((body_weight_word_t)0xFDFE1C3E3F11B2F9ULL << 64) | (body_weight_word_t)0x08CD27D431010519ULL), (((body_weight_word_t)0xE2F3EF0911F9F2CFULL << 64) | (body_weight_word_t)0x0FFDE82EEDE67E08ULL), (((body_weight_word_t)0x05E5DD9BB4051005ULL << 64) | (body_weight_word_t)0x3FA9D471E1312F55ULL),
+     (((body_weight_word_t)0xDAE11F480829EE02ULL << 64) | (body_weight_word_t)0x30E4D30A2BF0E2E4ULL), (((body_weight_word_t)0x0BE3D00C5D0F1518ULL << 64) | (body_weight_word_t)0xE8E6FA01E5ED2F0FULL), (((body_weight_word_t)0xED0BEBE0C716092AULL << 64) | (body_weight_word_t)0xFF0602EED91F281BULL), (((body_weight_word_t)0xE4F0C53A02FEFB01ULL << 64) | (body_weight_word_t)0x123BE101B1121534ULL),
+     (((body_weight_word_t)0xB721F3642E0EE90CULL << 64) | (body_weight_word_t)0xFB01282B0221B8F6ULL), (((body_weight_word_t)0x5C081830041CFB3CULL << 64) | (body_weight_word_t)0x40EF25F4F5E403DFULL), (((body_weight_word_t)0x230124D1DDF720C3ULL << 64) | (body_weight_word_t)0x34C6C93C02E506E0ULL), (((body_weight_word_t)0xF2FDEE12C21E36CCULL << 64) | (body_weight_word_t)0xD4EEE7ECDFDAD913ULL),
+     (((body_weight_word_t)0x11DDD548BEBAD9E9ULL << 64) | (body_weight_word_t)0xCC43FC0A1631FA28ULL), (((body_weight_word_t)0xF0FC0E1AB2FF3307ULL << 64) | (body_weight_word_t)0xC30D1CCBE4FFD6EBULL), (((body_weight_word_t)0xD1FF0606F405D124ULL << 64) | (body_weight_word_t)0xF30D070FF509C0F4ULL), (((body_weight_word_t)0xFDFC15218A20D6F4ULL << 64) | (body_weight_word_t)0x16811D0236F91BF5ULL)}};
+
 static const bias_t L3_BIAS[CNN_C] = {
-    -210, -1369, -690, -2264, -254, 1900, -217, 904,
-    -3087, -18785, -916, 1258, 2193, -14209, 41, -1023
-};
-static const q31_t L3_Q31[CNN_C] = {
-    1798244864, 1670798976, 1785132672, 1828690560,
-    1213601664, 2002852736, 2044977408, 1602863616,
-    1496851840, 1328290432, 1797194112, 1561657344,
-    1818315776, 1387812736, 1195281792, 2101645952
-};
-static const qexp_t L3_EXP[CNN_C] = {
-    -8, -8, -8, -8, -8, -8, -8, -8,
-    -8, -8, -8, -8, -8, -8, -7, -8
-};
+    1831, -4594, 10767, 7089, -4319, -7232, -39733, -7423,
+    -22284, 5928, -6709, -25507, -36475, -9588, -2713, -5224};
+static const q31_t L3_TO_CONV2_Q31[CNN_C] = {
+    1824279168, 1794930432, 1389114240, 1296885120,
+    1604052352, 1592122368, 1356486912, 1087127424,
+    1188877440, 1687335424, 1675969536, 1715169024,
+    1773011712, 1200609152, 2010904448, 1818423168};
+static const qexp_t L3_TO_CONV2_EXP[CNN_C] = {
+    -7, -7, -7, -7, -7, -7, -7, -7,
+    -7, -7, -7, -8, -8, -7, -7, -7};
 
-// L4
+// L4: block1.conv2 + local skip; logical W8, compatibility lane=W8
 static const body_weight_word_t L4_WBANK[9][CNN_C] = {
-    {
-        (((body_weight_word_t)0xe6f22bd79de303baULL << 64) | (body_weight_word_t)0x3811e9fc0120ddceULL), (((body_weight_word_t)0xf0e9f0081df63401ULL << 64) | (body_weight_word_t)0x1efffe23f21c01feULL), (((body_weight_word_t)0x00fde7f4da0afaf6ULL << 64) | (body_weight_word_t)0x15f7f9041b1c01cbULL), (((body_weight_word_t)0xf1d0180f2fd1159aULL << 64) | (body_weight_word_t)0xe0132ce9e4f7f607ULL),
-        (((body_weight_word_t)0x07fff82534fb17d4ULL << 64) | (body_weight_word_t)0x1bf8fce2e61bf8e6ULL), (((body_weight_word_t)0xe2c50ed202fd2ee5ULL << 64) | (body_weight_word_t)0x06f7f623f1fbf92dULL), (((body_weight_word_t)0x0e01effbe611e1cfULL << 64) | (body_weight_word_t)0x42112a015cd52034ULL), (((body_weight_word_t)0x0ded021829d21ae6ULL << 64) | (body_weight_word_t)0xfee9393018c730fcULL),
-        (((body_weight_word_t)0xf11937e7fa0d151cULL << 64) | (body_weight_word_t)0xf10b0f33d70f15f0ULL), (((body_weight_word_t)0xf8f2310ab4f1f2e5ULL << 64) | (body_weight_word_t)0xc6f41806da1c0e35ULL), (((body_weight_word_t)0xff0b0f05e5debdd3ULL << 64) | (body_weight_word_t)0xe8050c060f0dde07ULL), (((body_weight_word_t)0x171fe00bbb120d09ULL << 64) | (body_weight_word_t)0xdd0712cff6efe630ULL),
-        (((body_weight_word_t)0x46eef900414d363fULL << 64) | (body_weight_word_t)0xea1d212d14d92b12ULL), (((body_weight_word_t)0x07d7f8d0f806f7f1ULL << 64) | (body_weight_word_t)0x1a0ef12deb233fe5ULL), (((body_weight_word_t)0xdae6be1613e9211eULL << 64) | (body_weight_word_t)0xc40cbf0ad918f3fbULL), (((body_weight_word_t)0xf41808f6e1e3fae1ULL << 64) | (body_weight_word_t)0xf31212040bfbf8f4ULL)
-    },
-    {
-        (((body_weight_word_t)0xd6d9a61c0b2838dfULL << 64) | (body_weight_word_t)0x0e1c12f4fa3ecb01ULL), (((body_weight_word_t)0xef1cb5e8f5fd20d4ULL << 64) | (body_weight_word_t)0x05010108e1062ff9ULL), (((body_weight_word_t)0xea03ca341004100cULL << 64) | (body_weight_word_t)0x0cfc050808bc19e9ULL), (((body_weight_word_t)0xfafefa192cfbe5d2ULL << 64) | (body_weight_word_t)0xde2d12f1f7fadd35ULL),
-        (((body_weight_word_t)0x10e61e0f31f6201fULL << 64) | (body_weight_word_t)0x18e6303edec1dbf3ULL), (((body_weight_word_t)0xeadfe85a01034ff0ULL << 64) | (body_weight_word_t)0x220f3135d8f0233eULL), (((body_weight_word_t)0xfec128febdfefafeULL << 64) | (body_weight_word_t)0x55042feb61b0de26ULL), (((body_weight_word_t)0xee17e32fa0060aeaULL << 64) | (body_weight_word_t)0xc0f817020e1860d1ULL),
-        (((body_weight_word_t)0x0e38df1948fe471cULL << 64) | (body_weight_word_t)0x11e93c0b00d6f2d6ULL), (((body_weight_word_t)0x01e41f181ed2ee1aULL << 64) | (body_weight_word_t)0xefc72bfcf7d017f9ULL), (((body_weight_word_t)0xf9ed2ce6e61a22f4ULL << 64) | (body_weight_word_t)0xdb250b26f12801f8ULL), (((body_weight_word_t)0x3cf123b8a6211806ULL << 64) | (body_weight_word_t)0xdcd3df06febdfcd8ULL),
-        (((body_weight_word_t)0x5118e8a7d6d6991aULL << 64) | (body_weight_word_t)0x53e7d5e8fcfdc7c8ULL), (((body_weight_word_t)0x0400d0ffe616cc08ULL << 64) | (body_weight_word_t)0x0a18dbe9fc2c12c2ULL), (((body_weight_word_t)0xd418c70f2207f81cULL << 64) | (body_weight_word_t)0xd7ece608e6c70ae2ULL), (((body_weight_word_t)0xfb031d0bd2f839fdULL << 64) | (body_weight_word_t)0xf20911f61b1ed1ffULL)
-    },
-    {
-        (((body_weight_word_t)0xd8eb1d09f9f3265bULL << 64) | (body_weight_word_t)0x14e1e42d49010fc7ULL), (((body_weight_word_t)0xe30e04f317eb1cf3ULL << 64) | (body_weight_word_t)0x38f8ded3e619f5e7ULL), (((body_weight_word_t)0xe8e808e2eafed3e4ULL << 64) | (body_weight_word_t)0x00f9eaee09fce5ffULL), (((body_weight_word_t)0x02e308d606f0d91fULL << 64) | (body_weight_word_t)0x2600fb10090ffe06ULL),
-        (((body_weight_word_t)0xfe23d1fa1e070d23ULL << 64) | (body_weight_word_t)0x4e11fd0adfeafbc7ULL), (((body_weight_word_t)0xe5e9b6d6f20d0bf3ULL << 64) | (body_weight_word_t)0x001cd9f4300319eaULL), (((body_weight_word_t)0xfa011ef8c0020df4ULL << 64) | (body_weight_word_t)0x061f49054bf6bd46ULL), (((body_weight_word_t)0xf201c35e5bcbdd8fULL << 64) | (body_weight_word_t)0xdadecb07e5df25e8ULL),
-        (((body_weight_word_t)0xdb06cdfcfef00002ULL << 64) | (body_weight_word_t)0x09eff847cddaed09ULL), (((body_weight_word_t)0x02e3d71eb9ffcfdbULL << 64) | (body_weight_word_t)0xfbd9313e23ec0c2aULL), (((body_weight_word_t)0x0ffcfd05e005f392ULL << 64) | (body_weight_word_t)0xf609330bf32309f8ULL), (((body_weight_word_t)0x0fd80ccdf906a849ULL << 64) | (body_weight_word_t)0xfdcef33bcef2ea08ULL),
-        (((body_weight_word_t)0xe04b3924fd1b5350ULL << 64) | (body_weight_word_t)0xf4f71d0ab5f42e0aULL), (((body_weight_word_t)0xd9edf215c20215d0ULL << 64) | (body_weight_word_t)0x272bfdf4dfe446dbULL), (((body_weight_word_t)0x1e07d53c34f11217ULL << 64) | (body_weight_word_t)0x074df0b40034fa2bULL), (((body_weight_word_t)0xf511dd1edb0b03f0ULL << 64) | (body_weight_word_t)0x03062227dde3e805ULL)
-    },
-    {
-        (((body_weight_word_t)0xfaed3912e53a1744ULL << 64) | (body_weight_word_t)0xe128e2e6adee1fd3ULL), (((body_weight_word_t)0xf8ebd42744e119c1ULL << 64) | (body_weight_word_t)0x1305db29f806f4e1ULL), (((body_weight_word_t)0xe904db2ce2d71cd2ULL << 64) | (body_weight_word_t)0xe404ec131a0eedddULL), (((body_weight_word_t)0x0d03d94cf405101cULL << 64) | (body_weight_word_t)0x1628dffe33d509f5ULL),
-        (((body_weight_word_t)0xc6fb901c4cfe0021ULL << 64) | (body_weight_word_t)0xb72af01942e00bc1ULL), (((body_weight_word_t)0xdf271c810ebacd39ULL << 64) | (body_weight_word_t)0x02f9171d484403ffULL), (((body_weight_word_t)0xe4fefbfcec27bfc7ULL << 64) | (body_weight_word_t)0x2cebf79d14dc4c7aULL), (((body_weight_word_t)0xdf3217bf7fc2c2f5ULL << 64) | (body_weight_word_t)0xebec073300f324e7ULL),
-        (((body_weight_word_t)0x052017dcee27feefULL << 64) | (body_weight_word_t)0x33eefd0a270b020bULL), (((body_weight_word_t)0xcb25a71107440701ULL << 64) | (body_weight_word_t)0xf5ddceed0d42fadfULL), (((body_weight_word_t)0xfe15cae9cb2feafeULL << 64) | (body_weight_word_t)0x22d29fe24d18ffcaULL), (((body_weight_word_t)0x2c230deee149e727ULL << 64) | (body_weight_word_t)0xb5d015bf4d0908cdULL),
-        (((body_weight_word_t)0xbf1851494f2d4d12ULL << 64) | (body_weight_word_t)0x1b15be1332eb06e0ULL), (((body_weight_word_t)0xe5cde6fe0207ddf3ULL << 64) | (body_weight_word_t)0xeb0d0710c70a0d18ULL), (((body_weight_word_t)0xf4defe15200e043bULL << 64) | (body_weight_word_t)0xc8feec3d0d1ce681ULL), (((body_weight_word_t)0x030a61f40410f519ULL << 64) | (body_weight_word_t)0xf8f1f7edef34f8fcULL)
-    },
-    {
-        (((body_weight_word_t)0x02b7378ef8aaaff9ULL << 64) | (body_weight_word_t)0xe0fcdbdb0e102cffULL), (((body_weight_word_t)0xde1ce5ec63d219f1ULL << 64) | (body_weight_word_t)0xdadcd607e01002fcULL), (((body_weight_word_t)0x250ea0214323330eULL << 64) | (body_weight_word_t)0x2401051c3db13fd6ULL), (((body_weight_word_t)0x580e101d981efadbULL << 64) | (body_weight_word_t)0x28cae67f470f06f5ULL),
-        (((body_weight_word_t)0x0e3b482fed123912ULL << 64) | (body_weight_word_t)0x36f6181f0c15cde1ULL), (((body_weight_word_t)0x0bbfe3ce9316c01dULL << 64) | (body_weight_word_t)0x170a0f12f73db2c8ULL), (((body_weight_word_t)0xd2c34805fa19cfd7ULL << 64) | (body_weight_word_t)0x5f29ee010fbf04f9ULL), (((body_weight_word_t)0x131c27265fe2ea1eULL << 64) | (body_weight_word_t)0xf912fb49ab4ffbcbULL),
-        (((body_weight_word_t)0xe93734f5c23d22c1ULL << 64) | (body_weight_word_t)0xd418e38ef4ced51aULL), (((body_weight_word_t)0xe3c7d34aa702f32bULL << 64) | (body_weight_word_t)0xfd400c1eed253242ULL), (((body_weight_word_t)0xec1c1a2de90940f5ULL << 64) | (body_weight_word_t)0x058181810f9b42e8ULL), (((body_weight_word_t)0xe4ff19f030c63526ULL << 64) | (body_weight_word_t)0xc5f94154f270c920ULL),
-        (((body_weight_word_t)0xe1d881a87f818162ULL << 64) | (body_weight_word_t)0x811b4fe89d7f7fefULL), (((body_weight_word_t)0xfdfd0c25c7f31a32ULL << 64) | (body_weight_word_t)0x0a27d701e92b2de4ULL), (((body_weight_word_t)0x21523a969ce7210aULL << 64) | (body_weight_word_t)0x2ae29bfd2f413537ULL), (((body_weight_word_t)0x05d34afcd800e709ULL << 64) | (body_weight_word_t)0x31fe022edafefa05ULL)
-    },
-    {
-        (((body_weight_word_t)0xfccd64130a3029c9ULL << 64) | (body_weight_word_t)0x432b19d059253900ULL), (((body_weight_word_t)0xf810e42604d50cd9ULL << 64) | (body_weight_word_t)0x05f4c5f5d7f20503ULL), (((body_weight_word_t)0x0a16dff020fa15feULL << 64) | (body_weight_word_t)0x951ad6902923f31eULL), (((body_weight_word_t)0x16132706ee0eee11ULL << 64) | (body_weight_word_t)0xd00ff10e33eef714ULL),
-        (((body_weight_word_t)0xee05f25793084a26ULL << 64) | (body_weight_word_t)0x3838fbef06c9e81aULL), (((body_weight_word_t)0xcf0611f204eb2eceULL << 64) | (body_weight_word_t)0xeae8df0915020744ULL), (((body_weight_word_t)0xdbfffacde610cb52ULL << 64) | (body_weight_word_t)0x08cf12f9e8feac02ULL), (((body_weight_word_t)0x31fa2cce1ee7fbeaULL << 64) | (body_weight_word_t)0x8fda0e52bbd70664ULL),
-        (((body_weight_word_t)0xf9390142ed133205ULL << 64) | (body_weight_word_t)0x322aff641916f92aULL), (((body_weight_word_t)0xf0e7200301e8100cULL << 64) | (body_weight_word_t)0x02dfe51a17f9fff5ULL), (((body_weight_word_t)0xd1ffeb0918de11dbULL << 64) | (body_weight_word_t)0xf6e8c5bf0befff0bULL), (((body_weight_word_t)0x7f2acbfc07130d29ULL << 64) | (body_weight_word_t)0x3152fe2e27f11798ULL),
-        (((body_weight_word_t)0x4611493fe035281cULL << 64) | (body_weight_word_t)0x35fd57fa18c10fcdULL), (((body_weight_word_t)0xf9dc061fc8260916ULL << 64) | (body_weight_word_t)0x2eeb0914ffdc31e7ULL), (((body_weight_word_t)0x13fc28eb36ff14cdULL << 64) | (body_weight_word_t)0x0de84dffdaee00dcULL), (((body_weight_word_t)0xe30df51aa1f41c9fULL << 64) | (body_weight_word_t)0x28cf3d622fddede4ULL)
-    },
-    {
-        (((body_weight_word_t)0x02e75115c9b5f41eULL << 64) | (body_weight_word_t)0xf21e14fe442fc733ULL), (((body_weight_word_t)0x040018d72ee1f4daULL << 64) | (body_weight_word_t)0xdc0d1af9f4fef923ULL), (((body_weight_word_t)0x1ffc00fc2320f3feULL << 64) | (body_weight_word_t)0x0ffcf9e4f31f1001ULL), (((body_weight_word_t)0xf8ed2707f7ecdfcfULL << 64) | (body_weight_word_t)0xe0f3fff5eede0df6ULL),
-        (((body_weight_word_t)0xe20df9060503fb37ULL << 64) | (body_weight_word_t)0x140209f90204ec05ULL), (((body_weight_word_t)0x14d8fa0acf36d4ecULL << 64) | (body_weight_word_t)0xe3e2e7070014e4bdULL), (((body_weight_word_t)0x021c1a10f210dddeULL << 64) | (body_weight_word_t)0x110008f00f01290aULL), (((body_weight_word_t)0x0516295f43dd0506ULL << 64) | (body_weight_word_t)0x370cfc01ccee2b03ULL),
-        (((body_weight_word_t)0xecf8e31b3d0509e5ULL << 64) | (body_weight_word_t)0xf7f3df190212d7c4ULL), (((body_weight_word_t)0xf002e4f74827eeeaULL << 64) | (body_weight_word_t)0xd0ce080cfd3ef9c4ULL), (((body_weight_word_t)0x170d0ee08ec088ceULL << 64) | (body_weight_word_t)0x0b0731fde822e809ULL), (((body_weight_word_t)0x2f19b3acb90fd7ddULL << 64) | (body_weight_word_t)0xeff31619f228d4d4ULL),
-        (((body_weight_word_t)0xe4020ae43d13da7fULL << 64) | (body_weight_word_t)0xd6e5370e19e80766ULL), (((body_weight_word_t)0xfef1b5fffc48eeabULL << 64) | (body_weight_word_t)0x0b04c810ca1ee1faULL), (((body_weight_word_t)0xf00b02df011303f5ULL << 64) | (body_weight_word_t)0xe2f6f209ccfef513ULL), (((body_weight_word_t)0x08fa10023805fbf9ULL << 64) | (body_weight_word_t)0xe3fbfc02111bebdcULL)
-    },
-    {
-        (((body_weight_word_t)0x0981e33434fc14f9ULL << 64) | (body_weight_word_t)0xef3ef9f415511d9aULL), (((body_weight_word_t)0xf2f8d2f436f81a18ULL << 64) | (body_weight_word_t)0xc405f523f1fad8e1ULL), (((body_weight_word_t)0x1412c9deaeda2615ULL << 64) | (body_weight_word_t)0x3d1225cd0ac1261cULL), (((body_weight_word_t)0x1c14f42acc2e01baULL << 64) | (body_weight_word_t)0xd2c8e109111ccd0dULL),
-        (((body_weight_word_t)0xfae5ee2fe3fd05daULL << 64) | (body_weight_word_t)0x002410fcff08e9c5ULL), (((body_weight_word_t)0xc6e40eaf4bc1d4f9ULL << 64) | (body_weight_word_t)0x06ec12181d0efc05ULL), (((body_weight_word_t)0xf817fbdc070eec34ULL << 64) | (body_weight_word_t)0x33fd20f610121e20ULL), (((body_weight_word_t)0x4bec44f91d18eaf7ULL << 64) | (body_weight_word_t)0xfafd08e8d2b3100aULL),
-        (((body_weight_word_t)0xece47c132e072419ULL << 64) | (body_weight_word_t)0x0925ea3b0a13dd0bULL), (((body_weight_word_t)0xeb0d2122d5f7100cULL << 64) | (body_weight_word_t)0xee20e52924ce09f4ULL), (((body_weight_word_t)0xdd07f629f3e2f5ecULL << 64) | (body_weight_word_t)0x5820eadeafec05e3ULL), (((body_weight_word_t)0x0c2fd2c92d44e2cbULL << 64) | (body_weight_word_t)0x1eb4edc3e0f424faULL),
-        (((body_weight_word_t)0x32cdffeccc066932ULL << 64) | (body_weight_word_t)0xac2604eac1e815a5ULL), (((body_weight_word_t)0x1c2998f7fa0fe906ULL << 64) | (body_weight_word_t)0x0f20ecc6ea02f8faULL), (((body_weight_word_t)0x1941f529c9ed2ed9ULL << 64) | (body_weight_word_t)0xe002f9f71a0607fdULL), (((body_weight_word_t)0x07cd141a210de1abULL << 64) | (body_weight_word_t)0x0713c30fd10eecd6ULL)
-    },
-    {
-        (((body_weight_word_t)0xfcf726f2d2e494f6ULL << 64) | (body_weight_word_t)0x0d1de00534fee9c5ULL), (((body_weight_word_t)0x06e2effa1b051704ULL << 64) | (body_weight_word_t)0xf520e6f202fcfedbULL), (((body_weight_word_t)0xe915eededdf937ccULL << 64) | (body_weight_word_t)0xeef01ded16f7da20ULL), (((body_weight_word_t)0x17eedf14d0fedaf7ULL << 64) | (body_weight_word_t)0xedf72afa3f0a0cffULL),
-        (((body_weight_word_t)0xedf9de1314170204ULL << 64) | (body_weight_word_t)0x06ecf004e0e2f2deULL), (((body_weight_word_t)0xe3d8f3f7db11d310ULL << 64) | (body_weight_word_t)0xf1ce2222e824f5d7ULL), (((body_weight_word_t)0xfe1b0a09ffea051dULL << 64) | (body_weight_word_t)0x081109e6ea0ee208ULL), (((body_weight_word_t)0x2fed00512eea05feULL << 64) | (body_weight_word_t)0xdd06bd42fc0efdf8ULL),
-        (((body_weight_word_t)0x1b1b3e1b0f0435d7ULL << 64) | (body_weight_word_t)0x2339c8ec12adfc07ULL), (((body_weight_word_t)0x11f21cfff60003fdULL << 64) | (body_weight_word_t)0xf2fce4e20dea25ebULL), (((body_weight_word_t)0x22a4eee8e8ddbb22ULL << 64) | (body_weight_word_t)0x2ace131b8134f8d5ULL), (((body_weight_word_t)0x13e916db13447757ULL << 64) | (body_weight_word_t)0xf2c33e161b1234fdULL),
-        (((body_weight_word_t)0xf211e0d429fd16c6ULL << 64) | (body_weight_word_t)0x22f8e40cf6c3c029ULL), (((body_weight_word_t)0xf5d90ed12bff0af7ULL << 64) | (body_weight_word_t)0x5128c8ca05fe2dc3ULL), (((body_weight_word_t)0xf211e1df21f356c5ULL << 64) | (body_weight_word_t)0xf716ceef2603e701ULL), (((body_weight_word_t)0x1ce1110e06fccd29ULL << 64) | (body_weight_word_t)0x34060014db0627dbULL)
-    }
-};
+    {(((body_weight_word_t)0x00E619D6DAF826D9ULL << 64) | (body_weight_word_t)0xFB17370325C99D1EULL), (((body_weight_word_t)0xEC00DC111B3BF7D8ULL << 64) | (body_weight_word_t)0x17276C0DFA2DAB45ULL), (((body_weight_word_t)0xF8F00AEB0DF9F606ULL << 64) | (body_weight_word_t)0xD3FE14E2FF210BEFULL), (((body_weight_word_t)0x2DF9ED121BDFF5ECULL << 64) | (body_weight_word_t)0xB79CCE11F50C43F4ULL),
+     (((body_weight_word_t)0x0DFF3EFD0AE0FDCCULL << 64) | (body_weight_word_t)0x251616F3C1F637C5ULL), (((body_weight_word_t)0xE716D81104220413ULL << 64) | (body_weight_word_t)0x1019D7282F0BC91FULL), (((body_weight_word_t)0x7FC4CBFE1E1E0910ULL << 64) | (body_weight_word_t)0xB4FB213D363A7312ULL), (((body_weight_word_t)0xE6171F07F9D4FD00ULL << 64) | (body_weight_word_t)0xE50904FFD7FC18C1ULL),
+     (((body_weight_word_t)0xD8E90E0B1531F9F7ULL << 64) | (body_weight_word_t)0xFB050D08D609D310ULL), (((body_weight_word_t)0xF519DCFFCE0A0FF8ULL << 64) | (body_weight_word_t)0x3CFBF3EEEC0F19E6ULL), (((body_weight_word_t)0xFB24FC07F412F50DULL << 64) | (body_weight_word_t)0xF0FB2AF6FAF70626ULL), (((body_weight_word_t)0x31E2FD01E50EF6FFULL << 64) | (body_weight_word_t)0x15F22F00291AEAE6ULL),
+     (((body_weight_word_t)0xECF9ECF4FA4F0DFFULL << 64) | (body_weight_word_t)0xF0161DFDF8EADF04ULL), (((body_weight_word_t)0xE0FB040345010014ULL << 64) | (body_weight_word_t)0x1D20E919FCE3D5DFULL), (((body_weight_word_t)0xFD16FC0402E50F20ULL << 64) | (body_weight_word_t)0xEFF71DFC133B20EAULL), (((body_weight_word_t)0xFB0311FD0F1EE802ULL << 64) | (body_weight_word_t)0x18DD2F131F14E9F3ULL)},
+    {(((body_weight_word_t)0xEFEC3933B89E06B2ULL << 64) | (body_weight_word_t)0x1DD42FDB017F37B7ULL), (((body_weight_word_t)0x07E81D2A008FF9F1ULL << 64) | (body_weight_word_t)0xF92540F2DF1CF623ULL), (((body_weight_word_t)0x2107D71105BE05E3ULL << 64) | (body_weight_word_t)0x06F629F32C192209ULL), (((body_weight_word_t)0x2B0147DB4131F0DFULL << 64) | (body_weight_word_t)0x994DE9E90E11D1CCULL),
+     (((body_weight_word_t)0x13CD7FECD42CE809ULL << 64) | (body_weight_word_t)0xEEEED72020BDF3B7ULL), (((body_weight_word_t)0xCDC6D5011EE1E3F1ULL << 64) | (body_weight_word_t)0xD8C7D327C3CDAFFFULL), (((body_weight_word_t)0xF1EF09151CE30AFFULL << 64) | (body_weight_word_t)0xB6CF0226213D5C02ULL), (((body_weight_word_t)0x0C130DFCDB030FD3ULL << 64) | (body_weight_word_t)0xE8EBF908E41DE6F0ULL),
+     (((body_weight_word_t)0x170117F6EEF412E8ULL << 64) | (body_weight_word_t)0x0D18FCDBF50700F3ULL), (((body_weight_word_t)0xDD28A2E5271133F8ULL << 64) | (body_weight_word_t)0x18C468FCC5FC4015ULL), (((body_weight_word_t)0xFC17CC03FA1B06F2ULL << 64) | (body_weight_word_t)0x1C082ADE20261D1AULL), (((body_weight_word_t)0x090C2516F407070FULL << 64) | (body_weight_word_t)0xD31E31F5E5E30D09ULL),
+     (((body_weight_word_t)0x2113D1FFDDF3E8E1ULL << 64) | (body_weight_word_t)0xDAE24DE00500F8E4ULL), (((body_weight_word_t)0xE710F5FFEFEB1411ULL << 64) | (body_weight_word_t)0xFA0701EBF4FBC006ULL), (((body_weight_word_t)0x16E517FC1604ED19ULL << 64) | (body_weight_word_t)0xFD05F4F2E4F3F4FBULL), (((body_weight_word_t)0x351E13E91462130CULL << 64) | (body_weight_word_t)0x03C8F70DD8DBE4E8ULL)},
+    {(((body_weight_word_t)0x0152EDFA0CD0FD00ULL << 64) | (body_weight_word_t)0x4621A0E1F5C74FCBULL), (((body_weight_word_t)0x14AD0C30E2F1F9F2ULL << 64) | (body_weight_word_t)0xE909F9F4ECDCE140ULL), (((body_weight_word_t)0x0A0CF10200F7EFF8ULL << 64) | (body_weight_word_t)0x130021F8F8F70B1CULL), (((body_weight_word_t)0xE6F9D1DF1DCCEBCAULL << 64) | (body_weight_word_t)0x8E9DEF25E3EDFE1BULL),
+     (((body_weight_word_t)0xFA0324110AED1D05ULL << 64) | (body_weight_word_t)0xEB10FFF72A3A1FF0ULL), (((body_weight_word_t)0xF9C224F8E0010C02ULL << 64) | (body_weight_word_t)0xFCD8F50CFD44D2FCULL), (((body_weight_word_t)0xFBDE1A1634F11C20ULL << 64) | (body_weight_word_t)0xA12CB70DFE1906EDULL), (((body_weight_word_t)0xF6EAEAF6DD030303ULL << 64) | (body_weight_word_t)0xFE3511F0E8F906CBULL),
+     (((body_weight_word_t)0xE50326FE1F05F702ULL << 64) | (body_weight_word_t)0x432E030FBAE745F7ULL), (((body_weight_word_t)0x0030C3F12750DCFEULL << 64) | (body_weight_word_t)0x44035205EFDC03BEULL), (((body_weight_word_t)0x2C04400214D2F30FULL << 64) | (body_weight_word_t)0xEEFEF8FC290B1EFDULL), (((body_weight_word_t)0xD205DB12E5D4EC12ULL << 64) | (body_weight_word_t)0x18E21527D70AFFE3ULL),
+     (((body_weight_word_t)0xECECDCE0FEF3E00FULL << 64) | (body_weight_word_t)0x29DFF9F1010A120FULL), (((body_weight_word_t)0xEE09F204EE1EEA01ULL << 64) | (body_weight_word_t)0xEE1119FB0BED21F7ULL), (((body_weight_word_t)0xE4F1DB0C0FEEF411ULL << 64) | (body_weight_word_t)0xE327CF01E50635FAULL), (((body_weight_word_t)0xF50FF2192601EA1FULL << 64) | (body_weight_word_t)0x1109E6F8FC013317ULL)},
+    {(((body_weight_word_t)0xF008E76207AB1198ULL << 64) | (body_weight_word_t)0xFEB18F0F459803ADULL), (((body_weight_word_t)0xB42C0601190D0E0AULL << 64) | (body_weight_word_t)0xF149F611D024A94AULL), (((body_weight_word_t)0xFB16F2D901F401DAULL << 64) | (body_weight_word_t)0xD9EED2081112E9F7ULL), (((body_weight_word_t)0x2410D80A1312123AULL << 64) | (body_weight_word_t)0xFAC7EDF8FAFB0ED1ULL),
+     (((body_weight_word_t)0x1DEF2B1B19DF1A33ULL << 64) | (body_weight_word_t)0x16C734F9F4F44EDEULL), (((body_weight_word_t)0xE3D5DEF61701FA07ULL << 64) | (body_weight_word_t)0xFE28E5E7F818E62BULL), (((body_weight_word_t)0x4CF0F7FEC0CDF1FDULL << 64) | (body_weight_word_t)0xDF2806E5ECE5DCDCULL), (((body_weight_word_t)0x27F71EF9E31AF220ULL << 64) | (body_weight_word_t)0xF7E012EC0E02270CULL),
+     (((body_weight_word_t)0xE2FA0800FDD1F701ULL << 64) | (body_weight_word_t)0x2B21FAD124D70E22ULL), (((body_weight_word_t)0xBB813281431EE82EULL << 64) | (body_weight_word_t)0xE65878C4CC0AFB71ULL), (((body_weight_word_t)0x142F04E510010704ULL << 64) | (body_weight_word_t)0xFB324FDC0C250D2CULL), (((body_weight_word_t)0x36DA030FDF22F602ULL << 64) | (body_weight_word_t)0x1CFCDBE208FFEF06ULL),
+     (((body_weight_word_t)0x1400E2F102CDF921ULL << 64) | (body_weight_word_t)0xFB18EC080C24EC0CULL), (((body_weight_word_t)0xE8DDF11C02FF01E5ULL << 64) | (body_weight_word_t)0x15C2E5EB0001E5E9ULL), (((body_weight_word_t)0x0CBC14FC00DBEE12ULL << 64) | (body_weight_word_t)0xE60A4EEAB93CFFECULL), (((body_weight_word_t)0x4DF6FC000D3DFE16ULL << 64) | (body_weight_word_t)0xBEAE482624291EFBULL)},
+    {(((body_weight_word_t)0x29233EAF81B3DE02ULL << 64) | (body_weight_word_t)0x291E617F4166B8F1ULL), (((body_weight_word_t)0xC1FCF8F5BEE60110ULL << 64) | (body_weight_word_t)0xB2B695132919E94BULL), (((body_weight_word_t)0xDEE6DB12081B1107ULL << 64) | (body_weight_word_t)0x0DD647E2E9ECD526ULL), (((body_weight_word_t)0xFDE5DBF1EE10F446ULL << 64) | (body_weight_word_t)0xF6DEF0104CEC1D37ULL),
+     (((body_weight_word_t)0x1CE715E2FB44060AULL << 64) | (body_weight_word_t)0x556701032A923BB3ULL), (((body_weight_word_t)0x46C5D4DACD0E0909ULL << 64) | (body_weight_word_t)0x06DD811111C116D8ULL), (((body_weight_word_t)0xB50DD501F0861E19ULL << 64) | (body_weight_word_t)0xE8C1E3DF1EE6E80AULL), (((body_weight_word_t)0x00EF13E506191E11ULL << 64) | (body_weight_word_t)0x042E44EE03CE7437ULL),
+     (((body_weight_word_t)0xEBEC04E839CDF9F5ULL << 64) | (body_weight_word_t)0x050C1AFE012CE5DCULL), (((body_weight_word_t)0x293FD02928E5F732ULL << 64) | (body_weight_word_t)0xFCB1B8F50AD0A9B6ULL), (((body_weight_word_t)0xF8092A042BD8DE18ULL << 64) | (body_weight_word_t)0x49372A254D4C0ABFULL), (((body_weight_word_t)0xE6230B1024C00702ULL << 64) | (body_weight_word_t)0xD3FF2015C0D13514ULL),
+     (((body_weight_word_t)0x3310E40403E7F8E5ULL << 64) | (body_weight_word_t)0xCCF4F4F626FB120EULL), (((body_weight_word_t)0xC5E8EB1D08611D0EULL << 64) | (body_weight_word_t)0x148CEADDFFF2DA06ULL), (((body_weight_word_t)0xCB0241FEFEC7D71DULL << 64) | (body_weight_word_t)0xC11BA70AB60EF9A6ULL), (((body_weight_word_t)0xB90D3819220C0B09ULL << 64) | (body_weight_word_t)0xCF20E213E002D313ULL)},
+    {(((body_weight_word_t)0xDA13BDFF23D1E642ULL << 64) | (body_weight_word_t)0xEE4689F134F40A4EULL), (((body_weight_word_t)0xFFEEF50B0BA40602ULL << 64) | (body_weight_word_t)0x2B05CBE4C6DEF8F5ULL), (((body_weight_word_t)0x01F5F212BAADE527ULL << 64) | (body_weight_word_t)0x12C5D6FD12D70625ULL), (((body_weight_word_t)0x2A09E213EF28EBC5ULL << 64) | (body_weight_word_t)0x060F2ADFFB0107E3ULL),
+     (((body_weight_word_t)0x05E5D5F0317F05BCULL << 64) | (body_weight_word_t)0x05347415FBC40BE8ULL), (((body_weight_word_t)0x100BF5010131F6D1ULL << 64) | (body_weight_word_t)0x0E3151AB0810C1D7ULL), (((body_weight_word_t)0xEB06EA02F3DE1A22ULL << 64) | (body_weight_word_t)0xC6FFEEDCEC219D02ULL), (((body_weight_word_t)0xF8E2E00FDE27F306ULL << 64) | (body_weight_word_t)0x12E60DE001F56201ULL),
+     (((body_weight_word_t)0xBE0019F1F1B8FAF9ULL << 64) | (body_weight_word_t)0x5603EFEEFB191FFBULL), (((body_weight_word_t)0xFCF7DAF89B0D7FF1ULL << 64) | (body_weight_word_t)0xE3CAF9F49CB5F17FULL), (((body_weight_word_t)0xDDFDCDF1E7D8E5E1ULL << 64) | (body_weight_word_t)0x1A5032F61C06F418ULL), (((body_weight_word_t)0xD91910F21AC60729ULL << 64) | (body_weight_word_t)0xEC0A1E0FEC000F14ULL),
+     (((body_weight_word_t)0x0DDB03FED7E0F116ULL << 64) | (body_weight_word_t)0xF20707DF290FF60FULL), (((body_weight_word_t)0x2F0715000E3D01F7ULL << 64) | (body_weight_word_t)0x36D919E0FC0C07D7ULL), (((body_weight_word_t)0x16090AE151F10531ULL << 64) | (body_weight_word_t)0xDDF4B926CB33CFFAULL), (((body_weight_word_t)0x1917F00AE454030EULL << 64) | (body_weight_word_t)0x2A16EEFBB4E60CFCULL)},
+    {(((body_weight_word_t)0xF8EBC81303A20DFDULL << 64) | (body_weight_word_t)0x1F084ACE1AACE3E2ULL), (((body_weight_word_t)0xB706E5F7145106D9ULL << 64) | (body_weight_word_t)0x0448AA271001DFEDULL), (((body_weight_word_t)0xD10AFF20FBF4F3F5ULL << 64) | (body_weight_word_t)0xD728ED1A1DF43FD9ULL), (((body_weight_word_t)0x1118E308DF02002AULL << 64) | (body_weight_word_t)0xC2F6053E13DD08E8ULL),
+     (((body_weight_word_t)0x26F7FA0315D10D15ULL << 64) | (body_weight_word_t)0xF6FB22F9D036CEF0ULL), (((body_weight_word_t)0x07241EF6DB2C03FCULL << 64) | (body_weight_word_t)0x1901F2040812020EULL), (((body_weight_word_t)0x42DEE106F4FCF2E2ULL << 64) | (body_weight_word_t)0xF32B1B09160FC8E9ULL), (((body_weight_word_t)0xE7000C13120BF7F2ULL << 64) | (body_weight_word_t)0xFC0FEA0DF723DEF9ULL),
+     (((body_weight_word_t)0xF2F61CF80120E5F3ULL << 64) | (body_weight_word_t)0x3811F80822DCEAF8ULL), (((body_weight_word_t)0xF0126CF3D142FFB5ULL << 64) | (body_weight_word_t)0x24C1D4DE34F22FE0ULL), (((body_weight_word_t)0x03F933E5F31AFEE6ULL << 64) | (body_weight_word_t)0xFEFB0AE70FDF2001ULL), (((body_weight_word_t)0xF7F5DAF1DB00FCE4ULL << 64) | (body_weight_word_t)0xE523D9DE1F02C7E3ULL),
+     (((body_weight_word_t)0x26F2EB10F406FB18ULL << 64) | (body_weight_word_t)0x10011106F6ECE2FDULL), (((body_weight_word_t)0xE6F00E08FCDD0431ULL << 64) | (body_weight_word_t)0x0EE71D1B33EC4CE9ULL), (((body_weight_word_t)0x3CED21E900120AD8ULL << 64) | (body_weight_word_t)0xEEE20A1505771BF7ULL), (((body_weight_word_t)0x29EEE0DEFC871207ULL << 64) | (body_weight_word_t)0xA1DE1E012D142608ULL)},
+    {(((body_weight_word_t)0xEB8AAD3701F73E7FULL << 64) | (body_weight_word_t)0x4161BDE781EEAF0AULL), (((body_weight_word_t)0x081AD4FDD3A30625ULL << 64) | (body_weight_word_t)0x81AF00E2F10ED430ULL), (((body_weight_word_t)0xE8ECEFF5F0BB01F7ULL << 64) | (body_weight_word_t)0xC0CC3600160ED832ULL), (((body_weight_word_t)0x0EFFEEF7F4F509E7ULL << 64) | (body_weight_word_t)0xB9D4FE2AB52407FAULL),
+     (((body_weight_word_t)0x13DF1DFE1BF4F2C9ULL << 64) | (body_weight_word_t)0x1A033DE6DB1A0AE3ULL), (((body_weight_word_t)0xC8E8CFFB09E20112ULL << 64) | (body_weight_word_t)0xC6E6E20020E515FAULL), (((body_weight_word_t)0xB5DD0AF9EED90DEBULL << 64) | (body_weight_word_t)0x1622DC060104E2DDULL), (((body_weight_word_t)0x09F1210A1CF0FFF9ULL << 64) | (body_weight_word_t)0xF7FF141E11FAF60EULL),
+     (((body_weight_word_t)0xF20D2C0EE8FAEFE8ULL << 64) | (body_weight_word_t)0x212C1FEA0C09EBEDULL), (((body_weight_word_t)0xF95548FAF975FDEAULL << 64) | (body_weight_word_t)0x33CC300326D37F64ULL), (((body_weight_word_t)0x31062F23F337EB0CULL << 64) | (body_weight_word_t)0x41CA29E7F3E937EEULL), (((body_weight_word_t)0xFE170301FF08F238ULL << 64) | (body_weight_word_t)0xD7E3FC25FC154E0DULL),
+     (((body_weight_word_t)0x101EF8F3F0EBECDBULL << 64) | (body_weight_word_t)0xE5F7061015F76401ULL), (((body_weight_word_t)0x36EE0718CE25DFD2ULL << 64) | (body_weight_word_t)0xC13DD2F9F01C8714ULL), (((body_weight_word_t)0xD7DD4DF61119EDEEULL << 64) | (body_weight_word_t)0x5208050921EBDEEEULL), (((body_weight_word_t)0xA00903E11D84F3F8ULL << 64) | (body_weight_word_t)0x2C1AEEE40619E8EBULL)},
+    {(((body_weight_word_t)0x1BF0411646E4FEE6ULL << 64) | (body_weight_word_t)0xD632363A1F18FD0CULL), (((body_weight_word_t)0xE5E40019A4BA1726ULL << 64) | (body_weight_word_t)0xFAD8FBEEF2F80EFCULL), (((body_weight_word_t)0xDE12250AE2EE123EULL << 64) | (body_weight_word_t)0xEB10D71E16243400ULL), (((body_weight_word_t)0x0307000AEED4E202ULL << 64) | (body_weight_word_t)0xA8EFEB161DD6F4F9ULL),
+     (((body_weight_word_t)0xFBA6F71A1EF304DFULL << 64) | (body_weight_word_t)0xF51A160306280204ULL), (((body_weight_word_t)0x20F42CE2D0CAE3EFULL << 64) | (body_weight_word_t)0x0FD1D0FBE73DEFDFULL), (((body_weight_word_t)0x07F7E703231F090DULL << 64) | (body_weight_word_t)0x170AC7F1FAEC1E01ULL), (((body_weight_word_t)0xC10E0B03E9F509F1ULL << 64) | (body_weight_word_t)0xDA02150E08F50411ULL),
+     (((body_weight_word_t)0xEBFA1AEAF5E10DEDULL << 64) | (body_weight_word_t)0x3F18330D1A12E2E9ULL), (((body_weight_word_t)0xAC384A0119150768ULL << 64) | (body_weight_word_t)0x21FA43101D03BA26ULL), (((body_weight_word_t)0x36E3AD13F3C90813ULL << 64) | (body_weight_word_t)0xF3E51D0EE801E6EBULL), (((body_weight_word_t)0xDF17ED0BCEE7F501ULL << 64) | (body_weight_word_t)0x12E3E313FBF713EAULL),
+     (((body_weight_word_t)0x12E6DF0823E7F1D9ULL << 64) | (body_weight_word_t)0x16F514E80D1A2510ULL), (((body_weight_word_t)0x2F161BEBFE0C1CF3ULL << 64) | (body_weight_word_t)0xD6FD9C070FF50F05ULL), (((body_weight_word_t)0xF932FB0E18CEED07ULL << 64) | (body_weight_word_t)0xF8D50F15F1021A35ULL), (((body_weight_word_t)0xB6EFD411F80C04EEULL << 64) | (body_weight_word_t)0xF67F23F5E2E4DECEULL)}};
+
 static const bias_t L4_BIAS[CNN_C] = {
-    2176, -2157, -1123, -1709, -2075, -1023, -649, 1135,
-    -3797, -664, -531, -2962, 2944, -1543, 968, -156
-};
-static const q31_t L4_MAIN_Q31[CNN_C] = {
-    1279619328, 1568877696, 1493913856, 1458191616,
-    1102458496, 1230805632, 1627199744, 1545485696,
-    1164222592, 1614344192, 1531844736, 1734652544,
-    1660044288, 1081614720, 1629808512, 2116389760
-};
-static const qexp_t L4_MAIN_EXP[CNN_C] = {
-    -8, -8, -8, -8, -8, -8, -8, -8,
-    -8, -8, -8, -9, -8, -8, -8, -8
-};
-static const q31_t L4_SKIP_Q31 = 1774843907;
-static const qexp_t L4_SKIP_EXP = 1;
+    -20592, -20031, -32007, -13714, 301, 889, 10943, -4024,
+    -22334, 4887, 19932, 25043, 831, -19858, -19420, 3299};
+static const q31_t L4_MAIN_TO_SKIP_Q31[CNN_C] = {
+    1679554560, 1992555904, 1382898304, 1477935616,
+    1876859008, 1240600704, 1353681152, 1125984768,
+    1449651584, 1269965184, 1164546304, 1326759296,
+    1175997568, 1334844288, 1978810112, 1537083904};
+static const qexp_t L4_MAIN_TO_SKIP_EXP[CNN_C] = {
+    -10, -11, -10, -10, -10, -10, -10, -10,
+    -10, -9, -10, -10, -9, -10, -10, -10};
+#define L4_SKIP_ALREADY_IN_TARGET_SCALE 1
+#define L4_RESIDUAL_OUTPUT_CLAMP 0
+#define L4_RESIDUAL_STORAGE_BITS 32
 
-// L5
-static const body_weight_word_t L5_WBANK[9][CNN_C] = {
-    {
-        (((body_weight_word_t)0x00020202fefefe00ULL << 64) | (body_weight_word_t)0x01fe000000fefe00ULL), (((body_weight_word_t)0x02fffe0101fefe00ULL << 64) | (body_weight_word_t)0x00fffe0002020102ULL), (((body_weight_word_t)0x00feff00ff01ff02ULL << 64) | (body_weight_word_t)0xff020202fefffeffULL), (((body_weight_word_t)0x0200fe01010200ffULL << 64) | (body_weight_word_t)0x0002fe00fefe0000ULL),
-        (((body_weight_word_t)0xff020102010201ffULL << 64) | (body_weight_word_t)0x02ff0202ff000002ULL), (((body_weight_word_t)0xffffff01fffffefeULL << 64) | (body_weight_word_t)0x0001ff020201fefeULL), (((body_weight_word_t)0x02ff0201ff0102ffULL << 64) | (body_weight_word_t)0xffff00fe00ff00ffULL), (((body_weight_word_t)0x02ffffff0000ff01ULL << 64) | (body_weight_word_t)0xff02ff0101fe0202ULL),
-        (((body_weight_word_t)0x01ff020100fffe00ULL << 64) | (body_weight_word_t)0x0000020002ff0101ULL), (((body_weight_word_t)0x01ff0002fefefe00ULL << 64) | (body_weight_word_t)0xff00fefefefe01feULL), (((body_weight_word_t)0x000102020100fefeULL << 64) | (body_weight_word_t)0x01ff0102fefe00feULL), (((body_weight_word_t)0xfefe0002feff01feULL << 64) | (body_weight_word_t)0xfeff010200fefffeULL),
-        (((body_weight_word_t)0xfffeffff02fe0200ULL << 64) | (body_weight_word_t)0x02ff020202ff0201ULL), (((body_weight_word_t)0x00ffff000001ff01ULL << 64) | (body_weight_word_t)0x01fe00fe0102ffffULL), (((body_weight_word_t)0x02ffff0000010200ULL << 64) | (body_weight_word_t)0x00fe0201ff00fffeULL), (((body_weight_word_t)0x0202ff0000010200ULL << 64) | (body_weight_word_t)0xff02ffffffffff01ULL)
-    },
-    {
-        (((body_weight_word_t)0x01ff02fe0101feffULL << 64) | (body_weight_word_t)0x00fe02000102fefeULL), (((body_weight_word_t)0xfe010000fffefefeULL << 64) | (body_weight_word_t)0x000001fefe0001feULL), (((body_weight_word_t)0x01feff00fefffffeULL << 64) | (body_weight_word_t)0x00fe02ff01ff0202ULL), (((body_weight_word_t)0x02fe010000020001ULL << 64) | (body_weight_word_t)0x020200feff0102feULL),
-        (((body_weight_word_t)0x02fe00fffeff0201ULL << 64) | (body_weight_word_t)0x00feff00fefffefeULL), (((body_weight_word_t)0xff01fe02fe02ff02ULL << 64) | (body_weight_word_t)0x010100fe0100fefeULL), (((body_weight_word_t)0x00fefe00ff00ffffULL << 64) | (body_weight_word_t)0xff0001ff00fefeffULL), (((body_weight_word_t)0xff020102ff020002ULL << 64) | (body_weight_word_t)0x01ff010201ff00ffULL),
-        (((body_weight_word_t)0xffff000102feff00ULL << 64) | (body_weight_word_t)0x02ffff00ff01fe02ULL), (((body_weight_word_t)0xff01ff01fffe02feULL << 64) | (body_weight_word_t)0x020100ff010101feULL), (((body_weight_word_t)0xfefffe00fefeff01ULL << 64) | (body_weight_word_t)0x00ff01ff00fe0201ULL), (((body_weight_word_t)0x0101020001fe0201ULL << 64) | (body_weight_word_t)0x01fe02fe00020102ULL),
-        (((body_weight_word_t)0x0000fe02fe02feffULL << 64) | (body_weight_word_t)0x0200ff0001010200ULL), (((body_weight_word_t)0x000000ff02000100ULL << 64) | (body_weight_word_t)0xff0201fffe000202ULL), (((body_weight_word_t)0x01fe02fe00000102ULL << 64) | (body_weight_word_t)0x01ff01010201ff02ULL), (((body_weight_word_t)0xfffefffe01020002ULL << 64) | (body_weight_word_t)0x02fe000200ff02feULL)
-    },
-    {
-        (((body_weight_word_t)0xff0102ff0002ff00ULL << 64) | (body_weight_word_t)0x0000fffefffe02ffULL), (((body_weight_word_t)0xfffefffe02010100ULL << 64) | (body_weight_word_t)0xfffe02ff0100ff00ULL), (((body_weight_word_t)0xff0200fefffefffeULL << 64) | (body_weight_word_t)0x01000000000202ffULL), (((body_weight_word_t)0x0201000201fe0100ULL << 64) | (body_weight_word_t)0x0101ff00fe010201ULL),
-        (((body_weight_word_t)0x020102ff02fe00ffULL << 64) | (body_weight_word_t)0x0200ff01ff020101ULL), (((body_weight_word_t)0xfefe00010202ffffULL << 64) | (body_weight_word_t)0xfffefefe02fffe02ULL), (((body_weight_word_t)0xff00020202000000ULL << 64) | (body_weight_word_t)0xfe01ff00fe010202ULL), (((body_weight_word_t)0x00fe0201fe00ffffULL << 64) | (body_weight_word_t)0xfe010202fe010101ULL),
-        (((body_weight_word_t)0xfe0101fefefefe02ULL << 64) | (body_weight_word_t)0x000102ff01ffff01ULL), (((body_weight_word_t)0xfefe00fffe02ff02ULL << 64) | (body_weight_word_t)0x0202fe010202ff00ULL), (((body_weight_word_t)0x0001ff01ff000000ULL << 64) | (body_weight_word_t)0xff0001020100fe00ULL), (((body_weight_word_t)0xfe00fe00020101ffULL << 64) | (body_weight_word_t)0x01ffff00ff01fe00ULL),
-        (((body_weight_word_t)0xff000202010202feULL << 64) | (body_weight_word_t)0x000100fe00fffe00ULL), (((body_weight_word_t)0x010101fffe020102ULL << 64) | (body_weight_word_t)0x0100fefe00000001ULL), (((body_weight_word_t)0xfe00fe0201000001ULL << 64) | (body_weight_word_t)0x0002000201020001ULL), (((body_weight_word_t)0x01ffff010000fefeULL << 64) | (body_weight_word_t)0x01fffefe02fffffeULL)
-    },
-    {
-        (((body_weight_word_t)0x0000fe000202ff02ULL << 64) | (body_weight_word_t)0x01ffff0100000201ULL), (((body_weight_word_t)0xff000102ff00fefeULL << 64) | (body_weight_word_t)0x0001fefe0000feffULL), (((body_weight_word_t)0x00fe02fe00ff00feULL << 64) | (body_weight_word_t)0x00fe0202fe00ff01ULL), (((body_weight_word_t)0x01fefffe010000feULL << 64) | (body_weight_word_t)0xfffffe0100ff00ffULL),
-        (((body_weight_word_t)0x0202ff0000020000ULL << 64) | (body_weight_word_t)0xff01ff0002fe0100ULL), (((body_weight_word_t)0xfffefffe00000100ULL << 64) | (body_weight_word_t)0x0200020101ff0200ULL), (((body_weight_word_t)0x0100020001020201ULL << 64) | (body_weight_word_t)0x01fe0102fefeff00ULL), (((body_weight_word_t)0x01fefe01feffff02ULL << 64) | (body_weight_word_t)0xff02fe0200010201ULL),
-        (((body_weight_word_t)0x0002ff000100ff01ULL << 64) | (body_weight_word_t)0xff02ff0201000000ULL), (((body_weight_word_t)0xfffefefefefe00feULL << 64) | (body_weight_word_t)0x000102ff000001feULL), (((body_weight_word_t)0x020102ffff0101feULL << 64) | (body_weight_word_t)0x00feff01feff0000ULL), (((body_weight_word_t)0x010100ff000200ffULL << 64) | (body_weight_word_t)0xfe02fefe020200feULL),
-        (((body_weight_word_t)0xfefe000002feff02ULL << 64) | (body_weight_word_t)0x0201fe0202ff0001ULL), (((body_weight_word_t)0x0102fe0002fe01feULL << 64) | (body_weight_word_t)0xfefe02ff0000ffffULL), (((body_weight_word_t)0x00fe0102ff0101ffULL << 64) | (body_weight_word_t)0xff000102ff020102ULL), (((body_weight_word_t)0xfffffe02000101feULL << 64) | (body_weight_word_t)0xfe010200fe00ff00ULL)
-    },
-    {
-        (((body_weight_word_t)0xffff0200010102ffULL << 64) | (body_weight_word_t)0x010100fffeff0202ULL), (((body_weight_word_t)0xfffffeff010101feULL << 64) | (body_weight_word_t)0xff0201010201fe02ULL), (((body_weight_word_t)0x02020001feff0202ULL << 64) | (body_weight_word_t)0x0001fe0100fe0002ULL), (((body_weight_word_t)0x00ff0200fe00fe02ULL << 64) | (body_weight_word_t)0x00feffff01010001ULL),
-        (((body_weight_word_t)0xfe02020002fefe01ULL << 64) | (body_weight_word_t)0x0202feff0101fe01ULL), (((body_weight_word_t)0xfefffe00fffeff01ULL << 64) | (body_weight_word_t)0xfefffe01fefe0100ULL), (((body_weight_word_t)0xfe01fe0202010202ULL << 64) | (body_weight_word_t)0x0201010202feffffULL), (((body_weight_word_t)0x01ff0201fffefe00ULL << 64) | (body_weight_word_t)0xfefe000200feffffULL),
-        (((body_weight_word_t)0x0001fe0100fe01feULL << 64) | (body_weight_word_t)0xffff02fefe000202ULL), (((body_weight_word_t)0x02fe000001000100ULL << 64) | (body_weight_word_t)0x01fefe020001ff00ULL), (((body_weight_word_t)0xfefffe0101fe00ffULL << 64) | (body_weight_word_t)0xfefeff0202fffe01ULL), (((body_weight_word_t)0x0102ff02ffff0101ULL << 64) | (body_weight_word_t)0x00ffff0001ffffffULL),
-        (((body_weight_word_t)0xfe0101fe0201ff01ULL << 64) | (body_weight_word_t)0x01010000fe02feffULL), (((body_weight_word_t)0x00010201fe0201feULL << 64) | (body_weight_word_t)0xff02020200020200ULL), (((body_weight_word_t)0xfe020100ffff0002ULL << 64) | (body_weight_word_t)0xfe00fe0100000200ULL), (((body_weight_word_t)0x0100ff01ffff0100ULL << 64) | (body_weight_word_t)0xfffe020201020002ULL)
-    },
-    {
-        (((body_weight_word_t)0xffff020002ff00feULL << 64) | (body_weight_word_t)0x0000ff0102020202ULL), (((body_weight_word_t)0x0101010101feffffULL << 64) | (body_weight_word_t)0xfe0100fe02fffe02ULL), (((body_weight_word_t)0x02fe01ffffff0201ULL << 64) | (body_weight_word_t)0xfeff02020000ff02ULL), (((body_weight_word_t)0x0101ff02ff02fe00ULL << 64) | (body_weight_word_t)0xff0002fe01fe0002ULL),
-        (((body_weight_word_t)0x00020101ff00ff02ULL << 64) | (body_weight_word_t)0x00020101fe020202ULL), (((body_weight_word_t)0xff0002ff01ff0000ULL << 64) | (body_weight_word_t)0x02010100fe02ff00ULL), (((body_weight_word_t)0x0102fe0200020101ULL << 64) | (body_weight_word_t)0x00ff02010000ff00ULL), (((body_weight_word_t)0xfefe020000000102ULL << 64) | (body_weight_word_t)0xff01ff02fffe0100ULL),
-        (((body_weight_word_t)0x0102fefefefe0100ULL << 64) | (body_weight_word_t)0x00000100ff02ff02ULL), (((body_weight_word_t)0xfe0101fe0102ffffULL << 64) | (body_weight_word_t)0x0001ff01ff010000ULL), (((body_weight_word_t)0x0100ff00ff00fe02ULL << 64) | (body_weight_word_t)0x020102fe01ff02feULL), (((body_weight_word_t)0x0001fe01fefe0201ULL << 64) | (body_weight_word_t)0xfe02fe0000020000ULL),
-        (((body_weight_word_t)0xff01fe000002ffffULL << 64) | (body_weight_word_t)0xff010200fe000100ULL), (((body_weight_word_t)0x0202010202000000ULL << 64) | (body_weight_word_t)0x020001ff02000001ULL), (((body_weight_word_t)0x01fe01feffff0202ULL << 64) | (body_weight_word_t)0x000000fe0201ff00ULL), (((body_weight_word_t)0x00feff00fffe0102ULL << 64) | (body_weight_word_t)0x02fe010102fe02ffULL)
-    },
-    {
-        (((body_weight_word_t)0x01fe00fe00ff0202ULL << 64) | (body_weight_word_t)0x010202ff01ff0000ULL), (((body_weight_word_t)0xffff0002ffff01feULL << 64) | (body_weight_word_t)0xfe00feff02000201ULL), (((body_weight_word_t)0x01fefe02fffffffeULL << 64) | (body_weight_word_t)0xfe010002fe02ff00ULL), (((body_weight_word_t)0x00fe010001010101ULL << 64) | (body_weight_word_t)0x0002000000020200ULL),
-        (((body_weight_word_t)0xfe0001fffe02ff02ULL << 64) | (body_weight_word_t)0x0001ff0100fffe00ULL), (((body_weight_word_t)0xfe00fefffffffefeULL << 64) | (body_weight_word_t)0x01020001feff0202ULL), (((body_weight_word_t)0x00fe0100fffe0002ULL << 64) | (body_weight_word_t)0xffff01fffeff0202ULL), (((body_weight_word_t)0xff020101fefe0101ULL << 64) | (body_weight_word_t)0x0100ffff010002ffULL),
-        (((body_weight_word_t)0x020000000001ff01ULL << 64) | (body_weight_word_t)0x01fe00fe01feffffULL), (((body_weight_word_t)0xfe0200ff01000201ULL << 64) | (body_weight_word_t)0x00010001020100feULL), (((body_weight_word_t)0xfe0001010000ff01ULL << 64) | (body_weight_word_t)0xfe00010100ff00ffULL), (((body_weight_word_t)0xffff0202fe0002ffULL << 64) | (body_weight_word_t)0x01fe02ff00fffefeULL),
-        (((body_weight_word_t)0x020100fe0100fefeULL << 64) | (body_weight_word_t)0xfefe01ff01000202ULL), (((body_weight_word_t)0x0002020200ff00feULL << 64) | (body_weight_word_t)0x02fffffe00000200ULL), (((body_weight_word_t)0x02ff0200ff00fffeULL << 64) | (body_weight_word_t)0x00ff0100fefe02ffULL), (((body_weight_word_t)0xff00ff000202ff00ULL << 64) | (body_weight_word_t)0x0201ff0200010201ULL)
-    },
-    {
-        (((body_weight_word_t)0x000200fe0001ff02ULL << 64) | (body_weight_word_t)0xfe00ff0002ffff01ULL), (((body_weight_word_t)0x000001feff01fe00ULL << 64) | (body_weight_word_t)0xff0202ff000101ffULL), (((body_weight_word_t)0x02ff0200fffe0001ULL << 64) | (body_weight_word_t)0x0000fe0002fefe02ULL), (((body_weight_word_t)0x00fefeffff0200ffULL << 64) | (body_weight_word_t)0x020100020001fffeULL),
-        (((body_weight_word_t)0x02ffff020200ffffULL << 64) | (body_weight_word_t)0xfefffe00fe0200feULL), (((body_weight_word_t)0xfffe0000fe02fffeULL << 64) | (body_weight_word_t)0x0102010202fe0200ULL), (((body_weight_word_t)0x01fffefefe01feffULL << 64) | (body_weight_word_t)0x010200feffffff02ULL), (((body_weight_word_t)0xfffe02000000ffffULL << 64) | (body_weight_word_t)0xfffffe0002ff00feULL),
-        (((body_weight_word_t)0x0102000100010200ULL << 64) | (body_weight_word_t)0x00ff00fffeff0001ULL), (((body_weight_word_t)0xff020200020100ffULL << 64) | (body_weight_word_t)0xffff00ff02fefe02ULL), (((body_weight_word_t)0x02feff02fe010100ULL << 64) | (body_weight_word_t)0x02fffefefffe0200ULL), (((body_weight_word_t)0x02fffefe0201ff01ULL << 64) | (body_weight_word_t)0xfe02fe00020100feULL),
-        (((body_weight_word_t)0xff00fe0102020101ULL << 64) | (body_weight_word_t)0x000201ff0202feffULL), (((body_weight_word_t)0x01fe000202000002ULL << 64) | (body_weight_word_t)0x0002ff02000100feULL), (((body_weight_word_t)0xfe00fe00ff0202feULL << 64) | (body_weight_word_t)0x0102020200fe0000ULL), (((body_weight_word_t)0x02ff02ffff01fefeULL << 64) | (body_weight_word_t)0x02000000ff0202feULL)
-    },
-    {
-        (((body_weight_word_t)0x0001ff0102fe0001ULL << 64) | (body_weight_word_t)0xff02010000000202ULL), (((body_weight_word_t)0xff01ff00fffffe02ULL << 64) | (body_weight_word_t)0x00fffeff010201ffULL), (((body_weight_word_t)0xfe02ff02fe0001ffULL << 64) | (body_weight_word_t)0xffffff02000101ffULL), (((body_weight_word_t)0x0100020002010102ULL << 64) | (body_weight_word_t)0x00fe02fe00020101ULL),
-        (((body_weight_word_t)0xff02ff01fefeff00ULL << 64) | (body_weight_word_t)0xff020002feff0100ULL), (((body_weight_word_t)0x0001fffefeff02ffULL << 64) | (body_weight_word_t)0xff00fe010201feffULL), (((body_weight_word_t)0x00020100ff010102ULL << 64) | (body_weight_word_t)0xfffffffe0200ff00ULL), (((body_weight_word_t)0x00010200fe020101ULL << 64) | (body_weight_word_t)0x0202ffff0200fffeULL),
-        (((body_weight_word_t)0xfe02ff02020000ffULL << 64) | (body_weight_word_t)0xff0202fffe0201ffULL), (((body_weight_word_t)0x0200020201010201ULL << 64) | (body_weight_word_t)0xfe00000101fffefeULL), (((body_weight_word_t)0x00ff0001ff00ff00ULL << 64) | (body_weight_word_t)0xff00fffe0000ff02ULL), (((body_weight_word_t)0x0002ffffffff0102ULL << 64) | (body_weight_word_t)0x00020000fe000102ULL),
-        (((body_weight_word_t)0x00fe0100010101ffULL << 64) | (body_weight_word_t)0x0000fe0101ff0002ULL), (((body_weight_word_t)0x0200fe0001000000ULL << 64) | (body_weight_word_t)0x010201fe01020202ULL), (((body_weight_word_t)0x00fefeff0002ffffULL << 64) | (body_weight_word_t)0x0001fefffefffffeULL), (((body_weight_word_t)0x02ff0101fe0000ffULL << 64) | (body_weight_word_t)0x01fe010202020201ULL)
-    }
-};
-static const bias_t L5_BIAS[CNN_C] = {
-    84, 41, -127, 46, 92, -85, 54, -20, -33, 30, 33, 93, 85, 91, -10, 68
-};
-static const q31_t L5_Q31[CNN_C] = {
-    1073741824, 1073741824, 1073741824, 1073741824, 1073741824, 1073741824, 1073741824, 1073741824, 1073741824, 1073741824, 1073741824, 1073741824, 1073741824, 1073741824, 1073741824, 1073741824
-};
-static const qexp_t L5_EXP[CNN_C] = {
-    -3, -4, -5, -6, -3, -4, -5, -6, -3, -4, -5, -6, -3, -4, -5, -6
-};
+// L5: tail -> signed RAW-DN residual; logical W8, compatibility lane=W8
+static const tail_weight_word_t L5_WBANK[9][CNN_C] = {
+    {((tail_weight_word_t)0x12F2F5E4ULL), ((tail_weight_word_t)0x1AE4FCE1ULL), ((tail_weight_word_t)0x04E6FEDCULL), ((tail_weight_word_t)0xE8160720ULL),
+     ((tail_weight_word_t)0xF5EAFADDULL), ((tail_weight_word_t)0xEE0E0016ULL), ((tail_weight_word_t)0xE8FAF42EULL), ((tail_weight_word_t)0x1CE9F4DBULL),
+     ((tail_weight_word_t)0xF50AFF02ULL), ((tail_weight_word_t)0xFC0BF1FAULL), ((tail_weight_word_t)0x0DF9EBFEULL), ((tail_weight_word_t)0x1A2C18E6ULL),
+     ((tail_weight_word_t)0xF5E7EC14ULL), ((tail_weight_word_t)0x08FCEBD6ULL), ((tail_weight_word_t)0xFA140804ULL), ((tail_weight_word_t)0xF4320E1CULL)},
+    {((tail_weight_word_t)0xD9E90B1CULL), ((tail_weight_word_t)0x11D95821ULL), ((tail_weight_word_t)0xECE4CEF0ULL), ((tail_weight_word_t)0x0AEF43FFULL),
+     ((tail_weight_word_t)0x0DE12BD8ULL), ((tail_weight_word_t)0x04E71BEFULL), ((tail_weight_word_t)0x4129D5B4ULL), ((tail_weight_word_t)0x26F9CB39ULL),
+     ((tail_weight_word_t)0xF3111BFFULL), ((tail_weight_word_t)0xF9EDFEF5ULL), ((tail_weight_word_t)0x070F140DULL), ((tail_weight_word_t)0xFFE6F6E9ULL),
+     ((tail_weight_word_t)0xF0EBF8C7ULL), ((tail_weight_word_t)0xEDE53B2FULL), ((tail_weight_word_t)0xFD02100AULL), ((tail_weight_word_t)0xF437B6E9ULL)},
+    {((tail_weight_word_t)0xFD0A05FEULL), ((tail_weight_word_t)0x10201C0DULL), ((tail_weight_word_t)0xEAE3F4E9ULL), ((tail_weight_word_t)0x151E0215ULL),
+     ((tail_weight_word_t)0x10060212ULL), ((tail_weight_word_t)0xFC0AD0F2ULL), ((tail_weight_word_t)0xFBFD052DULL), ((tail_weight_word_t)0x0DF5FCFEULL),
+     ((tail_weight_word_t)0x1B18FDDEULL), ((tail_weight_word_t)0x020307F1ULL), ((tail_weight_word_t)0x090A2ADAULL), ((tail_weight_word_t)0x0BF6F6DAULL),
+     ((tail_weight_word_t)0x0AE0F8F2ULL), ((tail_weight_word_t)0x0A1803FFULL), ((tail_weight_word_t)0xF6EAFE06ULL), ((tail_weight_word_t)0x02E1FE02ULL)},
+    {((tail_weight_word_t)0xE1FE0C0DULL), ((tail_weight_word_t)0xF8F5FE18ULL), ((tail_weight_word_t)0x0101F70DULL), ((tail_weight_word_t)0x220B15B2ULL),
+     ((tail_weight_word_t)0xF4F6F5DEULL), ((tail_weight_word_t)0xF9BC0DE4ULL), ((tail_weight_word_t)0xF1223F3BULL), ((tail_weight_word_t)0x0337FD4CULL),
+     ((tail_weight_word_t)0x213B0DF8ULL), ((tail_weight_word_t)0xFD25F602ULL), ((tail_weight_word_t)0x35EDDCF1ULL), ((tail_weight_word_t)0x1C03C6C5ULL),
+     ((tail_weight_word_t)0x18EA0A05ULL), ((tail_weight_word_t)0x2E3B0225ULL), ((tail_weight_word_t)0x00F8EFE8ULL), ((tail_weight_word_t)0x1D0201CFULL)},
+    {((tail_weight_word_t)0x2CFF08F9ULL), ((tail_weight_word_t)0xDFC334DEULL), ((tail_weight_word_t)0xFE2EFC24ULL), ((tail_weight_word_t)0xE8E1817AULL),
+     ((tail_weight_word_t)0x2451FFE5ULL), ((tail_weight_word_t)0xE303C10DULL), ((tail_weight_word_t)0xA4E5930BULL), ((tail_weight_word_t)0xD18123E9ULL),
+     ((tail_weight_word_t)0x14BE1BDBULL), ((tail_weight_word_t)0x390714F9ULL), ((tail_weight_word_t)0xCDEA08A0ULL), ((tail_weight_word_t)0xDE131F28ULL),
+     ((tail_weight_word_t)0xED004906ULL), ((tail_weight_word_t)0xD7FDE2E1ULL), ((tail_weight_word_t)0x0918050DULL), ((tail_weight_word_t)0x815E63AEULL)},
+    {((tail_weight_word_t)0xDBEC1619ULL), ((tail_weight_word_t)0xD2D1F02FULL), ((tail_weight_word_t)0x240E3C0CULL), ((tail_weight_word_t)0xE11BE2FCULL),
+     ((tail_weight_word_t)0xFF17D70DULL), ((tail_weight_word_t)0x22CF4817ULL), ((tail_weight_word_t)0x0CF9161AULL), ((tail_weight_word_t)0x2A13B5D7ULL),
+     ((tail_weight_word_t)0x28F00D3CULL), ((tail_weight_word_t)0x00DAF5F4ULL), ((tail_weight_word_t)0xF4251D00ULL), ((tail_weight_word_t)0x15E9F8EAULL),
+     ((tail_weight_word_t)0x1929DBB8ULL), ((tail_weight_word_t)0xEBDF1DC6ULL), ((tail_weight_word_t)0x1A0A0FF4ULL), ((tail_weight_word_t)0xE690C13DULL)},
+    {((tail_weight_word_t)0xF404FBE7ULL), ((tail_weight_word_t)0xF615F409ULL), ((tail_weight_word_t)0x02F6F9E4ULL), ((tail_weight_word_t)0x07FF01C9ULL),
+     ((tail_weight_word_t)0x091019FFULL), ((tail_weight_word_t)0xF51504D6ULL), ((tail_weight_word_t)0xF0E6F4FEULL), ((tail_weight_word_t)0xE0061F1CULL),
+     ((tail_weight_word_t)0x12FC0F2CULL), ((tail_weight_word_t)0x00EEFBFEULL), ((tail_weight_word_t)0x20CFED05ULL), ((tail_weight_word_t)0xE608FD0DULL),
+     ((tail_weight_word_t)0x0CFDEC01ULL), ((tail_weight_word_t)0xE4091F19ULL), ((tail_weight_word_t)0x020F0100ULL), ((tail_weight_word_t)0x0110F817ULL)},
+    {((tail_weight_word_t)0x1F3D2B1CULL), ((tail_weight_word_t)0x21FA21F5ULL), ((tail_weight_word_t)0xEF45022FULL), ((tail_weight_word_t)0xCB38E3CDULL),
+     ((tail_weight_word_t)0xF2B5EFECULL), ((tail_weight_word_t)0xF72D2F11ULL), ((tail_weight_word_t)0x15E820E5ULL), ((tail_weight_word_t)0xB56A1AD1ULL),
+     ((tail_weight_word_t)0xF7F707F0ULL), ((tail_weight_word_t)0x0238E108ULL), ((tail_weight_word_t)0xCA09DE7FULL), ((tail_weight_word_t)0xE507F91BULL),
+     ((tail_weight_word_t)0x4455DD09ULL), ((tail_weight_word_t)0x38B1D9F1ULL), ((tail_weight_word_t)0x07E10AF7ULL), ((tail_weight_word_t)0x59CED607ULL)},
+    {((tail_weight_word_t)0xFBF9F9EFULL), ((tail_weight_word_t)0x1AC4E4E9ULL), ((tail_weight_word_t)0x240B25F1ULL), ((tail_weight_word_t)0x4F381819ULL),
+     ((tail_weight_word_t)0x1529032BULL), ((tail_weight_word_t)0x18D3F9F4ULL), ((tail_weight_word_t)0x1DF00ED9ULL), ((tail_weight_word_t)0x231C07F2ULL),
+     ((tail_weight_word_t)0x1B08FFF2ULL), ((tail_weight_word_t)0x030A07F7ULL), ((tail_weight_word_t)0xF7301008ULL), ((tail_weight_word_t)0xF313E8D2ULL),
+     ((tail_weight_word_t)0xE1C21914ULL), ((tail_weight_word_t)0xECE3FCF1ULL), ((tail_weight_word_t)0x02F703FEULL), ((tail_weight_word_t)0x19EFFF00ULL)}};
 
-// L6
-static const body_weight_word_t L6_WBANK[9][CNN_C] = {
-    {
-        (((body_weight_word_t)0x010100fe01fe00feULL << 64) | (body_weight_word_t)0x0102feff000102feULL), (((body_weight_word_t)0xfe01010002ff0002ULL << 64) | (body_weight_word_t)0xfffe0100fefe01feULL), (((body_weight_word_t)0x02fffeffff02fe02ULL << 64) | (body_weight_word_t)0x00fe000202ff0002ULL), (((body_weight_word_t)0xfe02fe02feff0100ULL << 64) | (body_weight_word_t)0x00020100ff000001ULL),
-        (((body_weight_word_t)0xfeff020102fefefeULL << 64) | (body_weight_word_t)0xff01fefe00ff0201ULL), (((body_weight_word_t)0x02fe0000fe0202ffULL << 64) | (body_weight_word_t)0x0001ff0200feff01ULL), (((body_weight_word_t)0xff00000002fefe01ULL << 64) | (body_weight_word_t)0xfe00fefe0101ff02ULL), (((body_weight_word_t)0xfefffe01fffefe02ULL << 64) | (body_weight_word_t)0x000202fefeff01ffULL),
-        (((body_weight_word_t)0x00010202fffe00feULL << 64) | (body_weight_word_t)0x0002020100fffefeULL), (((body_weight_word_t)0xfe01ff00fffe0202ULL << 64) | (body_weight_word_t)0x01ff01fe01fe0101ULL), (((body_weight_word_t)0xff00fe01fefffe02ULL << 64) | (body_weight_word_t)0x0001ff010002ff02ULL), (((body_weight_word_t)0x00fe0202fe01fefeULL << 64) | (body_weight_word_t)0x00fe0002fe01ff01ULL),
-        (((body_weight_word_t)0x01fffffefe0102feULL << 64) | (body_weight_word_t)0xfffefeff02000000ULL), (((body_weight_word_t)0xfe01fe00fe02ffffULL << 64) | (body_weight_word_t)0xffff0200ff00ff01ULL), (((body_weight_word_t)0xff01fefe01fefefeULL << 64) | (body_weight_word_t)0x02020002ff00feffULL), (((body_weight_word_t)0xfe0100ff010000ffULL << 64) | (body_weight_word_t)0x01010002fe000001ULL)
-    },
-    {
-        (((body_weight_word_t)0xfe00fe01010100ffULL << 64) | (body_weight_word_t)0x020000fefe0100ffULL), (((body_weight_word_t)0x02ff0101ff010000ULL << 64) | (body_weight_word_t)0x00fe0200feff00feULL), (((body_weight_word_t)0x0101ff01fefe0000ULL << 64) | (body_weight_word_t)0xffffff02ffffff00ULL), (((body_weight_word_t)0x02000001fe0201ffULL << 64) | (body_weight_word_t)0xfffffe0202fe0100ULL),
-        (((body_weight_word_t)0xfe00ff00010001ffULL << 64) | (body_weight_word_t)0x00000001fe00ffffULL), (((body_weight_word_t)0xff0102fefeff0000ULL << 64) | (body_weight_word_t)0xff02ff020100fe02ULL), (((body_weight_word_t)0x000101feff010002ULL << 64) | (body_weight_word_t)0x010200ff020201ffULL), (((body_weight_word_t)0x0201fe01fe0101ffULL << 64) | (body_weight_word_t)0xff0001fe02000000ULL),
-        (((body_weight_word_t)0xfe00010000fffe02ULL << 64) | (body_weight_word_t)0xfffeff0200010100ULL), (((body_weight_word_t)0xff01fffe02fe0100ULL << 64) | (body_weight_word_t)0x02ff01ff02ff02ffULL), (((body_weight_word_t)0xff000100010002ffULL << 64) | (body_weight_word_t)0x0101020000010000ULL), (((body_weight_word_t)0x02000201020002feULL << 64) | (body_weight_word_t)0xfe0202ff02000001ULL),
-        (((body_weight_word_t)0xfeff0000fffffe00ULL << 64) | (body_weight_word_t)0x020000fe000101ffULL), (((body_weight_word_t)0x02ff020201020100ULL << 64) | (body_weight_word_t)0xfffeff00fefeffffULL), (((body_weight_word_t)0xfe010102fe00fe01ULL << 64) | (body_weight_word_t)0x0201ff020202fefeULL), (((body_weight_word_t)0x00ff000200feff00ULL << 64) | (body_weight_word_t)0x00fffefe0102ff02ULL)
-    },
-    {
-        (((body_weight_word_t)0xfeffff02feffff00ULL << 64) | (body_weight_word_t)0xfe020100ff010100ULL), (((body_weight_word_t)0x01ffff02ff01feffULL << 64) | (body_weight_word_t)0xfeff0100ff0100ffULL), (((body_weight_word_t)0x00010000fe020202ULL << 64) | (body_weight_word_t)0x010002010002fefeULL), (((body_weight_word_t)0xfe0000ff01fe01ffULL << 64) | (body_weight_word_t)0x0202010200feff00ULL),
-        (((body_weight_word_t)0xfe02010200010000ULL << 64) | (body_weight_word_t)0x0102fffe02000002ULL), (((body_weight_word_t)0x0001fffeff0200feULL << 64) | (body_weight_word_t)0x00fe01020002fe00ULL), (((body_weight_word_t)0xfefe0002020201feULL << 64) | (body_weight_word_t)0x02fefffe000000feULL), (((body_weight_word_t)0x00fe020202fe00ffULL << 64) | (body_weight_word_t)0xffff010201020200ULL),
-        (((body_weight_word_t)0xffff02ff00020202ULL << 64) | (body_weight_word_t)0xff01fefeff010201ULL), (((body_weight_word_t)0x02fe0202fe0201feULL << 64) | (body_weight_word_t)0xfe01fe0200010001ULL), (((body_weight_word_t)0x01fe02fefefefe02ULL << 64) | (body_weight_word_t)0xff00020201fffe02ULL), (((body_weight_word_t)0x01ff000000020201ULL << 64) | (body_weight_word_t)0xfe00020100fefefeULL),
-        (((body_weight_word_t)0xfe01000001fffeffULL << 64) | (body_weight_word_t)0xffff010202ff0001ULL), (((body_weight_word_t)0x01000101010101feULL << 64) | (body_weight_word_t)0x0002fe01ff01feffULL), (((body_weight_word_t)0xfeff02fe010201ffULL << 64) | (body_weight_word_t)0x01fe00fffefe0102ULL), (((body_weight_word_t)0xfefffe010102ff01ULL << 64) | (body_weight_word_t)0x0002fe020100ffffULL)
-    },
-    {
-        (((body_weight_word_t)0xffff0200fe01fe00ULL << 64) | (body_weight_word_t)0x0000fffefe000201ULL), (((body_weight_word_t)0x01ff02feff01ff00ULL << 64) | (body_weight_word_t)0xff00020201fffffeULL), (((body_weight_word_t)0x00fe02fe02010101ULL << 64) | (body_weight_word_t)0x00fffefffe010201ULL), (((body_weight_word_t)0xfefefefe0202fe01ULL << 64) | (body_weight_word_t)0x00ff00fefefeff01ULL),
-        (((body_weight_word_t)0xfe01fe02feff0102ULL << 64) | (body_weight_word_t)0x02fefffffffe0101ULL), (((body_weight_word_t)0xff0202fe00fe0200ULL << 64) | (body_weight_word_t)0xfe0002fe01000000ULL), (((body_weight_word_t)0xfeffffffff01fffeULL << 64) | (body_weight_word_t)0xfffe02feffff02feULL), (((body_weight_word_t)0xff01ff02010201feULL << 64) | (body_weight_word_t)0xfe00fefe0100fe02ULL),
-        (((body_weight_word_t)0x0000fffe0201fe02ULL << 64) | (body_weight_word_t)0x01ff02ff020101ffULL), (((body_weight_word_t)0x010200ff0200ff01ULL << 64) | (body_weight_word_t)0x000102fffffeff01ULL), (((body_weight_word_t)0x02fe0101ff010001ULL << 64) | (body_weight_word_t)0x0002000200000001ULL), (((body_weight_word_t)0xfe0001ffffffff01ULL << 64) | (body_weight_word_t)0x020101fe0201fe01ULL),
-        (((body_weight_word_t)0x0100ff0100ff0100ULL << 64) | (body_weight_word_t)0x00fffe00ffff0102ULL), (((body_weight_word_t)0x01fe02ffff010200ULL << 64) | (body_weight_word_t)0x00020101feff00feULL), (((body_weight_word_t)0xfe02feffff010001ULL << 64) | (body_weight_word_t)0x01fe02020001ffffULL), (((body_weight_word_t)0x0100ffffff0102ffULL << 64) | (body_weight_word_t)0xfffe0102fefffffeULL)
-    },
-    {
-        (((body_weight_word_t)0x0200ff0102ff0001ULL << 64) | (body_weight_word_t)0xfeff00fefeff00ffULL), (((body_weight_word_t)0x0101ff02fffe01feULL << 64) | (body_weight_word_t)0x02000202020100ffULL), (((body_weight_word_t)0xfefe02ff0102fe01ULL << 64) | (body_weight_word_t)0x010002ff0102fe00ULL), (((body_weight_word_t)0x0102fe02feffff00ULL << 64) | (body_weight_word_t)0xfefefe00ffff02feULL),
-        (((body_weight_word_t)0xffff0001fe0201ffULL << 64) | (body_weight_word_t)0x000201fffe0102feULL), (((body_weight_word_t)0x01ffff00ff02feffULL << 64) | (body_weight_word_t)0xff0201fefe010202ULL), (((body_weight_word_t)0xfe000000feff00feULL << 64) | (body_weight_word_t)0x0202010002ffff01ULL), (((body_weight_word_t)0x0002ff0200010001ULL << 64) | (body_weight_word_t)0x02fe01fe01ffff01ULL),
-        (((body_weight_word_t)0x01020101000002feULL << 64) | (body_weight_word_t)0x01000202000001feULL), (((body_weight_word_t)0x02ff02fe02fefe02ULL << 64) | (body_weight_word_t)0xfe0202fe02ffff01ULL), (((body_weight_word_t)0x01020201fe00feffULL << 64) | (body_weight_word_t)0x020001ff02010100ULL), (((body_weight_word_t)0xfe02ff01ff020000ULL << 64) | (body_weight_word_t)0xff01fe0202ffff02ULL),
-        (((body_weight_word_t)0x0001000002020202ULL << 64) | (body_weight_word_t)0x000101fe01fefe02ULL), (((body_weight_word_t)0xff02fffefefe0101ULL << 64) | (body_weight_word_t)0x0102feff02fe0202ULL), (((body_weight_word_t)0xff000000fe000001ULL << 64) | (body_weight_word_t)0xffff000000020101ULL), (((body_weight_word_t)0x010102fe02fe02feULL << 64) | (body_weight_word_t)0x000202fffeff01feULL)
-    },
-    {
-        (((body_weight_word_t)0x0000fe02feff02ffULL << 64) | (body_weight_word_t)0x010001ffffff01feULL), (((body_weight_word_t)0xfe01010202ff0000ULL << 64) | (body_weight_word_t)0x02ffffff0102ffffULL), (((body_weight_word_t)0x0100ff00ff01ff00ULL << 64) | (body_weight_word_t)0x02fe0001fffefeffULL), (((body_weight_word_t)0x02fe02fefefe00ffULL << 64) | (body_weight_word_t)0x01010002020202feULL),
-        (((body_weight_word_t)0x01fe020102ff00ffULL << 64) | (body_weight_word_t)0xfefe02feff010201ULL), (((body_weight_word_t)0xfefefeff02000200ULL << 64) | (body_weight_word_t)0xff01fe0200000001ULL), (((body_weight_word_t)0x00ffff02ff00fffeULL << 64) | (body_weight_word_t)0xfe0002000201fefeULL), (((body_weight_word_t)0x0200fe01fffefe01ULL << 64) | (body_weight_word_t)0xfe00ff0001ff0002ULL),
-        (((body_weight_word_t)0x01020200fe02fffeULL << 64) | (body_weight_word_t)0xffff01010102ff00ULL), (((body_weight_word_t)0x00ffffff0202fffeULL << 64) | (body_weight_word_t)0xfe0102020002fefeULL), (((body_weight_word_t)0xfe02010101ffff00ULL << 64) | (body_weight_word_t)0xfefe02fe01fe02ffULL), (((body_weight_word_t)0xfefe0101ffff02feULL << 64) | (body_weight_word_t)0x00fe00fefe01ffffULL),
-        (((body_weight_word_t)0xfefe01fffe010102ULL << 64) | (body_weight_word_t)0xff02fe0100fe0000ULL), (((body_weight_word_t)0x010100020101fe00ULL << 64) | (body_weight_word_t)0x0002020002000102ULL), (((body_weight_word_t)0x0000fefe00ffff01ULL << 64) | (body_weight_word_t)0xfefefe000201fe01ULL), (((body_weight_word_t)0xfefffefefffefeffULL << 64) | (body_weight_word_t)0xfefe0102000200feULL)
-    },
-    {
-        (((body_weight_word_t)0xfefe000000fffe01ULL << 64) | (body_weight_word_t)0xffff00fe00ff0100ULL), (((body_weight_word_t)0x00000001ff000101ULL << 64) | (body_weight_word_t)0xfe010002fe01fefeULL), (((body_weight_word_t)0x01fe0001010202ffULL << 64) | (body_weight_word_t)0x01fffe01ff00ff00ULL), (((body_weight_word_t)0x000202fe01ffffffULL << 64) | (body_weight_word_t)0xfe0000fffe00ff01ULL),
-        (((body_weight_word_t)0x02fffe00fffffefeULL << 64) | (body_weight_word_t)0xff020100fe0102ffULL), (((body_weight_word_t)0xfeff01fe00fe0100ULL << 64) | (body_weight_word_t)0x00fe01fffffffe00ULL), (((body_weight_word_t)0x01000200fefe0102ULL << 64) | (body_weight_word_t)0x0201010201fe00ffULL), (((body_weight_word_t)0xff02fefefeff0102ULL << 64) | (body_weight_word_t)0xfefefeffff0001ffULL),
-        (((body_weight_word_t)0xfeff02ff00ff0000ULL << 64) | (body_weight_word_t)0xfefffe020201ff02ULL), (((body_weight_word_t)0xff02010001020100ULL << 64) | (body_weight_word_t)0xff000002fffe0000ULL), (((body_weight_word_t)0xfeff000201ff0101ULL << 64) | (body_weight_word_t)0xffff0201ff00ff01ULL), (((body_weight_word_t)0x01fffe02fe00fe00ULL << 64) | (body_weight_word_t)0x01fe02fffeff0102ULL),
-        (((body_weight_word_t)0xfe01fffe010000ffULL << 64) | (body_weight_word_t)0xfffe01fe00fe0201ULL), (((body_weight_word_t)0x010202feffffff02ULL << 64) | (body_weight_word_t)0xff00ffff02ff0000ULL), (((body_weight_word_t)0xff000000ff0100ffULL << 64) | (body_weight_word_t)0xfe02ff0200fffe02ULL), (((body_weight_word_t)0xfe020202fe0201ffULL << 64) | (body_weight_word_t)0xff000000fefffe02ULL)
-    },
-    {
-        (((body_weight_word_t)0xfe0002fe02000202ULL << 64) | (body_weight_word_t)0x020100fefeff0002ULL), (((body_weight_word_t)0x0000020100ff01ffULL << 64) | (body_weight_word_t)0xfe010101feff0000ULL), (((body_weight_word_t)0xff0201fefffe0100ULL << 64) | (body_weight_word_t)0xfffffeffffff0101ULL), (((body_weight_word_t)0x0102fffefe01fe00ULL << 64) | (body_weight_word_t)0xff01ff020001fe02ULL),
-        (((body_weight_word_t)0x00ff0201ffff00ffULL << 64) | (body_weight_word_t)0xff0000fefe0002feULL), (((body_weight_word_t)0xff02fe0002fefefeULL << 64) | (body_weight_word_t)0xfe020202ff000102ULL), (((body_weight_word_t)0x00fe0200feff0202ULL << 64) | (body_weight_word_t)0x00ff02ffff0000ffULL), (((body_weight_word_t)0x02fe00fefffefe02ULL << 64) | (body_weight_word_t)0xff00fe0200fffe02ULL),
-        (((body_weight_word_t)0xff01fe02ff0100ffULL << 64) | (body_weight_word_t)0xfefe0101010200feULL), (((body_weight_word_t)0x0202fe01fe02ff00ULL << 64) | (body_weight_word_t)0x01fe02000200fe01ULL), (((body_weight_word_t)0xff02fe020201fe02ULL << 64) | (body_weight_word_t)0xff00000001fffeffULL), (((body_weight_word_t)0x0100020202ffff00ULL << 64) | (body_weight_word_t)0x00fe000101ff0002ULL),
-        (((body_weight_word_t)0x01fefe0201010001ULL << 64) | (body_weight_word_t)0xffff01fe02fffe02ULL), (((body_weight_word_t)0xff020102feff0101ULL << 64) | (body_weight_word_t)0x0002000100010000ULL), (((body_weight_word_t)0x01ff020100000001ULL << 64) | (body_weight_word_t)0x0200ff01fefffe01ULL), (((body_weight_word_t)0xfefffefffffe0002ULL << 64) | (body_weight_word_t)0x01010001fe010201ULL)
-    },
-    {
-        (((body_weight_word_t)0x00ffff010002ffffULL << 64) | (body_weight_word_t)0xffff01fefeffff01ULL), (((body_weight_word_t)0x0102fefffe000001ULL << 64) | (body_weight_word_t)0xff000100ff01fe02ULL), (((body_weight_word_t)0x02ff0001fe01ffffULL << 64) | (body_weight_word_t)0x02fe02000102ffffULL), (((body_weight_word_t)0xff0100010101ff01ULL << 64) | (body_weight_word_t)0x02ff01fefe0100feULL),
-        (((body_weight_word_t)0x000201000101ffffULL << 64) | (body_weight_word_t)0xff0001000001ffffULL), (((body_weight_word_t)0xfefe000002000202ULL << 64) | (body_weight_word_t)0xfe0200ff02000101ULL), (((body_weight_word_t)0xfe0100ff0201fefeULL << 64) | (body_weight_word_t)0x01fe01ff01ffff02ULL), (((body_weight_word_t)0xfefe010202fe02ffULL << 64) | (body_weight_word_t)0x02020100fefe0102ULL),
-        (((body_weight_word_t)0x020202fe000000ffULL << 64) | (body_weight_word_t)0x02ff020202000201ULL), (((body_weight_word_t)0x00fe020200020200ULL << 64) | (body_weight_word_t)0xfe02000102000101ULL), (((body_weight_word_t)0x00ff00fffffeff02ULL << 64) | (body_weight_word_t)0x02010002010202ffULL), (((body_weight_word_t)0x000100010100fe01ULL << 64) | (body_weight_word_t)0x020200ff00ff0001ULL),
-        (((body_weight_word_t)0xfe0202ff01ff00feULL << 64) | (body_weight_word_t)0x01fe02ffffff01ffULL), (((body_weight_word_t)0x000100000002fe01ULL << 64) | (body_weight_word_t)0xff000001ff02fffeULL), (((body_weight_word_t)0x02ffffffff01feffULL << 64) | (body_weight_word_t)0xfefffe0200feff00ULL), (((body_weight_word_t)0xff02020001000201ULL << 64) | (body_weight_word_t)0xfe01000102010001ULL)
-    }
-};
-static const bias_t L6_BIAS[CNN_C] = {
-    56, -31, 52, -112, 101, 7, -66, 128, -115, -38, 118, -48, 63, -90, -38, -22
-};
-static const q31_t L6_MAIN_Q31[CNN_C] = {
-    1073741824, 1073741824, 1073741824, 1073741824, 1073741824, 1073741824, 1073741824, 1073741824, 1073741824, 1073741824, 1073741824, 1073741824, 1073741824, 1073741824, 1073741824, 1073741824
-};
-static const qexp_t L6_MAIN_EXP[CNN_C] = {
-    -3, -4, -5, -6, -3, -4, -5, -6, -3, -4, -5, -6, -3, -4, -5, -6
-};
-static const q31_t L6_SKIP_Q31 = 1073741824;
-static const qexp_t L6_SKIP_EXP = 1;
+static const bias_t L5_BIAS[4] = {
+    2985, 8348, -705, 3309};
+static const q31_t L5_TAIL_TO_RAW_DN_Q31[4] = {
+    1777767296, 2094488576, 1837793664, 2073466368};
+static const qexp_t L5_TAIL_TO_RAW_DN_EXP[4] = {
+    -10, -10, -10, -10};
+#define L5_OUTPUT_IS_SIGNED_RAW_RESIDUAL_DN 1
+#define L5_GLOBAL_SKIP_IS_ORIGINAL_RAW10 1
 
-// L7
-static const body_weight_word_t L7_WBANK[9][CNN_C] = {
-    {
-        (((body_weight_word_t)0xfe02fe01ff0202feULL << 64) | (body_weight_word_t)0x0002020102020201ULL), (((body_weight_word_t)0xff02ff000101ffffULL << 64) | (body_weight_word_t)0xff02010101020201ULL), (((body_weight_word_t)0xff020000ff02fe00ULL << 64) | (body_weight_word_t)0x020101fefefeff01ULL), (((body_weight_word_t)0x00fffe0100fe01feULL << 64) | (body_weight_word_t)0x02ff00ff0100ffffULL),
-        (((body_weight_word_t)0x02fe000201ffff00ULL << 64) | (body_weight_word_t)0x0002fe020101ff00ULL), (((body_weight_word_t)0x0200fefefe0202feULL << 64) | (body_weight_word_t)0x0202000102ff00feULL), (((body_weight_word_t)0x01000000ff020200ULL << 64) | (body_weight_word_t)0x010000ffff02ffffULL), (((body_weight_word_t)0xffff02ff02ff00ffULL << 64) | (body_weight_word_t)0xfeff0000ff0000ffULL),
-        (((body_weight_word_t)0xfe020001ffff0102ULL << 64) | (body_weight_word_t)0x00fe02fe02fe00feULL), (((body_weight_word_t)0xffffffff02fe02feULL << 64) | (body_weight_word_t)0x02fffeff01ff0100ULL), (((body_weight_word_t)0x02fffe01feff01feULL << 64) | (body_weight_word_t)0x01ff0100010101feULL), (((body_weight_word_t)0x0102fe020202fe01ULL << 64) | (body_weight_word_t)0x01000101fefe01feULL),
-        (((body_weight_word_t)0x020200fe01ff00feULL << 64) | (body_weight_word_t)0x0002fe00000102feULL), (((body_weight_word_t)0x0101fe01ff010201ULL << 64) | (body_weight_word_t)0x02fffe0001000002ULL), (((body_weight_word_t)0x01010001020200feULL << 64) | (body_weight_word_t)0xfe01000202000201ULL), (((body_weight_word_t)0x00ffff01fffeff00ULL << 64) | (body_weight_word_t)0x0002ffff01ffff01ULL)
-    },
-    {
-        (((body_weight_word_t)0xff02fe0002ff01feULL << 64) | (body_weight_word_t)0x00fefe0102020202ULL), (((body_weight_word_t)0x0102000001ff01feULL << 64) | (body_weight_word_t)0xfe020002fffe0101ULL), (((body_weight_word_t)0xfefeff020101fffeULL << 64) | (body_weight_word_t)0x0100fefe0200fe01ULL), (((body_weight_word_t)0xfeff02020200fe02ULL << 64) | (body_weight_word_t)0xfe0001ff020002feULL),
-        (((body_weight_word_t)0x0200fffe00fefffeULL << 64) | (body_weight_word_t)0x01fe00fffe0001feULL), (((body_weight_word_t)0x01ff0101ff00ffffULL << 64) | (body_weight_word_t)0xfeffffff02000202ULL), (((body_weight_word_t)0x01feff0101fefe02ULL << 64) | (body_weight_word_t)0xff00010002fefe00ULL), (((body_weight_word_t)0xfe01fe02fe020002ULL << 64) | (body_weight_word_t)0x000001fe00fefffeULL),
-        (((body_weight_word_t)0x000100010000feffULL << 64) | (body_weight_word_t)0x01feff000201fe00ULL), (((body_weight_word_t)0x01010100fe000101ULL << 64) | (body_weight_word_t)0xffff01fffe0102ffULL), (((body_weight_word_t)0x00ff0102fe00fe01ULL << 64) | (body_weight_word_t)0xfffe01ffffff02feULL), (((body_weight_word_t)0x02fefe0002020200ULL << 64) | (body_weight_word_t)0xff01ff01ff0001ffULL),
-        (((body_weight_word_t)0x0101fefffefe0002ULL << 64) | (body_weight_word_t)0x0000ff02fe000200ULL), (((body_weight_word_t)0xfffffe0101fe01feULL << 64) | (body_weight_word_t)0x0002fe02ff00fffeULL), (((body_weight_word_t)0xfe000001010200ffULL << 64) | (body_weight_word_t)0xfe020000fe00fe02ULL), (((body_weight_word_t)0x0001010101fe01ffULL << 64) | (body_weight_word_t)0x010202fe010202feULL)
-    },
-    {
-        (((body_weight_word_t)0x0202ff0200000202ULL << 64) | (body_weight_word_t)0x000200ff02020001ULL), (((body_weight_word_t)0x01fffffffe02fe00ULL << 64) | (body_weight_word_t)0xfe0102fffefeff01ULL), (((body_weight_word_t)0x00fe0200020200feULL << 64) | (body_weight_word_t)0x00ff000200fe0200ULL), (((body_weight_word_t)0x00ff02fe020201ffULL << 64) | (body_weight_word_t)0xff00000001020200ULL),
-        (((body_weight_word_t)0x01feff0201fe0102ULL << 64) | (body_weight_word_t)0xfe02feff0200ff01ULL), (((body_weight_word_t)0xfffefe01ff00fe02ULL << 64) | (body_weight_word_t)0xfe000101ff0102feULL), (((body_weight_word_t)0x0001000000fefeffULL << 64) | (body_weight_word_t)0x0200ff000101ffffULL), (((body_weight_word_t)0xfe000002fe01fe02ULL << 64) | (body_weight_word_t)0x02ff02fffe02fefeULL),
-        (((body_weight_word_t)0x000002feff000001ULL << 64) | (body_weight_word_t)0xff0101ff00fe0101ULL), (((body_weight_word_t)0xfe00fefe020101feULL << 64) | (body_weight_word_t)0x0202fe00ff02ff00ULL), (((body_weight_word_t)0x00ff0201ff000001ULL << 64) | (body_weight_word_t)0x01fffe0201fefe01ULL), (((body_weight_word_t)0x00ff01fefffffefeULL << 64) | (body_weight_word_t)0x02feff0200fefeffULL),
-        (((body_weight_word_t)0x00fe02ff000000ffULL << 64) | (body_weight_word_t)0xfffe0000fefe00feULL), (((body_weight_word_t)0xfe0100fffe02fefeULL << 64) | (body_weight_word_t)0x01fefeffff00fffeULL), (((body_weight_word_t)0xfe00fe0202ffffffULL << 64) | (body_weight_word_t)0xffff01ff00ff0102ULL), (((body_weight_word_t)0x01fe00ff02ff01ffULL << 64) | (body_weight_word_t)0xff0001fefe00ff00ULL)
-    },
-    {
-        (((body_weight_word_t)0x00feff01ff000202ULL << 64) | (body_weight_word_t)0x01fe000001020001ULL), (((body_weight_word_t)0x01010201ff02ffffULL << 64) | (body_weight_word_t)0xfefefe02ff000202ULL), (((body_weight_word_t)0xfe01ff0102020102ULL << 64) | (body_weight_word_t)0x000001020102fe00ULL), (((body_weight_word_t)0x00fffe0202fffeffULL << 64) | (body_weight_word_t)0xffff02fe02020001ULL),
-        (((body_weight_word_t)0x01feff02fefe0001ULL << 64) | (body_weight_word_t)0xfefefe00ffff02ffULL), (((body_weight_word_t)0xff0201fe00020102ULL << 64) | (body_weight_word_t)0x01010002ff010201ULL), (((body_weight_word_t)0x020001ff02000101ULL << 64) | (body_weight_word_t)0x0000fe00fe01ffffULL), (((body_weight_word_t)0xfeff010200fefe00ULL << 64) | (body_weight_word_t)0xfe0202ff02fe0100ULL),
-        (((body_weight_word_t)0x0102fe0000fffe00ULL << 64) | (body_weight_word_t)0x00ff02ff000001feULL), (((body_weight_word_t)0xfffefefffefe00feULL << 64) | (body_weight_word_t)0x0200fffffeff0200ULL), (((body_weight_word_t)0x0000ff00fe0101ffULL << 64) | (body_weight_word_t)0xfe02ff01ff020001ULL), (((body_weight_word_t)0xfe01010002fefeffULL << 64) | (body_weight_word_t)0xff010101fffefe01ULL),
-        (((body_weight_word_t)0xff02ff00fffefeffULL << 64) | (body_weight_word_t)0x02fe0101fe00fffeULL), (((body_weight_word_t)0x0101fe00ff02fe00ULL << 64) | (body_weight_word_t)0x02ff000000fe01ffULL), (((body_weight_word_t)0xfefeffffffff00feULL << 64) | (body_weight_word_t)0xff0101fffe010100ULL), (((body_weight_word_t)0x01fe0200fffefffeULL << 64) | (body_weight_word_t)0x0102ff0000fefefeULL)
-    },
-    {
-        (((body_weight_word_t)0xfefefe0201fffe01ULL << 64) | (body_weight_word_t)0xfe010102010001ffULL), (((body_weight_word_t)0x00ff0202000100feULL << 64) | (body_weight_word_t)0x020200ffff000101ULL), (((body_weight_word_t)0x0200feffff000101ULL << 64) | (body_weight_word_t)0x01ff00000102ff01ULL), (((body_weight_word_t)0x00010102fe02fefeULL << 64) | (body_weight_word_t)0x0102fffffffe02ffULL),
-        (((body_weight_word_t)0x010102000101ff01ULL << 64) | (body_weight_word_t)0xfe00fe01fefffffeULL), (((body_weight_word_t)0x02ff02fe000200ffULL << 64) | (body_weight_word_t)0x00fe02000202ff02ULL), (((body_weight_word_t)0x0002fefeff010102ULL << 64) | (body_weight_word_t)0x0002ff01000100feULL), (((body_weight_word_t)0xfffffefe02fefe02ULL << 64) | (body_weight_word_t)0x0002000201010002ULL),
-        (((body_weight_word_t)0xff0002ff0100feffULL << 64) | (body_weight_word_t)0xfe00fffeff02ffffULL), (((body_weight_word_t)0x0202010001010002ULL << 64) | (body_weight_word_t)0x02ff020202fe0202ULL), (((body_weight_word_t)0x010202fffffffe02ULL << 64) | (body_weight_word_t)0xfe02ffff02fe02feULL), (((body_weight_word_t)0xff0202ff0000ffffULL << 64) | (body_weight_word_t)0xfe00ff020000feffULL),
-        (((body_weight_word_t)0x01ff020102fffe01ULL << 64) | (body_weight_word_t)0xfe0202fe00ff01ffULL), (((body_weight_word_t)0x0102fffefefefe00ULL << 64) | (body_weight_word_t)0x00fefffe02010000ULL), (((body_weight_word_t)0xfe00ff0201fe00ffULL << 64) | (body_weight_word_t)0x01ff0002ffffff00ULL), (((body_weight_word_t)0xfe02ff0001fefe01ULL << 64) | (body_weight_word_t)0x0100fe0101000101ULL)
-    },
-    {
-        (((body_weight_word_t)0x0000ff0002020100ULL << 64) | (body_weight_word_t)0xfefefe01feffffffULL), (((body_weight_word_t)0x000000fe02fe0102ULL << 64) | (body_weight_word_t)0xff0202fffefe00ffULL), (((body_weight_word_t)0x00fe02010002ff02ULL << 64) | (body_weight_word_t)0x00010101010101ffULL), (((body_weight_word_t)0xfffffe0002fefffeULL << 64) | (body_weight_word_t)0xfffffffe020102ffULL),
-        (((body_weight_word_t)0xfffe000000010101ULL << 64) | (body_weight_word_t)0x02fe01fe01feff01ULL), (((body_weight_word_t)0xfefe01ffff0000ffULL << 64) | (body_weight_word_t)0x0002fe01fe01ff01ULL), (((body_weight_word_t)0xfefe0001fe000102ULL << 64) | (body_weight_word_t)0x0000010102ff0100ULL), (((body_weight_word_t)0x00020100ff01fe02ULL << 64) | (body_weight_word_t)0x0102ff02fe00ff02ULL),
-        (((body_weight_word_t)0x02fefe02fe020002ULL << 64) | (body_weight_word_t)0xffff0200ff000100ULL), (((body_weight_word_t)0xfe02feffff0101feULL << 64) | (body_weight_word_t)0x01ff00ff00fefe02ULL), (((body_weight_word_t)0x0100010001ff0100ULL << 64) | (body_weight_word_t)0xff0001ffffff0102ULL), (((body_weight_word_t)0xfe0001ffff0202feULL << 64) | (body_weight_word_t)0x02ff02ff01fe01ffULL),
-        (((body_weight_word_t)0xfeff02ff000200ffULL << 64) | (body_weight_word_t)0xff0102020101fe01ULL), (((body_weight_word_t)0x000002ffffff02ffULL << 64) | (body_weight_word_t)0x020002020100ff00ULL), (((body_weight_word_t)0xff000100fffeff02ULL << 64) | (body_weight_word_t)0x020102020202fffeULL), (((body_weight_word_t)0x00000100ff01fe00ULL << 64) | (body_weight_word_t)0x0102fe00010000feULL)
-    },
-    {
-        (((body_weight_word_t)0x0201fe02feff0201ULL << 64) | (body_weight_word_t)0xfe00fe01010201ffULL), (((body_weight_word_t)0x0102fe01ff00ff02ULL << 64) | (body_weight_word_t)0xfffe02ff010202ffULL), (((body_weight_word_t)0x010001ffff02ff02ULL << 64) | (body_weight_word_t)0x00000101fe01ff01ULL), (((body_weight_word_t)0xfffe02020001ff01ULL << 64) | (body_weight_word_t)0x0100fe0001020200ULL),
-        (((body_weight_word_t)0x0101ffff00ff0001ULL << 64) | (body_weight_word_t)0xfe0002ff00feff02ULL), (((body_weight_word_t)0x010202fe02fffefeULL << 64) | (body_weight_word_t)0xff02000000010001ULL), (((body_weight_word_t)0xff01fefeff02ff00ULL << 64) | (body_weight_word_t)0x02fe01010001fe00ULL), (((body_weight_word_t)0xfe02fffefeff0002ULL << 64) | (body_weight_word_t)0xff0100ff01fe0200ULL),
-        (((body_weight_word_t)0x0102fefffffeffffULL << 64) | (body_weight_word_t)0xfffeff00ff01ff02ULL), (((body_weight_word_t)0x020102fe02fefe01ULL << 64) | (body_weight_word_t)0xfe0200fe0101fffeULL), (((body_weight_word_t)0xfe0200fefffe0000ULL << 64) | (body_weight_word_t)0x0002feffff01feffULL), (((body_weight_word_t)0x000002fe0100fe02ULL << 64) | (body_weight_word_t)0x02feff01ff00fe01ULL),
-        (((body_weight_word_t)0x01010101ff010202ULL << 64) | (body_weight_word_t)0x01ff00feff0001ffULL), (((body_weight_word_t)0x00ff00ffff000201ULL << 64) | (body_weight_word_t)0x0100000100ff0201ULL), (((body_weight_word_t)0x0201020202fe00ffULL << 64) | (body_weight_word_t)0xff00020201fffe01ULL), (((body_weight_word_t)0x0100fe02ff02ff02ULL << 64) | (body_weight_word_t)0x01fffe0102fe02ffULL)
-    },
-    {
-        (((body_weight_word_t)0x010102ff00fe00ffULL << 64) | (body_weight_word_t)0xfffe00fffefe01feULL), (((body_weight_word_t)0xfe0200fe0102ff00ULL << 64) | (body_weight_word_t)0x01ffffff01ff0102ULL), (((body_weight_word_t)0x00fe010000fe0201ULL << 64) | (body_weight_word_t)0x02ff00ff01feff01ULL), (((body_weight_word_t)0xfe0100ff020001feULL << 64) | (body_weight_word_t)0xff02ffff010202ffULL),
-        (((body_weight_word_t)0x0201fe0002fe00feULL << 64) | (body_weight_word_t)0xfe010001fefe01ffULL), (((body_weight_word_t)0xff02010201000101ULL << 64) | (body_weight_word_t)0x020200feff0002feULL), (((body_weight_word_t)0x0200ff00fe00feffULL << 64) | (body_weight_word_t)0x01fefefe00ffff00ULL), (((body_weight_word_t)0x010200ff01ff0100ULL << 64) | (body_weight_word_t)0x01ff000101ffff01ULL),
-        (((body_weight_word_t)0x01fe0100fffffefeULL << 64) | (body_weight_word_t)0xff02ff01ff000002ULL), (((body_weight_word_t)0x00fe01ff01feff02ULL << 64) | (body_weight_word_t)0xff02fefffefe0200ULL), (((body_weight_word_t)0xff020200fefe02feULL << 64) | (body_weight_word_t)0x02ff000101fffe02ULL), (((body_weight_word_t)0x0102fe0102ff0201ULL << 64) | (body_weight_word_t)0xfefffeff02fe01ffULL),
-        (((body_weight_word_t)0xff02fffe010201feULL << 64) | (body_weight_word_t)0x01ff020102fe02feULL), (((body_weight_word_t)0x0000ff000202ff00ULL << 64) | (body_weight_word_t)0x02ff020202fe0100ULL), (((body_weight_word_t)0x00fe01ff00ff00feULL << 64) | (body_weight_word_t)0xff02000201fe02ffULL), (((body_weight_word_t)0x0102fe0202fe0101ULL << 64) | (body_weight_word_t)0x02fffeffff0000feULL)
-    },
-    {
-        (((body_weight_word_t)0xfe01020100ff02feULL << 64) | (body_weight_word_t)0x0001fe0201fffefeULL), (((body_weight_word_t)0x01fffefe0001ffffULL << 64) | (body_weight_word_t)0x02ff0000fffe0200ULL), (((body_weight_word_t)0x020000fffefe02ffULL << 64) | (body_weight_word_t)0x02ff00ff00fffe00ULL), (((body_weight_word_t)0xff01ff02fe0102ffULL << 64) | (body_weight_word_t)0xfffe010002010000ULL),
-        (((body_weight_word_t)0x02000000010101ffULL << 64) | (body_weight_word_t)0xff00ffff00010001ULL), (((body_weight_word_t)0x020202020102ff02ULL << 64) | (body_weight_word_t)0x01ffff02020001feULL), (((body_weight_word_t)0x0200fe010202fe02ULL << 64) | (body_weight_word_t)0xfe02fefe00020201ULL), (((body_weight_word_t)0xfe010200000001feULL << 64) | (body_weight_word_t)0xfe0102ff01fefe01ULL),
-        (((body_weight_word_t)0x00ff01ff01010200ULL << 64) | (body_weight_word_t)0xff01feff0201fe02ULL), (((body_weight_word_t)0x02feff0001fe0200ULL << 64) | (body_weight_word_t)0x00ff0102fe000002ULL), (((body_weight_word_t)0xfeff02ff010101feULL << 64) | (body_weight_word_t)0x0001020202fe0102ULL), (((body_weight_word_t)0xff00010202fffeffULL << 64) | (body_weight_word_t)0x0201010002fe02ffULL),
-        (((body_weight_word_t)0xfefe0200fffffe01ULL << 64) | (body_weight_word_t)0x00feff02fffe02ffULL), (((body_weight_word_t)0x02000100ff0001ffULL << 64) | (body_weight_word_t)0x02ffffff010001ffULL), (((body_weight_word_t)0xfeff0001fffe0001ULL << 64) | (body_weight_word_t)0x0002fefefeff0200ULL), (((body_weight_word_t)0xfffe000101010102ULL << 64) | (body_weight_word_t)0x0000ff02fe02fffeULL)
-    }
-};
-static const bias_t L7_BIAS[CNN_C] = {
-    66, 43, -26, 25, -124, -32, 67, 111, 37, 28, -70, -119, -31, 30, -99, 53
-};
-static const q31_t L7_Q31[CNN_C] = {
-    1073741824, 1073741824, 1073741824, 1073741824, 1073741824, 1073741824, 1073741824, 1073741824, 1073741824, 1073741824, 1073741824, 1073741824, 1073741824, 1073741824, 1073741824, 1073741824
-};
-static const qexp_t L7_EXP[CNN_C] = {
-    -3, -4, -5, -6, -3, -4, -5, -6, -3, -4, -5, -6, -3, -4, -5, -6
-};
+static const q31_t L2_RESIDUAL_TO_L3_INPUT_Q31 = 1319147892;
+static const qexp_t L2_RESIDUAL_TO_L3_INPUT_EXP = 0;
+static const int L2_RESIDUAL_TO_L3_INPUT_QMIN = -127;
+static const int L2_RESIDUAL_TO_L3_INPUT_QMAX = 127;
 
-// L8
-static const body_weight_word_t L8_WBANK[9][CNN_C] = {
-    {
-        (((body_weight_word_t)0x00fe01fe0102ff01ULL << 64) | (body_weight_word_t)0x02010201feffff00ULL), (((body_weight_word_t)0xfeff010001ffff02ULL << 64) | (body_weight_word_t)0x02fe01000200fffeULL), (((body_weight_word_t)0xfe0201fe020002ffULL << 64) | (body_weight_word_t)0x0101ff01fffe02ffULL), (((body_weight_word_t)0x0102ff02fffe02ffULL << 64) | (body_weight_word_t)0x0102fffefe01ff00ULL),
-        (((body_weight_word_t)0x0100000101000201ULL << 64) | (body_weight_word_t)0x010202fe0002ff01ULL), (((body_weight_word_t)0x02fffffeffff0102ULL << 64) | (body_weight_word_t)0x0002ff0102020002ULL), (((body_weight_word_t)0xfe00000002010101ULL << 64) | (body_weight_word_t)0x01fffffe00000201ULL), (((body_weight_word_t)0xfe0100ff0100fefeULL << 64) | (body_weight_word_t)0xff0201fe01feffffULL),
-        (((body_weight_word_t)0xfeff00ff00fffefeULL << 64) | (body_weight_word_t)0x00fffe010002ffffULL), (((body_weight_word_t)0x0200ff0202000102ULL << 64) | (body_weight_word_t)0xfefefefeff01ffffULL), (((body_weight_word_t)0xff010200020102feULL << 64) | (body_weight_word_t)0xfffe010101ff0202ULL), (((body_weight_word_t)0x00010202ff0201feULL << 64) | (body_weight_word_t)0xfffe01fefefe0102ULL),
-        (((body_weight_word_t)0x0002ff0100fffeffULL << 64) | (body_weight_word_t)0x02000200fe010001ULL), (((body_weight_word_t)0x01fe01fe01fe0202ULL << 64) | (body_weight_word_t)0x0102ffff000002ffULL), (((body_weight_word_t)0xfffe01fe02ff0101ULL << 64) | (body_weight_word_t)0x0200fffffeff01ffULL), (((body_weight_word_t)0x01ff020001010002ULL << 64) | (body_weight_word_t)0x02fe00fffe01fffeULL)
-    },
-    {
-        (((body_weight_word_t)0xff00fefffe02fffeULL << 64) | (body_weight_word_t)0xfffe020201fefefeULL), (((body_weight_word_t)0xfefefffefe000200ULL << 64) | (body_weight_word_t)0x0202020202fe00feULL), (((body_weight_word_t)0x010202feff02feffULL << 64) | (body_weight_word_t)0xff0000010002ff01ULL), (((body_weight_word_t)0x0100ff00fffeff02ULL << 64) | (body_weight_word_t)0x010201fe020201feULL),
-        (((body_weight_word_t)0x01ff0100000202ffULL << 64) | (body_weight_word_t)0xff02fe0101ff0201ULL), (((body_weight_word_t)0x020102feffffff02ULL << 64) | (body_weight_word_t)0x00ff0100fe01fffeULL), (((body_weight_word_t)0xfefffefefffffeffULL << 64) | (body_weight_word_t)0xff0000fefe010100ULL), (((body_weight_word_t)0x0001ff0102fe0201ULL << 64) | (body_weight_word_t)0x020101fe01020200ULL),
-        (((body_weight_word_t)0xfe01010001020202ULL << 64) | (body_weight_word_t)0x01fe00fffeffff01ULL), (((body_weight_word_t)0x00fefe0201fe0200ULL << 64) | (body_weight_word_t)0x00ff01ff01010202ULL), (((body_weight_word_t)0xfe00fe02fe0200feULL << 64) | (body_weight_word_t)0x01ff010100feffffULL), (((body_weight_word_t)0x0001ff00000001ffULL << 64) | (body_weight_word_t)0x02ff0002fffffe02ULL),
-        (((body_weight_word_t)0xff01feff0002ff00ULL << 64) | (body_weight_word_t)0xff0200fefffefe00ULL), (((body_weight_word_t)0x0101feffff0102ffULL << 64) | (body_weight_word_t)0xfe02010001fe00feULL), (((body_weight_word_t)0x020202ff0101feffULL << 64) | (body_weight_word_t)0x02fe000001020102ULL), (((body_weight_word_t)0xff00fe020000fe02ULL << 64) | (body_weight_word_t)0x010002ff01010002ULL)
-    },
-    {
-        (((body_weight_word_t)0x020001000200fefeULL << 64) | (body_weight_word_t)0xfeffff02010002feULL), (((body_weight_word_t)0xfe0202010102fefeULL << 64) | (body_weight_word_t)0xfe01fe02ff02ff02ULL), (((body_weight_word_t)0xff01010001020202ULL << 64) | (body_weight_word_t)0x00fefefe020201feULL), (((body_weight_word_t)0x01010000ff0000ffULL << 64) | (body_weight_word_t)0xfefe000001feff01ULL),
-        (((body_weight_word_t)0xff0000fffffe0101ULL << 64) | (body_weight_word_t)0xffff00feff0100ffULL), (((body_weight_word_t)0xff0200feffff0000ULL << 64) | (body_weight_word_t)0x0101000102fe0001ULL), (((body_weight_word_t)0x000001000201ffffULL << 64) | (body_weight_word_t)0x02ff0202fe0001feULL), (((body_weight_word_t)0xff01fefe01020002ULL << 64) | (body_weight_word_t)0xfeff00ff02fe01ffULL),
-        (((body_weight_word_t)0x01fefe0202010101ULL << 64) | (body_weight_word_t)0x00ff01fe02010102ULL), (((body_weight_word_t)0x0002ff00feff00ffULL << 64) | (body_weight_word_t)0x00010002fffffe00ULL), (((body_weight_word_t)0x01fffeffffffff01ULL << 64) | (body_weight_word_t)0xff0002fe01020200ULL), (((body_weight_word_t)0x0100fffe0001ff00ULL << 64) | (body_weight_word_t)0x0101fefe00ff01feULL),
-        (((body_weight_word_t)0x01feff000001fe01ULL << 64) | (body_weight_word_t)0x01fe02fe00000101ULL), (((body_weight_word_t)0xff0202fe02010201ULL << 64) | (body_weight_word_t)0x0201fe000101ff02ULL), (((body_weight_word_t)0xfe01fffe0002fffeULL << 64) | (body_weight_word_t)0x0201fe0100fefe00ULL), (((body_weight_word_t)0x00020201ff0000feULL << 64) | (body_weight_word_t)0xfe01020202ff00feULL)
-    },
-    {
-        (((body_weight_word_t)0xff010200ff020002ULL << 64) | (body_weight_word_t)0x01ffff0101020101ULL), (((body_weight_word_t)0x01fe010202fe02feULL << 64) | (body_weight_word_t)0x00ff01ffff0000ffULL), (((body_weight_word_t)0xff01ff000101fffeULL << 64) | (body_weight_word_t)0x0001feff0102ff02ULL), (((body_weight_word_t)0x02020100ffff0000ULL << 64) | (body_weight_word_t)0x01ff0100fefe0201ULL),
-        (((body_weight_word_t)0xff0001fffeff02feULL << 64) | (body_weight_word_t)0xff02ff00ff000202ULL), (((body_weight_word_t)0x01fefefe000000feULL << 64) | (body_weight_word_t)0x000201feffff01ffULL), (((body_weight_word_t)0x0201fffefe02fffeULL << 64) | (body_weight_word_t)0x01010002ff010200ULL), (((body_weight_word_t)0xfe02ff020200fe02ULL << 64) | (body_weight_word_t)0x000201ff00020102ULL),
-        (((body_weight_word_t)0x010000fe02feff01ULL << 64) | (body_weight_word_t)0x02ff02ff01feff02ULL), (((body_weight_word_t)0xff000002010001feULL << 64) | (body_weight_word_t)0x01fffefefe02feffULL), (((body_weight_word_t)0xfffefeffff000001ULL << 64) | (body_weight_word_t)0x0001ff0200010101ULL), (((body_weight_word_t)0xff000100ff0100feULL << 64) | (body_weight_word_t)0x02fe0100fe01fefeULL),
-        (((body_weight_word_t)0x0102fffffe0002feULL << 64) | (body_weight_word_t)0x01ff000102020101ULL), (((body_weight_word_t)0x02fefe010002fe00ULL << 64) | (body_weight_word_t)0x0101ff0000000002ULL), (((body_weight_word_t)0xfffe01fffefffffeULL << 64) | (body_weight_word_t)0x0200fe000100fe02ULL), (((body_weight_word_t)0xff000200fe000000ULL << 64) | (body_weight_word_t)0x00feffff02020102ULL)
-    },
-    {
-        (((body_weight_word_t)0x00fffe0200fe0201ULL << 64) | (body_weight_word_t)0x01000200ff00fe01ULL), (((body_weight_word_t)0x02fe01ff00fefefeULL << 64) | (body_weight_word_t)0x02ff02fe0000feffULL), (((body_weight_word_t)0x0000000201fffffeULL << 64) | (body_weight_word_t)0x01fe02fe02feff01ULL), (((body_weight_word_t)0xfeffff00fe00fe01ULL << 64) | (body_weight_word_t)0xfffe00fffffffefeULL),
-        (((body_weight_word_t)0xfffefe00ff010101ULL << 64) | (body_weight_word_t)0xffff00feff01ff01ULL), (((body_weight_word_t)0xfe01fffeff00fe02ULL << 64) | (body_weight_word_t)0x000100ffff0101ffULL), (((body_weight_word_t)0xfeff020100020100ULL << 64) | (body_weight_word_t)0x0101fffe01fe00feULL), (((body_weight_word_t)0x02ff0101ffff0101ULL << 64) | (body_weight_word_t)0xfe01fffeff0000feULL),
-        (((body_weight_word_t)0x01ff0002ff0102feULL << 64) | (body_weight_word_t)0xffff01000001fe01ULL), (((body_weight_word_t)0xfe00ff010202feffULL << 64) | (body_weight_word_t)0x01fe0200ff00ff01ULL), (((body_weight_word_t)0xfe0000feffff0001ULL << 64) | (body_weight_word_t)0xfe00ff0001fffe02ULL), (((body_weight_word_t)0x00000101fffefefeULL << 64) | (body_weight_word_t)0xfe01fffefefefffeULL),
-        (((body_weight_word_t)0x01fe0001fffe01ffULL << 64) | (body_weight_word_t)0x00ff00fefe000202ULL), (((body_weight_word_t)0x02fe020200010001ULL << 64) | (body_weight_word_t)0xfffefeff0101fe00ULL), (((body_weight_word_t)0x0201fefe000200ffULL << 64) | (body_weight_word_t)0x00010000010002feULL), (((body_weight_word_t)0x02000200fefe01feULL << 64) | (body_weight_word_t)0x000201020100ff02ULL)
-    },
-    {
-        (((body_weight_word_t)0x00ff0102ffff0100ULL << 64) | (body_weight_word_t)0xfeff02ff0101ffffULL), (((body_weight_word_t)0x01fe00fe00fe0202ULL << 64) | (body_weight_word_t)0x0201ffff0102ffffULL), (((body_weight_word_t)0x0201ff01ff0101feULL << 64) | (body_weight_word_t)0x00ff01ff0000feffULL), (((body_weight_word_t)0x01020000ffff01ffULL << 64) | (body_weight_word_t)0x02ff0102ff02fe01ULL),
-        (((body_weight_word_t)0x01fefeffff0201feULL << 64) | (body_weight_word_t)0x00fffe0000000100ULL), (((body_weight_word_t)0x00fe00ff02fffe01ULL << 64) | (body_weight_word_t)0x0000020000ff0202ULL), (((body_weight_word_t)0x0200ff00fffffffeULL << 64) | (body_weight_word_t)0xff01000202fe0001ULL), (((body_weight_word_t)0xff00ff0102feff01ULL << 64) | (body_weight_word_t)0xfe0102ff00010001ULL),
-        (((body_weight_word_t)0x0102fefefe0201ffULL << 64) | (body_weight_word_t)0x02ff00ff0200fe01ULL), (((body_weight_word_t)0x0001fe02ffff0200ULL << 64) | (body_weight_word_t)0xfeff02010201fefeULL), (((body_weight_word_t)0xfe020100fe00fe02ULL << 64) | (body_weight_word_t)0x00fe0000fe01ffffULL), (((body_weight_word_t)0x00020200fe0101feULL << 64) | (body_weight_word_t)0x0002ff0200000101ULL),
-        (((body_weight_word_t)0xfefffe00fe010101ULL << 64) | (body_weight_word_t)0xff02ff0000fefefeULL), (((body_weight_word_t)0xfffe0101fe01fe00ULL << 64) | (body_weight_word_t)0x0102fe02000002feULL), (((body_weight_word_t)0x0100ffffff01ffffULL << 64) | (body_weight_word_t)0x01000001ff010101ULL), (((body_weight_word_t)0xfefffefe01fffe00ULL << 64) | (body_weight_word_t)0x0102feff010000feULL)
-    },
-    {
-        (((body_weight_word_t)0xfe01ff01fefe01ffULL << 64) | (body_weight_word_t)0xfeff000202fe0202ULL), (((body_weight_word_t)0x00ff00feffff0100ULL << 64) | (body_weight_word_t)0x02fe01fefe020202ULL), (((body_weight_word_t)0xff000100010201feULL << 64) | (body_weight_word_t)0x020200fe02ff0200ULL), (((body_weight_word_t)0x0100fffffefefefeULL << 64) | (body_weight_word_t)0xff01fefe0001fe01ULL),
-        (((body_weight_word_t)0xfe01fefe01fffe02ULL << 64) | (body_weight_word_t)0x0100020102010200ULL), (((body_weight_word_t)0xfe020202fe02feffULL << 64) | (body_weight_word_t)0x000102ff01020102ULL), (((body_weight_word_t)0x0002fe01010100feULL << 64) | (body_weight_word_t)0xff0101fefe0101ffULL), (((body_weight_word_t)0xfefffe0101000201ULL << 64) | (body_weight_word_t)0x00010201fe0000feULL),
-        (((body_weight_word_t)0x0200fe020201fe02ULL << 64) | (body_weight_word_t)0x00ff00fe01ff00feULL), (((body_weight_word_t)0xfeff0201ffff0202ULL << 64) | (body_weight_word_t)0x02fefe010101ff02ULL), (((body_weight_word_t)0x00fe01ffff0001ffULL << 64) | (body_weight_word_t)0xfe02fefffe01fe00ULL), (((body_weight_word_t)0x02fefe010102ffffULL << 64) | (body_weight_word_t)0x0001000101fe0200ULL),
-        (((body_weight_word_t)0xffffff00fe020102ULL << 64) | (body_weight_word_t)0xff02fe0000020202ULL), (((body_weight_word_t)0x0202fefe0100fe01ULL << 64) | (body_weight_word_t)0x010100fffeffff01ULL), (((body_weight_word_t)0x0002fe01fe02ff01ULL << 64) | (body_weight_word_t)0xfeff01fffeff0002ULL), (((body_weight_word_t)0xfefefe0202ff0200ULL << 64) | (body_weight_word_t)0xfffe0101ff0002feULL)
-    },
-    {
-        (((body_weight_word_t)0x0100fe020200fffeULL << 64) | (body_weight_word_t)0x02ff0102fe000202ULL), (((body_weight_word_t)0x00000200000102feULL << 64) | (body_weight_word_t)0x0201fefeffff0002ULL), (((body_weight_word_t)0x0002fefe020000ffULL << 64) | (body_weight_word_t)0xff02fefefefffeffULL), (((body_weight_word_t)0xfe0002fffffe0100ULL << 64) | (body_weight_word_t)0xff01fefe01000201ULL),
-        (((body_weight_word_t)0xfe020100010000feULL << 64) | (body_weight_word_t)0xff0102ff0002fe00ULL), (((body_weight_word_t)0xfe00fe01feffff00ULL << 64) | (body_weight_word_t)0x01000200fe020100ULL), (((body_weight_word_t)0x0000fefffe01ff02ULL << 64) | (body_weight_word_t)0xfe00fffe01fe0202ULL), (((body_weight_word_t)0xfefe0101feff00feULL << 64) | (body_weight_word_t)0xfefefe00010100ffULL),
-        (((body_weight_word_t)0x01ffffffff00fefeULL << 64) | (body_weight_word_t)0xff0100fffe0000feULL), (((body_weight_word_t)0xff0101ff01ff0000ULL << 64) | (body_weight_word_t)0x0102feff02020201ULL), (((body_weight_word_t)0x01000201020202ffULL << 64) | (body_weight_word_t)0x000201020201ff01ULL), (((body_weight_word_t)0x0100fffe020101ffULL << 64) | (body_weight_word_t)0xfffe0102000200feULL),
-        (((body_weight_word_t)0xff0000010101fe02ULL << 64) | (body_weight_word_t)0x00ff01fe02010202ULL), (((body_weight_word_t)0x020001020102ff00ULL << 64) | (body_weight_word_t)0xfffefeff0000ffffULL), (((body_weight_word_t)0xff02ff01ff010202ULL << 64) | (body_weight_word_t)0x0200fe0000ff0100ULL), (((body_weight_word_t)0xfe01020201fe0201ULL << 64) | (body_weight_word_t)0x0201fefe02fffffeULL)
-    },
-    {
-        (((body_weight_word_t)0x0100010000010100ULL << 64) | (body_weight_word_t)0x0002fe0002010201ULL), (((body_weight_word_t)0xfefe0101fffe01ffULL << 64) | (body_weight_word_t)0x02ffff010200fffeULL), (((body_weight_word_t)0x010002020202fe02ULL << 64) | (body_weight_word_t)0xffffff01fefffefeULL), (((body_weight_word_t)0xffff0102fefffe01ULL << 64) | (body_weight_word_t)0x00fffffe01000200ULL),
-        (((body_weight_word_t)0x0100fe020002ff00ULL << 64) | (body_weight_word_t)0xfe000200feff00feULL), (((body_weight_word_t)0x0201ff0201ff02feULL << 64) | (body_weight_word_t)0xfe01ff00010100ffULL), (((body_weight_word_t)0xff000202fe000201ULL << 64) | (body_weight_word_t)0x01fefe01fe02fe00ULL), (((body_weight_word_t)0xfefefe0001000201ULL << 64) | (body_weight_word_t)0x000101010101ff01ULL),
-        (((body_weight_word_t)0x00020001ff00fe00ULL << 64) | (body_weight_word_t)0xfeff0200ff01ff00ULL), (((body_weight_word_t)0x0102fffefeff02ffULL << 64) | (body_weight_word_t)0xfe000102fe0101ffULL), (((body_weight_word_t)0x02ff0001000101feULL << 64) | (body_weight_word_t)0x01fe01feff010002ULL), (((body_weight_word_t)0x01fe020000fe00ffULL << 64) | (body_weight_word_t)0x000000fe0002fffeULL),
-        (((body_weight_word_t)0x01ff01ff02010102ULL << 64) | (body_weight_word_t)0x02ff00fe01000002ULL), (((body_weight_word_t)0x0101fe0202fe01feULL << 64) | (body_weight_word_t)0x0000fefe01010202ULL), (((body_weight_word_t)0xff020200fffe0100ULL << 64) | (body_weight_word_t)0x010202fffefe0001ULL), (((body_weight_word_t)0x0101ff0102fe0201ULL << 64) | (body_weight_word_t)0x0100feffff0002ffULL)
-    }
-};
-static const bias_t L8_BIAS[CNN_C] = {
-    128, 55, 97, -72, -99, 34, -114, -17, -110, 113, 69, 97, -75, -16, -57, -66
-};
-static const q31_t L8_MAIN_Q31[CNN_C] = {
-    1073741824, 1073741824, 1073741824, 1073741824, 1073741824, 1073741824, 1073741824, 1073741824, 1073741824, 1073741824, 1073741824, 1073741824, 1073741824, 1073741824, 1073741824, 1073741824
-};
-static const qexp_t L8_MAIN_EXP[CNN_C] = {
-    -3, -4, -5, -6, -3, -4, -5, -6, -3, -4, -5, -6, -3, -4, -5, -6
-};
-static const q31_t L8_SKIP_Q31 = 1073741824;
-static const qexp_t L8_SKIP_EXP = 1;
+static const q31_t L4_RESIDUAL_TO_L5_INPUT_Q31 = 2005678146;
+static const qexp_t L4_RESIDUAL_TO_L5_INPUT_EXP = 1;
+static const int L4_RESIDUAL_TO_L5_INPUT_QMIN = -127;
+static const int L4_RESIDUAL_TO_L5_INPUT_QMAX = 127;
 
-// L9
-static const tail_weight_word_t L9_WBANK[9][CNN_C] = {
-    {
-        (tail_weight_word_t)0xfc11fef7U, (tail_weight_word_t)0xfe170519U, (tail_weight_word_t)0x0d09f8f0U, (tail_weight_word_t)0x04040cf6U,
-        (tail_weight_word_t)0xfeec12f6U, (tail_weight_word_t)0x17040adbU, (tail_weight_word_t)0xe9030418U, (tail_weight_word_t)0x0507f911U,
-        (tail_weight_word_t)0xf602ebefU, (tail_weight_word_t)0x0002fcfcU, (tail_weight_word_t)0x06f51ef9U, (tail_weight_word_t)0x1311f705U,
-        (tail_weight_word_t)0xf4f60100U, (tail_weight_word_t)0xf0ff0408U, (tail_weight_word_t)0x04170102U, (tail_weight_word_t)0xfcf80901U
-    },
-    {
-        (tail_weight_word_t)0x15f426f1U, (tail_weight_word_t)0xf61125e9U, (tail_weight_word_t)0xeb1c24f4U, (tail_weight_word_t)0xfd101008U,
-        (tail_weight_word_t)0xf1f31103U, (tail_weight_word_t)0xec1ae7dbU, (tail_weight_word_t)0x1eeadd7fU, (tail_weight_word_t)0xff0912faU,
-        (tail_weight_word_t)0xfaf2f20eU, (tail_weight_word_t)0x040708ffU, (tail_weight_word_t)0x100505e4U, (tail_weight_word_t)0xe4e71b0dU,
-        (tail_weight_word_t)0xfe140805U, (tail_weight_word_t)0xfbf3fc20U, (tail_weight_word_t)0x14ea2aefU, (tail_weight_word_t)0x061ffaeaU
-    },
-    {
-        (tail_weight_word_t)0xf5f1e110U, (tail_weight_word_t)0xf809f6e9U, (tail_weight_word_t)0x00e1f81dU, (tail_weight_word_t)0xfcfe02feU,
-        (tail_weight_word_t)0xf0ee100aU, (tail_weight_word_t)0x1303ea15U, (tail_weight_word_t)0xe30f09c8U, (tail_weight_word_t)0xf0fae7ffU,
-        (tail_weight_word_t)0xfa070203U, (tail_weight_word_t)0xfa030b0fU, (tail_weight_word_t)0x1df20c1bU, (tail_weight_word_t)0x10f6171cU,
-        (tail_weight_word_t)0xf2f817ffU, (tail_weight_word_t)0xf6fdf0ddU, (tail_weight_word_t)0xf312e5fcU, (tail_weight_word_t)0x08ff0213U
-    },
-    {
-        (tail_weight_word_t)0xeceb08fcU, (tail_weight_word_t)0xeef30219U, (tail_weight_word_t)0xe0111c09U, (tail_weight_word_t)0x02eafff8U,
-        (tail_weight_word_t)0xa7f0f104U, (tail_weight_word_t)0x035ef5deU, (tail_weight_word_t)0x44d12806U, (tail_weight_word_t)0x101d0910U,
-        (tail_weight_word_t)0x0df31316U, (tail_weight_word_t)0x03fa00ffU, (tail_weight_word_t)0x0c29ddf1U, (tail_weight_word_t)0x03e91508U,
-        (tail_weight_word_t)0xf510fd0dU, (tail_weight_word_t)0x08d9d505U, (tail_weight_word_t)0xf7ea0912U, (tail_weight_word_t)0xf4170d0fU
-    },
-    {
-        (tail_weight_word_t)0x07fce534U, (tail_weight_word_t)0x0e3f07ffU, (tail_weight_word_t)0x1bd597d7U, (tail_weight_word_t)0xfbfd0cf3U,
-        (tail_weight_word_t)0x7fdcc7ccU, (tail_weight_word_t)0xc2c4a258U, (tail_weight_word_t)0xe9ef81e5U, (tail_weight_word_t)0xe2cb10d2U,
-        (tail_weight_word_t)0x174203f2U, (tail_weight_word_t)0xfaddfc06U, (tail_weight_word_t)0xcca91145U, (tail_weight_word_t)0xc97ffeffU,
-        (tail_weight_word_t)0x0bd6f4fdU, (tail_weight_word_t)0x119b33c6U, (tail_weight_word_t)0xe61ce5deU, (tail_weight_word_t)0x0ec4f4c2U
-    },
-    {
-        (tail_weight_word_t)0xf30c0be1U, (tail_weight_word_t)0x06e80efbU, (tail_weight_word_t)0x18371f58U, (tail_weight_word_t)0xf7fdef06U,
-        (tail_weight_word_t)0x18370604U, (tail_weight_word_t)0xbb11e9b9U, (tail_weight_word_t)0xfe2af8edU, (tail_weight_word_t)0x01000c22U,
-        (tail_weight_word_t)0x09f0e306U, (tail_weight_word_t)0xf713fa07U, (tail_weight_word_t)0x39bc1418U, (tail_weight_word_t)0xfa2004c2U,
-        (tail_weight_word_t)0x0a1b08f4U, (tail_weight_word_t)0xb2142200U, (tail_weight_word_t)0x22def41eU, (tail_weight_word_t)0x0c0001fcU
-    },
-    {
-        (tail_weight_word_t)0x01dd09f9U, (tail_weight_word_t)0x0604f803U, (tail_weight_word_t)0x08def5f4U, (tail_weight_word_t)0x0f0e0103U,
-        (tail_weight_word_t)0x0315081cU, (tail_weight_word_t)0xed440007U, (tail_weight_word_t)0xee14fa05U, (tail_weight_word_t)0x0409fa14U,
-        (tail_weight_word_t)0x0f00fe07U, (tail_weight_word_t)0x0704f4f8U, (tail_weight_word_t)0x032c1717U, (tail_weight_word_t)0xedf20508U,
-        (tail_weight_word_t)0xfbeffc03U, (tail_weight_word_t)0x0b0efafeU, (tail_weight_word_t)0xfbd907feU, (tail_weight_word_t)0xf8020204U
-    },
-    {
-        (tail_weight_word_t)0x0c2ffee5U, (tail_weight_word_t)0xf7f20009U, (tail_weight_word_t)0xfe312de7U, (tail_weight_word_t)0xfee4fbffU,
-        (tail_weight_word_t)0xf15df528U, (tail_weight_word_t)0x42042513U, (tail_weight_word_t)0x133d1abeU, (tail_weight_word_t)0x1a19ff16U,
-        (tail_weight_word_t)0xecdf06feU, (tail_weight_word_t)0x01fbfa06U, (tail_weight_word_t)0x0037fec1U, (tail_weight_word_t)0x24c4ea03U,
-        (tail_weight_word_t)0x1c0501f6U, (tail_weight_word_t)0x0fede621U, (tail_weight_word_t)0xe900f70aU, (tail_weight_word_t)0x0900f118U
-    },
-    {
-        (tail_weight_word_t)0x07e2f40fU, (tail_weight_word_t)0x090be8feU, (tail_weight_word_t)0xe9090cf2U, (tail_weight_word_t)0xf7f1f1f7U,
-        (tail_weight_word_t)0xf9e0f4f6U, (tail_weight_word_t)0x38f80719U, (tail_weight_word_t)0xfef61c00U, (tail_weight_word_t)0xf702fef4U,
-        (tail_weight_word_t)0xff16f410U, (tail_weight_word_t)0x0507fc05U, (tail_weight_word_t)0xe1fd1d10U, (tail_weight_word_t)0x1ac5ee11U,
-        (tail_weight_word_t)0x1ceef510U, (tail_weight_word_t)0x203a23feU, (tail_weight_word_t)0xfb2a160cU, (tail_weight_word_t)0xfcfcfffeU
-    }
-};
-static const bias_t L9_BIAS[4] = {107, 435, -79, -12};
-static const q31_t L9_TAIL_Q31[4] = {1355755264, 1666328192, 1306489344, 1617399680};
-static const qexp_t L9_TAIL_EXP[4] = {-10, -10, -10, -10};
-static const q31_t L9_GLOBAL_SKIP_Q31 = 2053364429;
-static const qexp_t L9_GLOBAL_SKIP_EXP = 0;
+// Final hardware rule:
+//   raw_residual_dn[c] = Q31(tail_acc[c], L5_TAIL_TO_RAW_DN_*)
+//   out_raw10 = clamp(original_raw10 + raw_residual_dn, 0, 959)
 
-
-static const q31_t L9_OUT_RAW_Q31 = 1979141884;
-static const qexp_t L9_OUT_RAW_EXP = 3;
-
-#endif
+#endif // LOCAL_RESNET_MICRO_PARAMS_W8A8_H

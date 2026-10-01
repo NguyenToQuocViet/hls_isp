@@ -10,38 +10,56 @@ acc_t q31_round(acc_t x, q31_t q31, qexp_t exp)
         return (acc_t)(product << (-shift));
     if (shift >= 63)
         return 0;
-
     bool neg = product.range(63, 63);
     ap_uint<64> mag = neg ? (ap_uint<64>)((ap_int<64>)-product) : (ap_uint<64>)product;
     ap_uint<64> q = mag >> shift;
-
     ap_uint<64> r = mag & ((((ap_uint<64>)1) << shift) - 1);
     ap_uint<64> half = ((ap_uint<64>)1) << (shift - 1);
     if ((r > half) || ((r == half) && ((q & 1) != 0)))
-    {
         ++q;
-    }
     ap_int<64> rounded = neg ? (ap_int<64>)(-(ap_int<64>)q) : (ap_int<64>)q;
     return (acc_t)rounded;
 }
 
-feature_t sat8(acc_t x)
+ufeature_t sat_u8(acc_t x)
+{
+#pragma HLS INLINE
+    if (x > 255)
+        return 255;
+    if (x < 0)
+        return 0;
+    return (ufeature_t)x;
+}
+
+sfeature_t sat_s8(acc_t x)
 {
 #pragma HLS INLINE
     if (x > 127)
         return 127;
     if (x < -127)
         return -127;
-    return (feature_t)x;
+    return (sfeature_t)x;
 }
 
-feature_t bits_to_feature(ap_uint<8> b)
+sfeature_t bits_to_s8(ap_uint<8> b)
 {
 #pragma HLS INLINE
-    return (feature_t)b;
+    return (sfeature_t)b;
 }
 
-ap_uint<8> feature_to_bits(feature_t x)
+ufeature_t bits_to_u8(ap_uint<8> b)
+{
+#pragma HLS INLINE
+    return (ufeature_t)b;
+}
+
+ap_uint<8> s8_to_bits(sfeature_t x)
+{
+#pragma HLS INLINE
+    return x.range(7, 0);
+}
+
+ap_uint<8> u8_to_bits(ufeature_t x)
 {
 #pragma HLS INLINE
     return x.range(7, 0);
@@ -63,9 +81,9 @@ FORK_LOOP:
 void feature16_to_windows_core(hls::stream<IspPixelPacket<128>> &in, hls::stream<feat16_window_t> &win_out, int instance_id)
 {
 #pragma HLS FUNCTION_INSTANTIATE variable = instance_id
-    feature_t lb0[CNN_C][CNN_PACK_W];
-    feature_t lb1[CNN_C][CNN_PACK_W];
-    feature_t lb2[CNN_C][CNN_PACK_W];
+    feature_bits_t lb0[CNN_C][CNN_PACK_W];
+    feature_bits_t lb1[CNN_C][CNN_PACK_W];
+    feature_bits_t lb2[CNN_C][CNN_PACK_W];
 
 #pragma HLS ARRAY_PARTITION variable = lb0 complete dim = 1
 #pragma HLS ARRAY_PARTITION variable = lb1 complete dim = 1
@@ -74,23 +92,10 @@ void feature16_to_windows_core(hls::stream<IspPixelPacket<128>> &in, hls::stream
 #pragma HLS BIND_STORAGE variable = lb1 type = ram_1p impl = bram
 #pragma HLS BIND_STORAGE variable = lb2 type = ram_1p impl = bram
 
-    feature_t hwin[CNN_C][3][3];
+    feature_bits_t hwin[CNN_C][3][3];
 #pragma HLS ARRAY_PARTITION variable = hwin complete dim = 0
 
 INIT_WIN:
-    for (int c = 0; c < CNN_C; ++c)
-    {
-#pragma HLS UNROLL
-        for (int ky = 0; ky < 3; ++ky)
-        {
-#pragma HLS UNROLL
-            for (int kx = 0; kx < 3; ++kx)
-            {
-#pragma HLS UNROLL
-                hwin[c][ky][kx] = 0;
-            }
-        }
-    }
 
     int y = 0, x = 0;
 
@@ -101,10 +106,8 @@ MAIN_INPUT:
         IspPixelPacket<128> pkt = in.read();
         const int bank = y % 3;
 
-        // pixel in the first of new row -> clear or compute the last window of previous row
         if (x == 0)
         {
-            // Compute the last window of previous row
             if (y >= 2)
             {
                 feat16_window_t wp;
@@ -134,7 +137,7 @@ MAIN_INPUT:
                         {
 #pragma HLS UNROLL
                             int idx = (ky * 3 + kx) * 8;
-                            wp.taps[c].range(idx + 7, idx) = feature_to_bits(hwin[c][ky][kx]);
+                            wp.taps[c].range(idx + 7, idx) = hwin[c][ky][kx];
                         }
                     }
                 }
@@ -157,9 +160,9 @@ MAIN_INPUT:
             }
         }
 
-        feature_t top[CNN_C];
-        feature_t mid[CNN_C];
-        feature_t cur[CNN_C];
+        feature_bits_t top[CNN_C];
+        feature_bits_t mid[CNN_C];
+        feature_bits_t cur[CNN_C];
 #pragma HLS ARRAY_PARTITION variable = top complete
 #pragma HLS ARRAY_PARTITION variable = mid complete
 #pragma HLS ARRAY_PARTITION variable = cur complete
@@ -167,24 +170,24 @@ MAIN_INPUT:
         for (int c = 0; c < CNN_C; ++c)
         {
 #pragma HLS UNROLL
-            cur[c] = bits_to_feature(pkt.data.range(c * 8 + 7, c * 8));
+            cur[c] = pkt.data.range(c * 8 + 7, c * 8);
 
             if (bank == 0)
             {
-                top[c] = (y >= 2) ? lb1[c][x] : (feature_t)0;
-                mid[c] = (y >= 1) ? lb2[c][x] : (feature_t)0;
+                top[c] = (y >= 2) ? lb1[c][x] : (feature_bits_t)0;
+                mid[c] = (y >= 1) ? lb2[c][x] : (feature_bits_t)0;
                 lb0[c][x] = cur[c];
             }
             else if (bank == 1)
             {
-                top[c] = (y >= 2) ? lb2[c][x] : (feature_t)0;
-                mid[c] = (y >= 1) ? lb0[c][x] : (feature_t)0;
+                top[c] = (y >= 2) ? lb2[c][x] : (feature_bits_t)0;
+                mid[c] = (y >= 1) ? lb0[c][x] : (feature_bits_t)0;
                 lb1[c][x] = cur[c];
             }
             else
             {
-                top[c] = (y >= 2) ? lb0[c][x] : (feature_t)0;
-                mid[c] = (y >= 1) ? lb1[c][x] : (feature_t)0;
+                top[c] = (y >= 2) ? lb0[c][x] : (feature_bits_t)0;
+                mid[c] = (y >= 1) ? lb1[c][x] : (feature_bits_t)0;
                 lb2[c][x] = cur[c];
             }
 
@@ -218,7 +221,7 @@ MAIN_INPUT:
                     {
 #pragma HLS UNROLL
                         int idx = (ky * 3 + kx) * 8;
-                        wp.taps[c].range(idx + 7, idx) = feature_to_bits(hwin[c][ky][kx]);
+                        wp.taps[c].range(idx + 7, idx) = hwin[c][ky][kx];
                     }
                 }
             }
@@ -236,7 +239,6 @@ MAIN_INPUT:
         }
     }
 
-    // Right edge for output row H-2.
 RIGHT_LAST:
     {
         feat16_window_t wp;
@@ -266,14 +268,13 @@ RIGHT_LAST:
                 {
 #pragma HLS UNROLL
                     int idx = (ky * 3 + kx) * 8;
-                    wp.taps[c].range(idx + 7, idx) = feature_to_bits(hwin[c][ky][kx]);
+                    wp.taps[c].range(idx + 7, idx) = hwin[c][ky][kx];
                 }
             }
         }
         win_out.write(wp);
     }
 
-    // Virtual bottom row.
     for (int c = 0; c < CNN_C; ++c)
     {
 #pragma HLS UNROLL
@@ -294,8 +295,8 @@ BOTTOM_X:
     for (int bx = 0; bx < CNN_PACK_W; ++bx)
     {
 #pragma HLS PIPELINE II = 1
-        feature_t top[CNN_C];
-        feature_t mid[CNN_C];
+        feature_bits_t top[CNN_C];
+        feature_bits_t mid[CNN_C];
 #pragma HLS ARRAY_PARTITION variable = top complete
 #pragma HLS ARRAY_PARTITION variable = mid complete
 
@@ -348,7 +349,7 @@ BOTTOM_X:
                     {
 #pragma HLS UNROLL
                         int idx = (ky * 3 + kx) * 8;
-                        wp.taps[c].range(idx + 7, idx) = feature_to_bits(hwin[c][ky][kx]);
+                        wp.taps[c].range(idx + 7, idx) = hwin[c][ky][kx];
                     }
                 }
             }
@@ -383,7 +384,7 @@ BOTTOM_RIGHT:
                 {
 #pragma HLS UNROLL
                     int idx = (ky * 3 + kx) * 8;
-                    wp.taps[c].range(idx + 7, idx) = feature_to_bits(hwin[c][ky][kx]);
+                    wp.taps[c].range(idx + 7, idx) = hwin[c][ky][kx];
                 }
             }
         }
@@ -391,121 +392,77 @@ BOTTOM_RIGHT:
     }
 }
 
-
-static void internal_raw10_to_axis(hls::stream<IspPixelPacket<10>>& in, hls::stream<axis_raw10_t>& out)
+static void internal_raw10_to_axis(hls::stream<IspPixelPacket<10>> &in, hls::stream<axis_raw10_t> &out)
 {
 INTERNAL_TO_AXIS:
     for (int p = 0; p < CNN_RAW_W * CNN_RAW_H; ++p)
     {
-#pragma HLS PIPELINE II=1
-
+#pragma HLS PIPELINE II = 1
         IspPixelPacket<10> v = in.read();
-
         axis_raw10_t a;
         a.data = v.data;
         a.user = v.user;
         a.last = v.last;
-
         out.write(a);
     }
 }
 
-
 void local_resnet_micro_top(hls::stream<axis_raw10_t> &raw_in, hls::stream<axis_raw10_t> &raw_out)
 {
-#pragma HLS INTERFACE axis port=raw_in register=false
-#pragma HLS INTERFACE axis port=raw_out
-#pragma HLS INTERFACE s_axilite port=return bundle=CTRL
-
-#if L0_PARAMS_VALID != 1
-#error "L0 parameters are invalid."
+#pragma HLS INTERFACE axis port = raw_in register = false
+#pragma HLS INTERFACE axis port = raw_out
+#pragma HLS INTERFACE s_axilite port = return bundle = CTRL
+#if LOCAL_RESNET_PARAMS_VALID != 1
+#error "LocalResNet-Micro parameters are invalid."
 #endif
-
-#if CNN_BODY_PARAMS_VALID != 1
-#error "Body/Tail parameters are invalid."
+#if LOCAL_RESNET_RESBLOCKS != 2
+#error "This HLS graph is locked to LocalResNet-Micro B2."
 #endif
-
-    hls::stream<IspPixelPacket<10>> raw_internal_out("raw_internal_out");
-
     hls::stream<IspPixelPacket<128>> head_out("head_out");
     hls::stream<IspPixelPacket<128>> rb0_out("rb0_out");
     hls::stream<IspPixelPacket<128>> rb1_out("rb1_out");
-    hls::stream<IspPixelPacket<128>> rb2_out("rb2_out");
-    hls::stream<IspPixelPacket<128>> rb3_out("rb3_out");
-
-    hls::stream<IspPixelPacket<32>> global_skip("global_skip");
-    hls::stream<IspPixelPacket<32>> tail_packed("tail_packed");
-
-#pragma HLS STREAM variable=raw_internal_out depth=64
-
-#pragma HLS STREAM variable=head_out depth=1024
-#pragma HLS STREAM variable=rb0_out depth=64
-#pragma HLS STREAM variable=rb1_out depth=64
-#pragma HLS STREAM variable=rb2_out depth=64
-#pragma HLS STREAM variable=rb3_out depth=64
-
-#pragma HLS STREAM variable=global_skip depth=16384
-#pragma HLS STREAM variable=tail_packed depth=2048
-
+    hls::stream<IspPixelPacket<40>> global_skip("global_skip");
+    hls::stream<IspPixelPacket<40>> tail_packed("tail_packed");
+    hls::stream<IspPixelPacket<10>> raw_internal_out("raw_internal_out");
+#pragma HLS STREAM variable = head_out depth = 1024
+#pragma HLS STREAM variable = rb0_out depth = 64
+#pragma HLS STREAM variable = rb1_out depth = 64
+#pragma HLS STREAM variable = global_skip depth = 16384
+#pragma HLS STREAM variable = tail_packed depth = 2048
+#pragma HLS STREAM variable = raw_internal_out depth = 64
 #pragma HLS DATAFLOW
-
     cnn_l0_axis_core(raw_in, head_out, global_skip);
-
     cnn_resblock0(head_out, rb0_out);
     cnn_resblock1(rb0_out, rb1_out);
-
-    // cnn_resblock2(rb1_out, rb2_out);
-    // cnn_resblock3(rb2_out, rb3_out);
-
-    cnn_l9_tail(rb1_out, global_skip, tail_packed);
-
+    cnn_l5_tail(rb1_out, global_skip, tail_packed);
     packed4_to_raw10(tail_packed, raw_internal_out);
     internal_raw10_to_axis(raw_internal_out, raw_out);
 }
 
 void isp_cnn_denoise_top(hls::stream<IspPixelPacket<10>> &raw_in, hls::stream<IspPixelPacket<10>> &raw_out)
 {
-#pragma HLS INTERFACE axis port=raw_in register=false
-#pragma HLS INTERFACE axis port=raw_out
-#pragma HLS INTERFACE s_axilite port=return bundle=CTRL
-
-#if L0_PARAMS_VALID != 1
-#error "L0 parameters are invalid."
+#pragma HLS INTERFACE axis port = raw_in register = false
+#pragma HLS INTERFACE axis port = raw_out
+#if LOCAL_RESNET_PARAMS_VALID != 1
+#error "LocalResNet-Micro parameters are invalid."
 #endif
-
-#if CNN_BODY_PARAMS_VALID != 1
-#error "Body/Tail parameters are invalid."
+#if LOCAL_RESNET_RESBLOCKS != 2
+#error "This HLS graph is locked to LocalResNet-Micro B2."
 #endif
-
     hls::stream<IspPixelPacket<128>> head_out("head_out");
     hls::stream<IspPixelPacket<128>> rb0_out("rb0_out");
     hls::stream<IspPixelPacket<128>> rb1_out("rb1_out");
-    hls::stream<IspPixelPacket<128>> rb2_out("rb2_out");
-    hls::stream<IspPixelPacket<128>> rb3_out("rb3_out");
-
-    hls::stream<IspPixelPacket<32>> global_skip("global_skip");
-    hls::stream<IspPixelPacket<32>> tail_packed("tail_packed");
-
-#pragma HLS STREAM variable=head_out depth=1024
-#pragma HLS STREAM variable=rb0_out depth=64
-#pragma HLS STREAM variable=rb1_out depth=64
-#pragma HLS STREAM variable=rb2_out depth=64
-#pragma HLS STREAM variable=rb3_out depth=64
-
-#pragma HLS STREAM variable=global_skip depth=16384
-#pragma HLS STREAM variable=tail_packed depth=2048
-
+    hls::stream<IspPixelPacket<40>> global_skip("global_skip");
+    hls::stream<IspPixelPacket<40>> tail_packed("tail_packed");
+#pragma HLS STREAM variable = head_out depth = 1024
+#pragma HLS STREAM variable = rb0_out depth = 64
+#pragma HLS STREAM variable = rb1_out depth = 64
+#pragma HLS STREAM variable = global_skip depth = 16384
+#pragma HLS STREAM variable = tail_packed depth = 2048
 #pragma HLS DATAFLOW
-
     cnn_l0_core(raw_in, head_out, global_skip);
-
     cnn_resblock0(head_out, rb0_out);
     cnn_resblock1(rb0_out, rb1_out);
-
-    // cnn_resblock2(rb1_out, rb2_out);
-    // cnn_resblock3(rb2_out, rb3_out);
-
-    cnn_l9_tail(rb1_out, global_skip, tail_packed);
-
+    cnn_l5_tail(rb1_out, global_skip, tail_packed);
     packed4_to_raw10(tail_packed, raw_out);
 }
