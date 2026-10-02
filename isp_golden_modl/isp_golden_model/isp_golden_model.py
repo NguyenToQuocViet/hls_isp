@@ -363,7 +363,7 @@ class CnnDenoiseW8A8MixedP999Q31:
 # ============================================================================
 
 def quantize_gain_q4_12(gain: float) -> int:
-    return int(max(0.0, min(65535.0, math.floor(gain * 4096.0 + 0.5))))
+    return int(max(0.0, min(65535.0, math.floor(gain * 4096.0))))
 
 
 def wb(raw: np.ndarray, cfg: WbConfig) -> np.ndarray:
@@ -467,7 +467,7 @@ def demosaic(raw: np.ndarray, cfg: DemosaicConfig) -> np.ndarray:
 # ============================================================================
 
 def quantize_coeff_q4_12(value: float) -> int:
-    return int(max(-32768.0, min(32767.0, math.floor(value * 4096.0 + 0.5))))
+    return int(max(-32768.0, min(32767.0, math.floor(value * 4096.0))))
 
 
 def ccm(img_in: np.ndarray, cfg: CcmConfig) -> np.ndarray:
